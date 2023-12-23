@@ -9,3 +9,6 @@ xcuserdata
 Debug
 Release
 Backup
+build
+.vscode
+data/*

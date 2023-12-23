@@ -138,7 +138,10 @@ void CRT_Screenshot(void){
  
  
    unsigned char TGAheader[12]={0,0,2,0,0,0,0,0,0,0,0,0};
-   unsigned char header[6] = { width%256,width/256,height%256,height/256,24,0};
+   unsigned char header[6] = { (unsigned char)(width%256),
+                                (unsigned char)(width/256),
+                                (unsigned char)(height%256),
+                                (unsigned char)(height/256),24,0};
 
    // We write the headers
    fwrite(TGAheader,	sizeof(unsigned char),	12,	filePtr);
