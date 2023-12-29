@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.13)
 project(Chocolate_Wolfenstein_3D VERSION 0.1.0 LANGUAGES C CXX)
 
 find_package(SDL REQUIRED)
@@ -32,14 +32,17 @@ add_executable(Chocolate_Wolfenstein_3D
    )
 
 target_include_directories(Chocolate_Wolfenstein_3D PRIVATE "include")
-target_compile_options(Chocolate_Wolfenstein_3D PRIVATE 
-    -Wpointer-arith
-    -Wreturn-type
-    -Wwrite-strings
-    -Wcast-align
-    -Wsequence-point)
+if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+   target_compile_options(Chocolate_Wolfenstein_3D PRIVATE 
+   -Wpointer-arith
+   -Wreturn-type
+   -Wwrite-strings
+   -Wcast-align
+   -Wsequence-point)
+endif()
 
-target_link_libraries(Chocolate_Wolfenstein_3D PRIVATE SDL SDL_mixer GL)
+target_include_directories(Chocolate_Wolfenstein_3D PRIVATE SDL_INCLUDE_DIR)
+target_include_directories(Chocolate_Wolfenstein_3D PRIVATE SDL_MIXER_INCLUDE_DIR)
 add_custom_command(TARGET Chocolate_Wolfenstein_3D POST_BUILD 
    COMMAND cp ${CMAKE_SOURCE_DIR}/data/audiohed.wl1 ${CMAKE_CURRENT_BINARY_DIR}
    COMMAND cp ${CMAKE_SOURCE_DIR}/data/audiot.wl1 ${CMAKE_CURRENT_BINARY_DIR}
