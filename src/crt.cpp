@@ -11,6 +11,14 @@
 // Win32
 #ifdef _WIN32
 #include "SDL.h"
+
+FILE _iob[] = {*stdin, *stdout, *stderr};
+
+extern "C" FILE * __cdecl __iob_func(void)
+{
+    return _iob;
+}
+
 #elif __linux__
 #include "SDL/SDL.h"
 #else

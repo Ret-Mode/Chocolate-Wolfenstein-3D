@@ -12,3 +12,5 @@ Backup
 build
 .vscode
 data/*
+SDL/*
+SDL_mixer/*
