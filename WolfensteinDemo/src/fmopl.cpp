@@ -98,15 +98,10 @@ inline void logerror(...) {}
 #endif
 
 /* output final shift */
-#if (OPL_SAMPLE_BITS==16)
-    #define FINAL_SH    (0)
-    #define MAXOUT      (+32767)
-    #define MINOUT      (-32768)
-#else
-    #define FINAL_SH    (8)
-    #define MAXOUT      (+127)
-    #define MINOUT      (-128)
-#endif
+#define FINAL_SH    (0)
+#define MAXOUT      (+32767)
+#define MINOUT      (-32768)
+
 
 
 #define FREQ_SH         16  /* 16.16 fixed point (frequency calculations) */
@@ -144,71 +139,6 @@ inline void logerror(...) {}
 #define EG_SUS          2
 #define EG_REL          1
 #define EG_OFF          0
-
-
-/* save output as raw 16-bit sample */
-
-/*#define SAVE_SAMPLE*/
-
-#ifdef SAVE_SAMPLE
-INLINE signed int acc_calc(signed int value)
-{
-    if (value>=0)
-    {
-        if (value < 0x0200)
-            return (value & ~0);
-        if (value < 0x0400)
-            return (value & ~1);
-        if (value < 0x0800)
-            return (value & ~3);
-        if (value < 0x1000)
-            return (value & ~7);
-        if (value < 0x2000)
-            return (value & ~15);
-        if (value < 0x4000)
-            return (value & ~31);
-        return (value & ~63);
-    }
-    /*else value < 0*/
-    if (value > -0x0200)
-        return (~abs(value) & ~0);
-    if (value > -0x0400)
-        return (~abs(value) & ~1);
-    if (value > -0x0800)
-        return (~abs(value) & ~3);
-    if (value > -0x1000)
-        return (~abs(value) & ~7);
-    if (value > -0x2000)
-        return (~abs(value) & ~15);
-    if (value > -0x4000)
-        return (~abs(value) & ~31);
-    return (~abs(value) & ~63);
-}
-
-
-static FILE *sample[1];
-    #if 1   /*save to MONO file */
-        #define SAVE_ALL_CHANNELS \
-        {   signed int pom = acc_calc(lt); \
-            fputc((unsigned short)pom&0xff,sample[0]); \
-            fputc(((unsigned short)pom>>8)&0xff,sample[0]); \
-        }
-    #else   /*save to STEREO file */
-        #define SAVE_ALL_CHANNELS \
-        {   signed int pom = lt; \
-            fputc((unsigned short)pom&0xff,sample[0]); \
-            fputc(((unsigned short)pom>>8)&0xff,sample[0]); \
-            pom = rt; \
-            fputc((unsigned short)pom&0xff,sample[0]); \
-            fputc(((unsigned short)pom>>8)&0xff,sample[0]); \
-        }
-    #endif
-#endif
-
-/* #define LOG_CYM_FILE */
-#ifdef LOG_CYM_FILE
-    FILE * cymfile = NULL;
-#endif
 
 
 
@@ -304,22 +234,6 @@ typedef struct fm_opl_f {
 
     int     T[2];                   /* timer counters               */
     UINT8   st[2];                  /* timer enable                 */
-
-#if BUILD_Y8950
-    /* Delta-T ADPCM unit (Y8950) */
-
-    YM_DELTAT *deltat;
-
-    /* Keyboard and I/O ports interface */
-    UINT8   portDirection;
-    UINT8   portLatch;
-    OPL_PORTHANDLER_R porthandler_r;
-    OPL_PORTHANDLER_W porthandler_w;
-    int     port_param;
-    OPL_PORTHANDLER_R keyboardhandler_r;
-    OPL_PORTHANDLER_W keyboardhandler_w;
-    int     keyboard_param;
-#endif
 
     /* external event callback handlers */
     OPL_TIMERHANDLER  TimerHandler; /* TIMER handler                */
@@ -658,10 +572,6 @@ static OPL_SLOT *SLOT7_1, *SLOT7_2, *SLOT8_1, *SLOT8_2;
 
 static signed int phase_modulation; /* phase modulation input (SLOT 2) */
 static signed int output[1];
-
-#if BUILD_Y8950
-static INT32 output_deltat[4];      /* for Y8950 DELTA-T, chip is mono, that 4 here is just for safety */
-#endif
 
 static UINT32   LFO_AM;
 static INT32    LFO_PM;
@@ -1198,12 +1108,6 @@ static int init_tables(void)
             tl_tab[ x*2+0 + i*2*TL_RES_LEN ] =  tl_tab[ x*2+0 ]>>i;
             tl_tab[ x*2+1 + i*2*TL_RES_LEN ] = -tl_tab[ x*2+0 + i*2*TL_RES_LEN ];
         }
-    #if 0
-            logerror("tl %04i", x*2);
-            for (i=0; i<12; i++)
-                logerror(", [%02i] %5i", i*2, tl_tab[ x*2 /*+1*/ + i*2*TL_RES_LEN ] );
-            logerror("\n");
-    #endif
     }
     /*logerror("FMOPL.C: TL_TAB_LEN = %i elements (%i bytes)\n",TL_TAB_LEN, (int)sizeof(tl_tab));*/
 
@@ -1265,19 +1169,12 @@ static int init_tables(void)
     }
     /*logerror("FMOPL.C: ENV_QUIET= %08x (dec*8=%i)\n", ENV_QUIET, ENV_QUIET*8 );*/
 
-
-#ifdef SAVE_SAMPLE
-    sample[0]=fopen("sampsum.pcm","wb");
-#endif
-
     return 1;
 }
 
 static void OPLCloseTable( void )
 {
-#ifdef SAVE_SAMPLE
-    fclose(sample[0]);
-#endif
+
 }
 
 
@@ -1288,10 +1185,6 @@ static void OPL_initalize(FM_OPL *OPL)
 
     /* frequency base */
     OPL->freqbase  = (OPL->rate) ? ((double)OPL->clock / 72.0) / OPL->rate  : 0;
-#if 0
-    OPL->rate = (double)OPL->clock / 72.0;
-    OPL->freqbase  = 1.0;
-#endif
 
     /*logerror("freqbase=%f\n", OPL->freqbase);*/
 
@@ -1303,30 +1196,7 @@ static void OPL_initalize(FM_OPL *OPL)
     {
         /* opn phase increment counter = 20bit */
         OPL->fn_tab[i] = (UINT32)( (double)i * 64 * OPL->freqbase * (1<<(FREQ_SH-10)) ); /* -10 because chip works with 10.10 fixed point, while we use 16.16 */
-#if 0
-        logerror("FMOPL.C: fn_tab[%4i] = %08x (dec=%8i)\n",
-                 i, OPL->fn_tab[i]>>6, OPL->fn_tab[i]>>6 );
-#endif
     }
-
-#if 0
-    for( i=0 ; i < 16 ; i++ )
-    {
-        logerror("FMOPL.C: sl_tab[%i] = %08x\n",
-            i, sl_tab[i] );
-    }
-    for( i=0 ; i < 8 ; i++ )
-    {
-        int j;
-        logerror("FMOPL.C: ksl_tab[oct=%2i] =",i);
-        for (j=0; j<16; j++)
-        {
-            logerror("%08x ", ksl_tab[i*16+j] );
-        }
-        logerror("\n");
-    }
-#endif
-
 
     /* Amplitude modulation: 27 output levels (triangle waveform); 1 level takes one of: 192, 256 or 448 samples */
     /* One entry from LFO_AM_TABLE lasts for 64 samples */
@@ -1481,15 +1351,6 @@ static void OPLWriteReg(FM_OPL *OPL, int r, int v)
     r &= 0xff;
     v &= 0xff;
 
-#ifdef LOG_CYM_FILE
-    if ((cymfile) && (r!=0) )
-    {
-        fputc( (unsigned char)r, cymfile );
-        fputc( (unsigned char)v, cymfile );
-    }
-#endif
-
-
     switch(r&0xe0)
     {
     case 0x00:  /* 00-1f:control */
@@ -1538,63 +1399,9 @@ static void OPLWriteReg(FM_OPL *OPL, int r, int v)
                 }
             }
             break;
-#if BUILD_Y8950
-        case 0x06:      /* Key Board OUT */
-            if(OPL->type&OPL_TYPE_KEYBOARD)
-            {
-                if(OPL->keyboardhandler_w)
-                    OPL->keyboardhandler_w(OPL->keyboard_param,v);
-                else
-                    logerror("Y8950: write unmapped KEYBOARD port\n");
-            }
-            break;
-        case 0x07:  /* DELTA-T control 1 : START,REC,MEMDATA,REPT,SPOFF,x,x,RST */
-            if(OPL->type&OPL_TYPE_ADPCM)
-                YM_DELTAT_ADPCM_Write(OPL->deltat,r-0x07,v);
-            break;
-#endif
         case 0x08:  /* MODE,DELTA-T control 2 : CSM,NOTESEL,x,x,smpl,da/ad,64k,rom */
             OPL->mode = v;
-#if BUILD_Y8950
-            if(OPL->type&OPL_TYPE_ADPCM)
-                YM_DELTAT_ADPCM_Write(OPL->deltat,r-0x07,v&0x0f); /* mask 4 LSBs in register 08 for DELTA-T unit */
-#endif
             break;
-
-#if BUILD_Y8950
-        case 0x09:      /* START ADD */
-        case 0x0a:
-        case 0x0b:      /* STOP ADD  */
-        case 0x0c:
-        case 0x0d:      /* PRESCALE   */
-        case 0x0e:
-        case 0x0f:      /* ADPCM data write */
-        case 0x10:      /* DELTA-N    */
-        case 0x11:      /* DELTA-N    */
-        case 0x12:      /* ADPCM volume */
-            if(OPL->type&OPL_TYPE_ADPCM)
-                YM_DELTAT_ADPCM_Write(OPL->deltat,r-0x07,v);
-            break;
-
-        case 0x15:      /* DAC data high 8 bits (F7,F6...F2) */
-        case 0x16:      /* DAC data low 2 bits (F1, F0 in bits 7,6) */
-        case 0x17:      /* DAC data shift (S2,S1,S0 in bits 2,1,0) */
-            logerror("FMOPL.C: DAC data register written, but not implemented reg=%02x val=%02x\n",r,v);
-            break;
-
-        case 0x18:      /* I/O CTRL (Direction) */
-            if(OPL->type&OPL_TYPE_IO)
-                OPL->portDirection = v&0x0f;
-            break;
-        case 0x19:      /* I/O DATA */
-            if(OPL->type&OPL_TYPE_IO)
-            {
-                OPL->portLatch = v;
-                if(OPL->porthandler_w)
-                    OPL->porthandler_w(OPL->port_param,v&OPL->portDirection);
-            }
-            break;
-#endif
         default:
             logerror("FMOPL.C: write to unknown register: %02x\n",r);
             break;
@@ -1782,16 +1589,6 @@ static void OPLMute(FM_OPL *OPL,int channel,BOOL mute)
     }*/
 }
 
-#ifdef LOG_CYM_FILE
-static void cymfile_callback (int n)
-{
-    if (cymfile)
-    {
-        fputc( (unsigned char)0, cymfile );
-    }
-}
-#endif
-
 /* lock/unlock for common table */
 static int OPL_LockTable(void)
 {
@@ -1808,14 +1605,6 @@ static int OPL_LockTable(void)
         return -1;
     }
 
-#ifdef LOG_CYM_FILE
-    cymfile = fopen("3812_.cym","wb");
-    if (cymfile)
-        timer_pulse ( TIME_IN_HZ(110), 0, cymfile_callback); /*110 Hz pulse timer*/
-    else
-        logerror("Could not create file 3812_.cym\n");
-#endif
-
     return 0;
 }
 
@@ -1828,11 +1617,6 @@ static void OPL_UnLockTable(void)
 
     cur_chip = NULL;
     OPLCloseTable();
-
-#ifdef LOG_CYM_FILE
-    fclose (cymfile);
-    cymfile = NULL;
-#endif
 
 }
 
@@ -1867,18 +1651,6 @@ static void OPLResetChip(FM_OPL *OPL)
             CH->SLOT[s].volume    = MAX_ATT_INDEX;
         }
     }
-#if BUILD_Y8950
-    if(OPL->type&OPL_TYPE_ADPCM)
-    {
-        YM_DELTAT *DELTAT = OPL->deltat;
-
-        DELTAT->freqbase = OPL->freqbase;
-        DELTAT->output_pointer = &output_deltat[0];
-        DELTAT->portshift = 5;
-        DELTAT->output_range = 1<<23;
-        YM_DELTAT_ADPCM_Reset(DELTAT,0);
-    }
-#endif
 }
 
 /* Create one of virtual YM3812/YM3526/Y8950 */
@@ -1895,10 +1667,6 @@ static FM_OPL *OPLCreate(int type, int clock, int rate)
     /* calculate OPL state size */
     state_size  = sizeof(FM_OPL);
 
-#if BUILD_Y8950
-    if (type&OPL_TYPE_ADPCM) state_size+= sizeof(YM_DELTAT);
-#endif
-
     /* allocate memory block */
     ptr = (char *) malloc(state_size);
 
@@ -1911,14 +1679,6 @@ static FM_OPL *OPLCreate(int type, int clock, int rate)
     OPL  = (FM_OPL *)(void *)ptr;   // ptr comes from malloc, so it is correctly aligned
 
     ptr += sizeof(FM_OPL);
-
-#if BUILD_Y8950
-    if (type&OPL_TYPE_ADPCM)
-    {
-        OPL->deltat = (YM_DELTAT *)ptr;
-    }
-    ptr += sizeof(YM_DELTAT);
-#endif
 
     OPL->type  = type;
     OPL->clock = clock;
@@ -1973,64 +1733,10 @@ static unsigned char OPLRead(FM_OPL *OPL,int a)
 {
     if( !(a&1) )
     {
-        /* status port */
-
-        #if BUILD_Y8950
-
-        if(OPL->type&OPL_TYPE_ADPCM)    /* Y8950 */
-        {
-            return (OPL->status & (OPL->statusmask|0x80)) | (OPL->deltat->PCM_BSY&1);
-        }
-
-        #endif
 
         /* OPL and OPL2 */
         return OPL->status & (OPL->statusmask|0x80);
     }
-
-#if BUILD_Y8950
-    /* data port */
-    switch(OPL->address)
-    {
-    case 0x05: /* KeyBoard IN */
-        if(OPL->type&OPL_TYPE_KEYBOARD)
-        {
-            if(OPL->keyboardhandler_r)
-                return OPL->keyboardhandler_r(OPL->keyboard_param);
-            else
-                logerror("Y8950: read unmapped KEYBOARD port\n");
-        }
-        return 0;
-
-    case 0x0f: /* ADPCM-DATA  */
-        if(OPL->type&OPL_TYPE_ADPCM)
-        {
-            UINT8 val;
-
-            val = YM_DELTAT_ADPCM_Read(OPL->deltat);
-            /*logerror("Y8950: read ADPCM value read=%02x\n",val);*/
-            return val;
-        }
-        return 0;
-
-    case 0x19: /* I/O DATA    */
-        if(OPL->type&OPL_TYPE_IO)
-        {
-            if(OPL->porthandler_r)
-                return OPL->porthandler_r(OPL->port_param);
-            else
-                logerror("Y8950:read unmapped I/O port\n");
-        }
-        return 0;
-    case 0x1a: /* PCM-DATA    */
-        if(OPL->type&OPL_TYPE_ADPCM)
-        {
-            logerror("Y8950 A/D convertion is accessed but not implemented !\n");
-            return 0x80; /* 2's complement PCM data - result from A/D convertion */
-        }
-        return 0;
-    }
-#endif
 
     return 0xff;
 }
@@ -2073,9 +1779,6 @@ static int OPLTimerOver(FM_OPL *OPL,int c)
 
 
 #define MAX_OPL_CHIPS 2
-
-
-#if (BUILD_YM3812)
 
 static FM_OPL *OPL_YM3812[MAX_OPL_CHIPS];   /* array of pointers to the YM3812's */
 static int YM3812NumChips = 0;              /* number of chips */
@@ -2216,13 +1919,6 @@ void YM3812UpdateOne(int which, INT16 *buffer, int length)
         /* limit check */
         lt = limit( lt , MAXOUT, MINOUT );
 
-        #ifdef SAVE_SAMPLE
-        if (which==0)
-        {
-            SAVE_ALL_CHANNELS
-        }
-        #endif
-
         /* store to sound buffer */
 /*      #if (OPL_SAMPLE_BITS == 16)
             lt += 32768;
@@ -2239,353 +1935,4 @@ void YM3812UpdateOne(int which, INT16 *buffer, int length)
     }
 
 }
-#endif /* BUILD_YM3812 */
 
-
-
-#if (BUILD_YM3526)
-
-static FM_OPL *OPL_YM3526[MAX_OPL_CHIPS];   /* array of pointers to the YM3526's */
-static int YM3526NumChips = 0;              /* number of chips */
-
-int YM3526Init(int num, int clock, int rate)
-{
-    int i;
-
-    if (YM3526NumChips)
-        return -1;  /* duplicate init. */
-
-    YM3526NumChips = num;
-
-    for (i = 0;i < YM3526NumChips; i++)
-    {
-        /* emulator create */
-        OPL_YM3526[i] = OPLCreate(OPL_TYPE_YM3526,clock,rate);
-        if(OPL_YM3526[i] == NULL)
-        {
-            /* it's really bad - we run out of memeory */
-            YM3526NumChips = 0;
-            return -1;
-        }
-        /* reset */
-        YM3526ResetChip(i);
-    }
-
-    return 0;
-}
-
-void YM3526Shutdown(void)
-{
-    int i;
-
-    for (i = 0;i < YM3526NumChips; i++)
-    {
-        /* emulator shutdown */
-        OPLDestroy(OPL_YM3526[i]);
-        OPL_YM3526[i] = NULL;
-    }
-    YM3526NumChips = 0;
-}
-void YM3526ResetChip(int which)
-{
-    OPLResetChip(OPL_YM3526[which]);
-}
-
-int YM3526Write(int which, int a, int v)
-{
-    return OPLWrite(OPL_YM3526[which], a, v);
-}
-
-unsigned char YM3526Read(int which, int a)
-{
-    /* YM3526 always returns bit2 and bit1 in HIGH state */
-    return OPLRead(OPL_YM3526[which], a) | 0x06 ;
-}
-int YM3526TimerOver(int which, int c)
-{
-    return OPLTimerOver(OPL_YM3526[which], c);
-}
-
-void YM3526SetTimerHandler(int which, OPL_TIMERHANDLER TimerHandler, int channelOffset)
-{
-    OPLSetTimerHandler(OPL_YM3526[which], TimerHandler, channelOffset);
-}
-void YM3526SetIRQHandler(int which,OPL_IRQHANDLER IRQHandler,int param)
-{
-    OPLSetIRQHandler(OPL_YM3526[which], IRQHandler, param);
-}
-void YM3526SetUpdateHandler(int which,OPL_UPDATEHANDLER UpdateHandler,int param)
-{
-    OPLSetUpdateHandler(OPL_YM3526[which], UpdateHandler, param);
-}
-
-
-/*
-** Generate samples for one of the YM3526's
-**
-** 'which' is the virtual YM3526 number
-** '*buffer' is the output buffer pointer
-** 'length' is the number of samples that should be generated
-*/
-void YM3526UpdateOne(int which, INT16 *buffer, int length)
-{
-    FM_OPL      *OPL = OPL_YM3526[which];
-    UINT8       rhythm = OPL->rhythm&0x20;
-    OPLSAMPLE   *buf = buffer;
-    int i;
-
-    if( (void *)OPL != cur_chip ){
-        cur_chip = (void *)OPL;
-        /* rhythm slots */
-        SLOT7_1 = &OPL->P_CH[7].SLOT[SLOT1];
-        SLOT7_2 = &OPL->P_CH[7].SLOT[SLOT2];
-        SLOT8_1 = &OPL->P_CH[8].SLOT[SLOT1];
-        SLOT8_2 = &OPL->P_CH[8].SLOT[SLOT2];
-    }
-    for( i=0; i < length ; i++ )
-    {
-        int lt;
-
-        output[0] = 0;
-
-        advance_lfo(OPL);
-
-        /* FM part */
-        OPL_CALC_CH(&OPL->P_CH[0]);
-        OPL_CALC_CH(&OPL->P_CH[1]);
-        OPL_CALC_CH(&OPL->P_CH[2]);
-        OPL_CALC_CH(&OPL->P_CH[3]);
-        OPL_CALC_CH(&OPL->P_CH[4]);
-        OPL_CALC_CH(&OPL->P_CH[5]);
-
-        if(!rhythm)
-        {
-            OPL_CALC_CH(&OPL->P_CH[6]);
-            OPL_CALC_CH(&OPL->P_CH[7]);
-            OPL_CALC_CH(&OPL->P_CH[8]);
-        }
-        else        /* Rhythm part */
-        {
-            OPL_CALC_RH(&OPL->P_CH[0], (OPL->noise_rng>>0)&1 );
-        }
-
-        lt = output[0];
-
-        lt >>= FINAL_SH;
-
-        /* limit check */
-        lt = limit( lt , MAXOUT, MINOUT );
-
-        #ifdef SAVE_SAMPLE
-        if (which==0)
-        {
-            SAVE_ALL_CHANNELS
-        }
-        #endif
-
-        /* store to sound buffer */
-        buf[i] = lt;
-
-        advance(OPL);
-    }
-
-}
-#endif /* BUILD_YM3526 */
-
-
-
-
-#if BUILD_Y8950
-
-static FM_OPL *OPL_Y8950[MAX_OPL_CHIPS];    /* array of pointers to the Y8950's */
-static int Y8950NumChips = 0;               /* number of chips */
-
-static void Y8950_deltat_status_set(UINT8 which, UINT8 changebits)
-{
-    OPL_STATUS_SET(OPL_Y8950[which], changebits);
-}
-static void Y8950_deltat_status_reset(UINT8 which, UINT8 changebits)
-{
-    OPL_STATUS_RESET(OPL_Y8950[which], changebits);
-}
-
-int Y8950Init(int num, int clock, int rate)
-{
-    int i;
-
-    if (Y8950NumChips)
-        return -1;  /* duplicate init. */
-
-    Y8950NumChips = num;
-
-    for (i = 0;i < Y8950NumChips; i++)
-    {
-        /* emulator create */
-        OPL_Y8950[i] = OPLCreate(OPL_TYPE_Y8950,clock,rate);
-        if(OPL_Y8950[i] == NULL)
-        {
-            /* it's really bad - we run out of memeory */
-            Y8950NumChips = 0;
-            return -1;
-        }
-        OPL_Y8950[i]->deltat->status_set_handler = Y8950_deltat_status_set;
-        OPL_Y8950[i]->deltat->status_reset_handler = Y8950_deltat_status_reset;
-        OPL_Y8950[i]->deltat->status_change_which_chip = i;
-        OPL_Y8950[i]->deltat->status_change_EOS_bit = 0x10;     /* status flag: set bit4 on End Of Sample */
-        OPL_Y8950[i]->deltat->status_change_BRDY_bit = 0x08;    /* status flag: set bit3 on BRDY (End Of: ADPCM analysis/synthesis, memory reading/writing) */
-
-        /*OPL_Y8950[i]->deltat->write_time = 10.0 / clock;*/        /* a single byte write takes 10 cycles of main clock */
-        /*OPL_Y8950[i]->deltat->read_time  = 8.0 / clock;*/     /* a single byte read takes 8 cycles of main clock */
-        /* reset */
-        Y8950ResetChip(i);
-    }
-
-    return 0;
-}
-
-void Y8950Shutdown(void)
-{
-    int i;
-
-    for (i = 0;i < Y8950NumChips; i++)
-    {
-        /* emulator shutdown */
-        OPLDestroy(OPL_Y8950[i]);
-        OPL_Y8950[i] = NULL;
-    }
-    Y8950NumChips = 0;
-}
-void Y8950ResetChip(int which)
-{
-    OPLResetChip(OPL_Y8950[which]);
-}
-
-int Y8950Write(int which, int a, int v)
-{
-    return OPLWrite(OPL_Y8950[which], a, v);
-}
-
-unsigned char Y8950Read(int which, int a)
-{
-    return OPLRead(OPL_Y8950[which], a);
-}
-int Y8950TimerOver(int which, int c)
-{
-    return OPLTimerOver(OPL_Y8950[which], c);
-}
-
-void Y8950SetTimerHandler(int which, OPL_TIMERHANDLER TimerHandler, int channelOffset)
-{
-    OPLSetTimerHandler(OPL_Y8950[which], TimerHandler, channelOffset);
-}
-void Y8950SetIRQHandler(int which,OPL_IRQHANDLER IRQHandler,int param)
-{
-    OPLSetIRQHandler(OPL_Y8950[which], IRQHandler, param);
-}
-void Y8950SetUpdateHandler(int which,OPL_UPDATEHANDLER UpdateHandler,int param)
-{
-    OPLSetUpdateHandler(OPL_Y8950[which], UpdateHandler, param);
-}
-
-void Y8950SetDeltaTMemory(int which, void * deltat_mem_ptr, int deltat_mem_size )
-{
-    FM_OPL      *OPL = OPL_Y8950[which];
-    OPL->deltat->memory = (UINT8 *)(deltat_mem_ptr);
-    OPL->deltat->memory_size = deltat_mem_size;
-}
-
-/*
-** Generate samples for one of the Y8950's
-**
-** 'which' is the virtual Y8950 number
-** '*buffer' is the output buffer pointer
-** 'length' is the number of samples that should be generated
-*/
-void Y8950UpdateOne(int which, INT16 *buffer, int length)
-{
-    int i;
-    FM_OPL      *OPL = OPL_Y8950[which];
-    UINT8       rhythm  = OPL->rhythm&0x20;
-    YM_DELTAT   *DELTAT = OPL->deltat;
-    OPLSAMPLE   *buf    = buffer;
-
-    if( (void *)OPL != cur_chip ){
-        cur_chip = (void *)OPL;
-        /* rhythm slots */
-        SLOT7_1 = &OPL->P_CH[7].SLOT[SLOT1];
-        SLOT7_2 = &OPL->P_CH[7].SLOT[SLOT2];
-        SLOT8_1 = &OPL->P_CH[8].SLOT[SLOT1];
-        SLOT8_2 = &OPL->P_CH[8].SLOT[SLOT2];
-
-    }
-    for( i=0; i < length ; i++ )
-    {
-        int lt;
-
-        output[0] = 0;
-        output_deltat[0] = 0;
-
-        advance_lfo(OPL);
-
-        /* deltaT ADPCM */
-        if( DELTAT->portstate&0x80 )
-            YM_DELTAT_ADPCM_CALC(DELTAT);
-
-        /* FM part */
-        OPL_CALC_CH(&OPL->P_CH[0]);
-        OPL_CALC_CH(&OPL->P_CH[1]);
-        OPL_CALC_CH(&OPL->P_CH[2]);
-        OPL_CALC_CH(&OPL->P_CH[3]);
-        OPL_CALC_CH(&OPL->P_CH[4]);
-        OPL_CALC_CH(&OPL->P_CH[5]);
-
-        if(!rhythm)
-        {
-            OPL_CALC_CH(&OPL->P_CH[6]);
-            OPL_CALC_CH(&OPL->P_CH[7]);
-            OPL_CALC_CH(&OPL->P_CH[8]);
-        }
-        else        /* Rhythm part */
-        {
-            OPL_CALC_RH(&OPL->P_CH[0], (OPL->noise_rng>>0)&1 );
-        }
-
-        lt = output[0] + (output_deltat[0]>>11);
-
-        lt >>= FINAL_SH;
-
-        /* limit check */
-        lt = limit( lt , MAXOUT, MINOUT );
-
-        #ifdef SAVE_SAMPLE
-        if (which==0)
-        {
-            SAVE_ALL_CHANNELS
-        }
-        #endif
-
-        /* store to sound buffer */
-        buf[i] = lt;
-
-        advance(OPL);
-    }
-
-}
-
-void Y8950SetPortHandler(int which,OPL_PORTHANDLER_W PortHandler_w,OPL_PORTHANDLER_R PortHandler_r,int param)
-{
-    FM_OPL      *OPL = OPL_Y8950[which];
-    OPL->porthandler_w = PortHandler_w;
-    OPL->porthandler_r = PortHandler_r;
-    OPL->port_param = param;
-}
-
-void Y8950SetKeyboardHandler(int which,OPL_PORTHANDLER_W KeyboardHandler_w,OPL_PORTHANDLER_R KeyboardHandler_r,int param)
-{
-    FM_OPL      *OPL = OPL_Y8950[which];
-    OPL->keyboardhandler_w = KeyboardHandler_w;
-    OPL->keyboardhandler_r = KeyboardHandler_r;
-    OPL->keyboard_param = param;
-}
-
-#endif
