@@ -94,11 +94,8 @@ void CA_CannotOpen(const char *string);
 static int32_t  grstarts[NUMCHUNKS + 1];
 static int32_t* audiostarts; // array of offsets in audio / audiot
 
-#ifdef GRHEADERLINKED
-huffnode *grhuffman;
-#else
 huffnode grhuffman[255];
-#endif
+
 
 int    grhandle = -1;               // handle to EGAGRAPH
 int    maphandle = -1;              // handle to MAPTEMP / GAMEMAPS
@@ -447,13 +444,6 @@ void CAL_SetupGrFile (void)
     int handle;
     byte *compseg;
 
-#ifdef GRHEADERLINKED
-
-    grhuffman = (huffnode *)&EGAdict;
-    grstarts = (int32_t _seg *)FP_SEG(&EGAhead);
-
-#else
-
 //
 // load ???dict.ext (huffman dictionary for graphics files)
 //
@@ -479,11 +469,7 @@ void CAL_SetupGrFile (void)
     long headersize = lseek(handle, 0, SEEK_END);
     lseek(handle, 0, SEEK_SET);
 
-#ifndef APOGEE_1_0
     int expectedsize = lengthof(grstarts) - numEpisodesMissing;
-#else
-    int expectedsize = lengthof(grstarts);
-#endif
 
     if(!param_ignorenumchunks && headersize / 3 != (long) expectedsize)
         Quit("Chocolate Wolfenstein 3D was not compiled for these data files:\n"
@@ -503,7 +489,7 @@ void CAL_SetupGrFile (void)
         *i = (val == 0x00FFFFFF ? -1 : val);
         d += 3;
     }
-#endif
+
 
 //
 // Open the graphics file, leaving it open until the game is finished
@@ -576,12 +562,7 @@ void CAL_SetupMapFile (void)
     if (maphandle == -1)
         CA_CannotOpen(fname);
 #else
-    strcpy(fname,mfilename);
-    strcat(fname,extension);
 
-    maphandle = open(fname, O_RDONLY | O_BINARY);
-    if (maphandle == -1)
-        CA_CannotOpen(fname);
 #endif
 
 //
@@ -664,10 +645,6 @@ void CAL_SetupAudioFile (void)
 
 void CA_Startup (void)
 {
-#ifdef PROFILE
-    unlink ("PROFILE.TXT");
-    profilehandle = open("PROFILE.TXT", O_CREAT | O_WRONLY | O_TEXT);
-#endif
 
     CAL_SetupMapFile ();
     CAL_SetupGrFile ();
@@ -1040,10 +1017,9 @@ void CA_CacheMap (int mapnum)
     memptr    bigbufferseg;
     unsigned  size;
     word     *source;
-#ifdef CARMACIZED
     word     *buffer2seg;
     int32_t   expanded;
-#endif
+
 
     mapon = mapnum;
 
@@ -1070,7 +1046,6 @@ void CA_CacheMap (int mapnum)
         }
 
         read(maphandle,source,compressed);
-#ifdef CARMACIZED
         //
         // unhuffman, then unRLEW
         // The huffman'd chunk has a two byte expanded length first
@@ -1084,13 +1059,6 @@ void CA_CacheMap (int mapnum)
         CAL_CarmackExpand((byte *) source, buffer2seg,expanded);
         CA_RLEWexpand(buffer2seg+1,dest,size,RLEWtag);
         free(buffer2seg);
-
-#else
-        //
-        // unRLEW, skipping expanded length
-        //
-        CA_RLEWexpand (source+1,dest,size,RLEWtag);
-#endif
 
         if (compressed>BUFFERSIZE)
             free(bigbufferseg);

@@ -40,12 +40,6 @@ boolean         ingame,fizzlein;
 gametype        gamestate;
 byte            bordercol=VIEWCOLOR;        // color of the Change View/Ingame border
 
-#ifdef SPEAR
-int32_t         spearx,speary;
-unsigned        spearangle;
-boolean         spearflag;
-#endif
-
 
 //
 // ELEVATOR BACK MAPS - REMEMBER (-1)!!
@@ -298,10 +292,6 @@ static void ScanInfoPlane(void)
                 case 70:
                 case 71:
                 case 72:
-#ifdef SPEAR
-                case 73:                        // TRUCK AND SPEAR!
-                case 74:
-#endif
                     SpawnStatic(x,y,tile-23);
                     break;
 
@@ -504,7 +494,6 @@ static void ScanInfoPlane(void)
 //
 // boss
 //
-#ifndef SPEAR
                 case 214:
                     SpawnBoss (x,y);
                     break;
@@ -526,27 +515,7 @@ static void ScanInfoPlane(void)
                 case 178:
                     SpawnHitler (x,y);
                     break;
-#else
-                case 106:
-                    SpawnSpectre (x,y);
-                    break;
-                case 107:
-                    SpawnAngel (x,y);
-                    break;
-                case 125:
-                    SpawnTrans (x,y);
-                    break;
-                case 142:
-                    SpawnUber (x,y);
-                    break;
-                case 143:
-                    SpawnWill (x,y);
-                    break;
-                case 161:
-                    SpawnDeath (x,y);
-                    break;
 
-#endif
 
 //
 // mutants
@@ -596,7 +565,6 @@ static void ScanInfoPlane(void)
 //
 // ghosts
 //
-#ifndef SPEAR
                 case 224:
                     SpawnGhosts (en_blinky,x,y);
                     break;
@@ -609,7 +577,7 @@ static void ScanInfoPlane(void)
                 case 227:
                     SpawnGhosts (en_inky,x,y);
                     break;
-#endif
+
             }
         }
     }
@@ -1067,15 +1035,8 @@ void RecordDemo (void)
     CA_CacheGrChunk(STARTFONT);
     fontnumber=0;
     SETFONTCOLOR(0,15);
-#ifndef SPEAR
-#ifdef UPLOAD
     US_Print("  Demo which level(1-10): "); maps = 10;
-#else
-    US_Print("  Demo which level(1-60): "); maps = 60;
-#endif
-#else
-    US_Print("  Demo which level(1-21): "); maps = 21;
-#endif
+
     VW_UpdateScreen();
     VW_FadeIn ();
     esc = !US_LineInput (px,py,str,NULL,true,2,0);
@@ -1090,13 +1051,9 @@ void RecordDemo (void)
 
     VW_FadeOut ();
 
-#ifndef SPEAR
     NewGame (gd_hard,level/10);
     gamestate.mapon = level%10;
-#else
-    NewGame (gd_hard,0);
-    gamestate.mapon = level;
-#endif
+
 
     StartDemoRecord (level);
 
