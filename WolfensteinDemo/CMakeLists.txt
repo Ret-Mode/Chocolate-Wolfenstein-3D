@@ -21,6 +21,7 @@ add_executable(WolfensteinDemo
    src/wl_state.cpp
    src/wl_play.cpp  
    src/wl_text.cpp
+   src/sdl_music.cpp
    
    )
 

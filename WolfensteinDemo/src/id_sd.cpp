@@ -28,14 +28,8 @@
 //
 
 #include "wl_def.h"
-#ifdef _WIN32
-#include "SDL_mixer.h"
-#elif __linux__
-#include <SDL/SDL_mixer.h>
-#else
-#include <SDL/SDL_mixer.h>
-#endif
 #include "fmopl.h"
+#include "sdl_music.h"
 
 #pragma hdrstop
 
@@ -68,10 +62,7 @@ typedef struct
     uint32_t length;
 } digiinfo;
 
-static Mix_Chunk *SoundChunks[ STARTMUSIC - STARTDIGISOUNDS];
 static byte      *SoundBuffers[STARTMUSIC - STARTDIGISOUNDS];
-
-globalsoundpos channelSoundPos[MIX_CHANNELS];
 
 //      Global variables
         boolean         AdLibPresent,
@@ -143,7 +134,7 @@ SD_StopDigitized(void)
             break;
         case sds_SoundBlaster:
 //            SDL_SBStopSampleInIRQ();
-            Mix_HaltChannel(-1);
+            SDL_Mus_Mix_HaltChannel(-1);
             break;
     }
 }
@@ -152,10 +143,10 @@ int SD_GetChannelForDigi(int which)
 {
     if(DigiChannel[which] != -1) return DigiChannel[which];
 
-    int channel = Mix_GroupAvailable(1);
-    if(channel == -1) channel = Mix_GroupOldest(1);
+    int channel = SDL_Mus_Mix_GroupAvailable(1);
+    if(channel == -1) channel = SDL_Mus_Mix_GroupOldest(1);
     if(channel == -1)           // All sounds stopped in the meantime?
-        return Mix_GroupAvailable(1);
+        return SDL_Mus_Mix_GroupAvailable(1);
     return channel;
 }
 
@@ -169,7 +160,7 @@ void SD_SetPosition(int channel, int leftpos, int rightpos)
     {
         case sds_SoundBlaster:
 //            SDL_PositionSBP(leftpos,rightpos);
-            Mix_SetPanning(channel, ((15 - leftpos) << 4) + 15,
+            SDL_Mus_Mix_SetPanning(channel, ((15 - leftpos) << 4) + 15,
                 ((15 - rightpos) << 4) + 15);
             break;
     }
@@ -213,8 +204,8 @@ void SD_PrepareSound(int which)
         Quit("Unable to allocate wave buffer for sound %i!\n", which);
 
     headchunk head = {{'R','I','F','F'}, 0, {'W','A','V','E'},
-        {'f','m','t',' '}, 0x10, 0x0001, 1, param_samplerate, param_samplerate*2, 2, 16};
-    wavechunk dhead = {{'d', 'a', 't', 'a'}, destsamples*2};
+        {'f','m','t',' '}, 0x10, 0x0001, 1, (unsigned int)param_samplerate, (unsigned int)param_samplerate*2, 2, 16};
+    wavechunk dhead = {{'d', 'a', 't', 'a'}, (unsigned int)destsamples*2};
     head.filelenminus8 = sizeof(head) + destsamples*2;  // (sizeof(dhead)-8 = 0)
     memcpy(wavebuffer, &head, sizeof(head));
     memcpy(wavebuffer+sizeof(head), &dhead, sizeof(dhead));
@@ -232,8 +223,7 @@ void SD_PrepareSound(int which)
     }
     SoundBuffers[which] = wavebuffer;
 
-    SoundChunks[which] = Mix_LoadWAV_RW(SDL_RWFromMem(wavebuffer,
-        sizeof(headchunk) + sizeof(wavechunk) + destsamples * 2), 1);
+    SDL_Mus_Mix_LoadWAV_RW(which, wavebuffer, sizeof(headchunk) + sizeof(wavechunk) + destsamples * 2, 1);
 }
 
 int SD_PlayDigitized(word which,int leftpos,int rightpos)
@@ -249,20 +239,7 @@ int SD_PlayDigitized(word which,int leftpos,int rightpos)
 
     DigiPlaying = true;
 
-    Mix_Chunk *sample = SoundChunks[which];
-    if(sample == NULL)
-    {
-        printf("SoundChunks[%i] is NULL!\n", which);
-        return 0;
-    }
-
-    if(Mix_PlayChannel(channel, sample, 0) == -1)
-    {
-        printf("Unable to play sound: %s\n", Mix_GetError());
-        return 0;
-    }
-
-    return channel;
+    return SDL_Mus_PlayChunk(channel, which);
 }
 
 void SD_ChannelFinished(int channel)
@@ -699,14 +676,9 @@ SD_Startup(void)
     if (SD_Started)
         return;
 
-    if(Mix_OpenAudio(param_samplerate, AUDIO_S16, 2, param_audiobuffer))
-    {
-        printf("Unable to open audio: %s\n", Mix_GetError());
+    if (!SDL_Mus_Startup(param_samplerate, param_audiobuffer)) {
         return;
     }
-
-    Mix_ReserveChannels(2);  // reserve player and boss weapon channels
-    Mix_GroupChannels(2, MIX_CHANNELS-1, 1); // group remaining channels
 
     // Init music
 
@@ -723,8 +695,8 @@ SD_Startup(void)
     YM3812Write(0,1,0x20); // Set WSE=1
 //    YM3812Write(0,8,0); // Set CSM=0 & SEL=0       // already set in for statement
 
-    Mix_HookMusic(SDL_IMFMusicPlayer, 0);
-    Mix_ChannelFinished(SD_ChannelFinished);
+    SDL_Mus_Mix_HookMusic(SDL_IMFMusicPlayer, 0);
+    SDL_Mus_Mix_ChannelFinished(SD_ChannelFinished);
     AdLibPresent = true;
     SoundBlasterPresent = true;
 
@@ -753,9 +725,10 @@ SD_Shutdown(void)
     SD_MusicOff();
     SD_StopSound();
 
+    SDL_Mus_Mix_FreeAllChunks();
+    
     for(int i = 0; i < STARTMUSIC - STARTDIGISOUNDS; i++)
     {
-        if(SoundChunks[i]) Mix_FreeChunk(SoundChunks[i]);
         if(SoundBuffers[i]) free(SoundBuffers[i]);
     }
 

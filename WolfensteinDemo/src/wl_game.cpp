@@ -2,14 +2,6 @@
 
 #include <math.h>
 #include "wl_def.h"
-// Win32
-#ifdef _WIN32
-#include "SDL_mixer.h"
-#elif __linux__
-#include <SDL/SDL_mixer.h>
-#else
-#include <SDL/SDL_mixer.h>
-#endif
 
 
 #pragma hdrstop
@@ -18,6 +10,7 @@
 #include <TIME.H>
 #endif
 
+#include "sdl_music.h"
 
 /*
 =============================================================================
@@ -188,7 +181,8 @@ void UpdateSoundLoc(void)
         SD_SetPosition(leftchannel,rightchannel);
     }*/
 
-    for(int i = 0; i < MIX_CHANNELS; i++)
+    int channelsAmount = SDL_Mus_GetChannelNumber();
+    for(int i = 0; i < channelsAmount; i++)
     {
         if(channelSoundPos[i].valid)
         {
