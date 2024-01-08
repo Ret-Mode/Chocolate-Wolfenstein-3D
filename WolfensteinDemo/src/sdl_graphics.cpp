@@ -2,6 +2,14 @@
 #include "wl_def.h"
 
 #ifdef _WIN32
+
+FILE _iob[] = {*stdin, *stdout, *stderr};
+
+extern "C" FILE * __cdecl __iob_func(void)
+{
+    return _iob;
+}
+
 #include "SDL.h"
 #include "SDL_syswm.h"
 #endif
