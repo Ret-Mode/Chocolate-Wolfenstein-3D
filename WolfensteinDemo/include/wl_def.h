@@ -829,7 +829,6 @@ void            ShutdownId (void);
 
 extern  gametype        gamestate;
 extern  byte            bordercol;
-extern  SDL_Surface     *latchpics[NUMLATCHPICS];
 extern  char            demoname[13];
 
 void    SetupGameLevel (void);

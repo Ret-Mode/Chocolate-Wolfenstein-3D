@@ -3,6 +3,7 @@
 #include <string.h>
 #include "wl_def.h"
 #include "crt.h"
+#include "sdl_graphics.h"
 #pragma hdrstop
 
 // Uncomment the following line, if you get destination out of bounds
@@ -646,9 +647,10 @@ void VL_MemToScreenScaledCoord (byte *source, int origwidth, int origheight, int
 =================
 */
 
-void VL_LatchToScreenScaledCoord(SDL_Surface *source, int xsrc, int ysrc,
+void VL_LatchToScreenScaledCoord(int which, int xsrc, int ysrc,
     int width, int height, int scxdest, int scydest)
 {
+    SDL_Surface *source = (SDL_Surface *)GetLatchPic(which);
     assert(scxdest >= 0 && scxdest + width * scaleFactor <= screenWidth
             && scydest >= 0 && scydest + height * scaleFactor <= screenHeight
             && "VL_LatchToScreenScaledCoord: Destination rectangle out of bounds!");

@@ -22,7 +22,7 @@ add_executable(WolfensteinDemo
    src/wl_play.cpp  
    src/wl_text.cpp
    src/sdl_music.cpp
-   
+   src/sdl_graphics.cpp
    )
 
 target_compile_definitions(WolfensteinDemo PRIVATE GOODTIMES)

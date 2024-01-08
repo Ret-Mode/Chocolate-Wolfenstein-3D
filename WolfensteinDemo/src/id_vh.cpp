@@ -1,8 +1,7 @@
 #include "wl_def.h"
-
+#include "sdl_graphics.h"
 
 pictabletype    *pictable;
-SDL_Surface     *latchpics[NUMLATCHPICS];
 
 int     px,py;
 byte    fontcolor,backcolor;
@@ -122,7 +121,7 @@ void VH_UpdateScreen()
 
 void VWB_DrawTile8 (int x, int y, int tile)
 {
-    LatchDrawChar(x,y,tile);
+    VL_LatchToScreenScaledCoord(0,((tile)&7)*8,((tile)>>3)*8*64,8,8,scaleFactor*x,scaleFactor*y);
 }
 
 void VWB_DrawTile8M (int x, int y, int tile)
@@ -203,12 +202,14 @@ void VWB_Vlin (int y1, int y2, int x, int color)
 
 void LatchDrawPic (unsigned x, unsigned y, unsigned picnum)
 {
-    VL_LatchToScreen (latchpics[2+picnum-LATCHPICS_LUMP_START], x*8, y);
+    int which = 2+picnum-LATCHPICS_LUMP_START;
+    VL_LatchToScreenScaledCoord(which,0,0,GetLatchPicWidth(which),GetLatchPicHeight(which), scaleFactor*x*8,scaleFactor*y);
 }
 
 void LatchDrawPicScaledCoord (unsigned scx, unsigned scy, unsigned picnum)
 {
-    VL_LatchToScreenScaledCoord (latchpics[2+picnum-LATCHPICS_LUMP_START], scx*8, scy);
+    int which = 2+picnum-LATCHPICS_LUMP_START;
+    VL_LatchToScreenScaledCoord(which,0,0,GetLatchPicWidth(which),GetLatchPicHeight(which),scx*8,scy);
 }
 
 
@@ -240,7 +241,7 @@ void LoadLatchMem (void)
     }
     SDL_SetColors(surf, gamepal, 0, 256);
 
-    latchpics[0] = surf;
+    SetLatchPic(0, surf);
     CA_CacheGrChunk (STARTTILE8);
     src = grsegs[STARTTILE8];
 
@@ -268,7 +269,7 @@ void LoadLatchMem (void)
         }
         SDL_SetColors(surf, gamepal, 0, 256);
 
-        latchpics[2+i-start] = surf;
+        SetLatchPic(2+i-start, surf);
         CA_CacheGrChunk (i);
         VL_MemToLatch (grsegs[i], width, height, surf, 0, 0);
         UNCACHEGRCHUNK(i);

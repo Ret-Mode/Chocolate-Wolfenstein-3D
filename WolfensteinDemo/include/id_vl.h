@@ -9,7 +9,7 @@
 #define ID_VL_H
 
 #include "wl_def.h"
-
+#include "sdl_graphics.h"
 void Quit (const char *error,...);
 
 //===========================================================================
@@ -88,23 +88,7 @@ void inline VL_MemToScreen (byte *source, int width, int height, int x, int y)
 
 void VL_MaskedToScreen (byte *source, int width, int height, int x, int y);
 
-void VL_LatchToScreenScaledCoord (SDL_Surface *source, int xsrc, int ysrc,
+void VL_LatchToScreenScaledCoord (int which, int xsrc, int ysrc,
     int width, int height, int scxdest, int scydest);
-
-void inline VL_LatchToScreen (SDL_Surface *source, int xsrc, int ysrc,
-    int width, int height, int xdest, int ydest)
-{
-    VL_LatchToScreenScaledCoord(source,xsrc,ysrc,width,height,
-        scaleFactor*xdest,scaleFactor*ydest);
-}
-void inline VL_LatchToScreenScaledCoord (SDL_Surface *source, int scx, int scy)
-{
-    VL_LatchToScreenScaledCoord(source,0,0,source->w,source->h,scx,scy);
-}
-void inline VL_LatchToScreen (SDL_Surface *source, int x, int y)
-{
-    VL_LatchToScreenScaledCoord(source,0,0,source->w,source->h,
-        scaleFactor*x,scaleFactor*y);
-}
 
 #endif
