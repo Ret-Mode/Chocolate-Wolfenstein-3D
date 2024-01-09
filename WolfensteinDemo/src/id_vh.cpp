@@ -114,7 +114,7 @@ void VW_MeasurePropString (const char *string, word *width, word *height)
 
 void VH_UpdateScreen()
 {
-    SDL_BlitSurface(screenBuffer, NULL, screen, NULL);
+    SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, screen, NULL);
     SDL_Flip(screen);
 }
 
@@ -339,10 +339,10 @@ void VH_Startup()
     rndmask = rndmasks[rndbits - 17];
 }
 
-boolean FizzleFade (SDL_Surface *source, int x1, int y1,
+boolean FizzleFade (void *src, int x1, int y1,
     unsigned width, unsigned height, unsigned frames, boolean abortable)
 {
-
+    SDL_Surface *source = (SDL_Surface*) src;
     unsigned x, y, frame, pixperframe;
     int32_t  rndval, lastrndval;
     int      first = 1;
@@ -359,21 +359,21 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
     SDL_Surface *source_copy = SDL_ConvertSurface(source, source->format, source->flags);
     SDL_Surface *screen_copy = SDL_ConvertSurface(screen, screen->format, screen->flags);
 
-    byte *srcptr = VL_LockSurface(source_copy);
+    byte *srcptr = VL_LockSurface((void*)source_copy);
     do
     {
         if(abortable && IN_CheckAck ())
         {
-            VL_UnlockSurface(source_copy);
-            SDL_BlitSurface(screen_copy, NULL, screenBuffer, NULL);
-            SDL_BlitSurface(screenBuffer, NULL, screen, NULL);
+            VL_UnlockSurface((void*)source_copy);
+            SDL_BlitSurface(screen_copy, NULL, (SDL_Surface *)GetScreenBuffer(), NULL);
+            SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, screen, NULL);
             SDL_Flip(screen);
             SDL_FreeSurface(source_copy);
             SDL_FreeSurface(screen_copy);
             return true;
         }
 
-        byte *destptr = VL_LockSurface(screen_copy);
+        byte *destptr = VL_LockSurface((void*)screen_copy);
 
         rndval = lastrndval;
 
@@ -431,9 +431,9 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
         // If there is no double buffering, we always use the "first frame" case
         if(usedoublebuffering) first = 0;
 
-        VL_UnlockSurface(screen_copy);
-        SDL_BlitSurface(screen_copy, NULL, screenBuffer, NULL);
-        SDL_BlitSurface(screenBuffer, NULL, screen, NULL);
+        VL_UnlockSurface((void*)screen_copy);
+        SDL_BlitSurface(screen_copy, NULL, (SDL_Surface *)GetScreenBuffer(), NULL);
+        SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, screen, NULL);
         SDL_Flip(screen);
 
         frame++;
@@ -441,10 +441,10 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
     } while (1);
 
 finished:
-    VL_UnlockSurface(source_copy);
-    VL_UnlockSurface(screen_copy);
-    SDL_BlitSurface(screen_copy, NULL, screenBuffer, NULL);
-    SDL_BlitSurface(screenBuffer, NULL, screen, NULL);
+    VL_UnlockSurface((void*)source_copy);
+    VL_UnlockSurface((void*)screen_copy);
+    SDL_BlitSurface(screen_copy, NULL, (SDL_Surface *)GetScreenBuffer(), NULL);
+    SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, screen, NULL);
     SDL_Flip(screen);
     SDL_FreeSurface(source_copy);
     SDL_FreeSurface(screen_copy);

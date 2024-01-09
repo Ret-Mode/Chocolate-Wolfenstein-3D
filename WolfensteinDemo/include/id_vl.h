@@ -19,7 +19,7 @@ void Quit (const char *error,...);
 
 //===========================================================================
 
-extern SDL_Surface *screen, *screenBuffer, *curSurface;
+extern SDL_Surface *screen, *curSurface;
 
 extern  boolean  fullscreen, usedoublebuffering;
 extern  unsigned screenWidth, screenHeight, screenBits, screenPitch, bufferPitch, curPitch;
@@ -51,11 +51,11 @@ void VL_GetPalette  (SDL_Color *palette);
 void VL_FadeOut     (int start, int end, int red, int green, int blue, int steps);
 void VL_FadeIn      (int start, int end, SDL_Color *palette, int steps);
 
-byte *VL_LockSurface(SDL_Surface *surface);
-void VL_UnlockSurface(SDL_Surface *surface);
+byte *VL_LockSurface(void *surface);
+void VL_UnlockSurface(void *surface);
 
-#define LOCK() VL_LockSurface(curSurface)
-#define UNLOCK() VL_UnlockSurface(curSurface)
+#define LOCK() VL_LockSurface((void*)curSurface)
+#define UNLOCK() VL_UnlockSurface((void*)curSurface)
 
 byte VL_GetPixel        (int x, int y);
 void VL_Plot            (int x, int y, int color);

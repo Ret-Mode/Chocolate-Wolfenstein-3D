@@ -1,6 +1,7 @@
 // WL_DRAW.C
 
 #include "wl_def.h"
+#include "sdl_graphics.h"
 #pragma hdrstop
 
 
@@ -1523,7 +1524,7 @@ void    ThreeDRefresh (void)
     memset(spotvis,0,maparea);
     spotvis[player->tilex][player->tiley] = 1;       // Detect all sprites over player fix
 
-    vbuf = VL_LockSurface(screenBuffer);
+    vbuf = VL_LockSurface((SDL_Surface *)GetScreenBuffer());
     vbuf+=screenofs;
     vbufPitch = bufferPitch;
 
@@ -1550,7 +1551,7 @@ void    ThreeDRefresh (void)
     if(Keyboard[sc_Tab] && viewsize == 21 && gamestate.weapon != -1)
         ShowActStatus();
 
-    VL_UnlockSurface(screenBuffer);
+    VL_UnlockSurface((SDL_Surface *)GetScreenBuffer());
     vbuf = NULL;
 
 //
@@ -1559,7 +1560,7 @@ void    ThreeDRefresh (void)
 
     if (fizzlein)
     {
-        FizzleFade(screenBuffer, 0, 0, screenWidth, screenHeight, 20, false);
+        FizzleFade(GetScreenBuffer(), 0, 0, screenWidth, screenHeight, 20, false);
         fizzlein = false;
 
         lasttimecount = GetTimeCount();          // don't make a big tic count
@@ -1578,7 +1579,7 @@ void    ThreeDRefresh (void)
         }
 #endif
         
-        SDL_BlitSurface(screenBuffer, NULL, screen, NULL);
+        SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, screen, NULL);
         SDL_Flip(screen);
     }
 

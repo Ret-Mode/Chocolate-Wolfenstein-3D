@@ -10,6 +10,7 @@
 
 #define alOut(n,b) YM3812Write(0, n, b)
 
+#include "sdl_graphics.h"
 #define TickBase        70      // 70Hz per tick - used as a base for timer 0
 
 typedef enum
@@ -119,11 +120,11 @@ extern  SMMode          MusicMode;
 extern  int             DigiMap[];
 extern  int             DigiChannel[];
 
-#define GetTimeCount()  ((SDL_GetTicks()*7)/100)
+#define GetTimeCount()  (GetWolfTicks())
 
 inline void Delay(int wolfticks)
 {
-    if(wolfticks>0) SDL_Delay(wolfticks * 100 / 7);
+    if(wolfticks>0) DelayWolfTicks(wolfticks);
 }
 
 // Function prototypes

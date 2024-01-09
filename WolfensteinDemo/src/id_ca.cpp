@@ -991,7 +991,7 @@ void CA_CacheScreen (int chunk)
                 for(unsigned j = 0; j < scaleFactor; j++)
                     vbuf[(scy + i) * curPitch + scx + j] = col;
         }
-    }
+    } 
     UNLOCK();
     free(pic);
     free(bigbufferseg);

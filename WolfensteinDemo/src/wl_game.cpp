@@ -11,7 +11,7 @@
 #endif
 
 #include "sdl_music.h"
-
+#include "sdl_graphics.h"
 /*
 =============================================================================
 
@@ -1261,7 +1261,7 @@ void Died (void)
 
     IN_ClearKeysDown ();
 
-    FizzleFade(screenBuffer,viewscreenx,viewscreeny,viewwidth,viewheight,70,false);
+    FizzleFade(GetScreenBuffer(),viewscreenx,viewscreeny,viewwidth,viewheight,70,false);
 
     IN_UserInput(100);
     SD_WaitSoundDone ();

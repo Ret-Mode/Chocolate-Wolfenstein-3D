@@ -18,6 +18,7 @@ extern "C" FILE * __cdecl __iob_func(void)
 #endif
 
 static SDL_Surface *latchpics[NUMLATCHPICS];
+static SDL_Surface *screenBuffer;
 
 void *GetLatchPic(int which) {
     return (void*) latchpics[which];
@@ -32,4 +33,51 @@ int GetLatchPicWidth(int which) {
 }
 int GetLatchPicHeight(int which) {
     return latchpics[which]->h;
+}
+
+void DelayWolfTicks(int ticks) {
+    SDL_Delay(ticks * 100 / 7);
+}
+
+unsigned int GetWolfTicks(void) {
+    return (SDL_GetTicks()*7)/100;
+}
+
+unsigned char *GraphicLockBytes(void *surface)
+{
+    SDL_Surface *src = (SDL_Surface*)surface;
+    if(SDL_MUSTLOCK(src))
+    {
+        if(SDL_LockSurface(src) < 0)
+            return NULL;
+    }
+    return (unsigned char *) src->pixels;
+}
+
+void GraphicUnlockBytes(void *surface)
+{
+    SDL_Surface *src = (SDL_Surface*)surface;
+    if(SDL_MUSTLOCK(src))
+    {
+        SDL_UnlockSurface(src);
+    }
+}
+
+void *CreateScreenBuffer(void *gamepal, unsigned int *bufferPitch, unsigned int screenWidth, unsigned int screenHeight) {
+    screenBuffer = SDL_CreateRGBSurface(SDL_SWSURFACE, screenWidth,
+        screenHeight, 8, 0, 0, 0, 0);
+    if(!screenBuffer)
+    {
+        printf("Unable to create screen buffer surface: %s\n", SDL_GetError());
+        exit(1);
+    }
+    SDL_SetColors(screenBuffer, (SDL_Color*)gamepal, 0, 256);
+
+    *bufferPitch = screenBuffer->pitch;
+
+    return (void *)screenBuffer;
+}
+
+void *GetScreenBuffer(void) {
+    return (void *)screenBuffer;
 }
