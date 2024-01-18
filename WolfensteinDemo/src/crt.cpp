@@ -61,14 +61,12 @@ void CRT_Init(int _width){
 
 #include "id_vl.h"
 void CRT_DAC(void){
-    // Grab the screen framebuffer from SDL
-    SDL_Surface *screen = (SDL_Surface *)GetScreenBuffer();
     
     //Convert palette based framebuffer to RGB for OpenGL
     byte* pixelPointer = coloredFrameBuffer;
     for (int i=0; i < 320*200; i++) {
         unsigned char paletteIndex;
-        paletteIndex = ((byte*)screen->pixels)[i];
+        paletteIndex = GetScreenBufferPixel(i);
         *pixelPointer++ = curpal[paletteIndex].r;
         *pixelPointer++ = curpal[paletteIndex].g;
         *pixelPointer++ = curpal[paletteIndex].b;

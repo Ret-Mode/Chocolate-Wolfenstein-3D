@@ -20,6 +20,16 @@ extern "C" FILE * __cdecl __iob_func(void)
 static SDL_Surface *latchpics[NUMLATCHPICS];
 static SDL_Surface *screenBuffer;
 
+static unsigned screenBits;
+
+static SDL_Surface *screen;
+// static SDL_Surface *curSurface;
+// static SDL_Color gamepal[256];
+
+// static SDL_Color palette1[256];
+// static SDL_Color palette2[256];
+// static SDL_Color curpal[256];
+
 void *GetLatchPic(int which) {
     return (void*) latchpics[which];
 }
@@ -80,4 +90,66 @@ void *CreateScreenBuffer(void *gamepal, unsigned int *bufferPitch, unsigned int 
 
 void *GetScreenBuffer(void) {
     return (void *)screenBuffer;
+}
+
+unsigned char GetScreenBufferPixel(int offset) {
+    return ((uint8_t*)screenBuffer->pixels)[offset];
+}
+
+void GetCurrentPaletteColor(int color, int *red, int *green, int *blue) {
+    SDL_Color *col = &curpal[color];
+    *red = col->r;
+    *green = col->g;
+    *blue = col->b;
+}
+
+void SetCurrentPaletteColor(int color, int red, int green, int blue, unsigned int screenBits) {
+    SDL_Color col = { red, green, blue };
+    curpal[color] = col;
+
+    if(screenBits == 8)
+        SDL_SetPalette(screen, SDL_PHYSPAL, &col, color, 1);
+    else
+    {
+        SDL_SetPalette(curSurface, SDL_LOGPAL, &col, color, 1);
+        SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, screen, NULL);
+        SDL_Flip(screen);
+    }
+}
+
+void SetWindowTitle(const char *title) {
+    SDL_WM_SetCaption(title, NULL);
+}
+
+void SetScreenBits(void) {
+    const SDL_VideoInfo *vidInfo = SDL_GetVideoInfo();
+    screenBits = vidInfo->vfmt->BitsPerPixel;
+}
+
+unsigned GetScreenBits(void) {
+    return screenBits;
+}
+
+void SetScreen(void *screenPtr) {
+    screen = (SDL_Surface *)screenPtr;
+}
+
+void *GetScreen(void) {
+    return (void *) screen;
+}
+
+short GetScreenFlags(void) {
+    return screen->flags;
+}
+
+unsigned short GetScreenPitch(void) {
+    return screen->pitch;
+}
+
+void *GetScreenFormat(void) {
+    return (void *)screen->format;
+}
+
+unsigned char GetScreenBytesPerPixel(void) {
+    return screen->format->BytesPerPixel;
 }

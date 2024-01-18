@@ -24,8 +24,6 @@ boolean fullscreen = false;
 boolean usedoublebuffering = true;
 unsigned screenWidth = 640;
 unsigned screenHeight = 480;
-unsigned screenBits = -1;      // use "best" color depth according to libSDL
-
 
 SDL_Surface *screen = NULL;
 unsigned screenPitch;
@@ -81,34 +79,31 @@ void    VL_Shutdown (void)
 
 void    VL_SetVGAPlaneMode (void)
 {
-    SDL_WM_SetCaption("Wolfenstein 3D", NULL);
+    SetWindowTitle("Wolfenstein 3D");
 
-    if(screenBits == -1)
-    {
-        const SDL_VideoInfo *vidInfo = SDL_GetVideoInfo();
-        screenBits = vidInfo->vfmt->BitsPerPixel;
-    }
+    SetScreenBits();
 
     //Fab's CRT Hack
     //Adjust height so the screen is 4:3 aspect ratio
     screenHeight=screenWidth * 3.0/4.0;
     
-    screen = SDL_SetVideoMode(screenWidth, screenHeight, screenBits,
+    screen = SDL_SetVideoMode(screenWidth, screenHeight, GetScreenBits(),
           (usedoublebuffering ? SDL_HWSURFACE | SDL_DOUBLEBUF : 0)
-        | (screenBits == 8 ? SDL_HWPALETTE : 0)
+        | (GetScreenBits() == 8 ? SDL_HWPALETTE : 0)
         | (fullscreen ? SDL_FULLSCREEN : 0) | SDL_OPENGL | SDL_OPENGLBLIT);
     
-    
-    if(!screen)
+    SetScreen((void *)screen);
+
+    if(!GetScreen())
     {
-        printf("Unable to set %ix%ix%i video mode: %s\n", screenWidth, screenHeight, screenBits, SDL_GetError());
+        printf("Unable to set %ix%ix%i video mode: %s\n", screenWidth, screenHeight, GetScreenBits(), SDL_GetError());
         exit(1);
     }
-    if((screen->flags & SDL_DOUBLEBUF) != SDL_DOUBLEBUF)
+    if((GetScreenFlags() & SDL_DOUBLEBUF) != SDL_DOUBLEBUF)
         usedoublebuffering = false;
     SDL_ShowCursor(SDL_DISABLE);
 
-    SDL_SetColors(screen, gamepal, 0, 256);
+    SDL_SetColors((SDL_Surface*)GetScreen(), gamepal, 0, 256);
     memcpy(curpal, gamepal, sizeof(SDL_Color) * 256);
 
     //Fab's CRT Hack
@@ -120,7 +115,7 @@ void    VL_SetVGAPlaneMode (void)
     
     SDL_Surface *screenBuffer = (SDL_Surface *)CreateScreenBuffer(gamepal, &bufferPitch, screenWidth, screenHeight);
 
-    screenPitch = screen->pitch;
+    screenPitch = GetScreenPitch();
 
     curSurface = (SDL_Surface *)screenBuffer;
     curPitch = bufferPitch;
@@ -155,8 +150,9 @@ void    VL_SetVGAPlaneMode (void)
 =================
 */
 
-void VL_ConvertPalette(byte *srcpal, SDL_Color *destpal, int numColors)
+void VL_ConvertPalette(byte *srcpal, void *dest, int numColors)
 {
+    SDL_Color *destpal = (SDL_Color *)dest;
     for(int i=0; i<numColors; i++)
     {
         destpal[i].r = *srcpal++ * 255 / 63;
@@ -185,7 +181,7 @@ void VL_FillPalette (int red, int green, int blue)
         pal[i].b = blue;
     }
 
-    VL_SetPalette(pal, true);
+    VL_SetPalette((void*)pal, true);
 }
 
 //===========================================================================
@@ -200,16 +196,17 @@ void VL_FillPalette (int red, int green, int blue)
 
 void VL_SetColor    (int color, int red, int green, int blue)
 {
+    //SetCurrentPaletteColor(color, red, green, blue, screenBits);
     SDL_Color col = { red, green, blue };
     curpal[color] = col;
 
-    if(screenBits == 8)
-        SDL_SetPalette(screen, SDL_PHYSPAL, &col, color, 1);
+    if(GetScreenBits() == 8)
+        SDL_SetPalette((SDL_Surface *)GetScreen(), SDL_PHYSPAL, &col, color, 1);
     else
     {
         SDL_SetPalette(curSurface, SDL_LOGPAL, &col, color, 1);
-        SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, screen, NULL);
-        SDL_Flip(screen);
+        SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreen(), NULL);
+        SDL_Flip((SDL_Surface *)GetScreen());
     }
 }
 
@@ -225,6 +222,7 @@ void VL_SetColor    (int color, int red, int green, int blue)
 
 void VL_GetColor    (int color, int *red, int *green, int *blue)
 {
+    //GetCurrentPaletteColor(color, red, green, blue);
     SDL_Color *col = &curpal[color];
     *red = col->r;
     *green = col->g;
@@ -241,19 +239,19 @@ void VL_GetColor    (int color, int *red, int *green, int *blue)
 =================
 */
 
-void VL_SetPalette (SDL_Color *palette, bool forceupdate)
+void VL_SetPalette (void *palette, bool forceupdate)
 {
-    memcpy(curpal, palette, sizeof(SDL_Color) * 256);
+    memcpy(curpal, (SDL_Color *)palette, sizeof(SDL_Color) * 256);
 
-    if(screenBits == 8)
-        SDL_SetPalette(screen, SDL_PHYSPAL, palette, 0, 256);
+    if(GetScreenBits() == 8)
+        SDL_SetPalette((SDL_Surface *)GetScreenBuffer(), SDL_PHYSPAL, (SDL_Color *)palette, 0, 256);
     else
     {
-        SDL_SetPalette(curSurface, SDL_LOGPAL, palette, 0, 256);
+        SDL_SetPalette(curSurface, SDL_LOGPAL, (SDL_Color *)palette, 0, 256);
         if(forceupdate)
         {
-            SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, screen, NULL);
-            SDL_Flip(screen);
+            SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreenBuffer(), NULL);
+            SDL_Flip((SDL_Surface *)GetScreenBuffer());
         }
     }
 }
@@ -269,7 +267,7 @@ void VL_SetPalette (SDL_Color *palette, bool forceupdate)
 =================
 */
 
-void VL_GetPalette (SDL_Color *palette)
+void VL_GetPalette (void *palette)
 {
     memcpy(palette, curpal, sizeof(SDL_Color) * 256);
 }
@@ -322,7 +320,7 @@ void VL_FadeOut (int start, int end, int red, int green, int blue, int steps)
             newptr++;
         }
 
-        if(!usedoublebuffering || screenBits == 8) VL_WaitVBL(1);
+        if(!usedoublebuffering || GetScreenBits() == 8) VL_WaitVBL(1);
         VL_SetPalette (palette2, true);
     }
 
@@ -343,8 +341,9 @@ void VL_FadeOut (int start, int end, int red, int green, int blue, int steps)
 =================
 */
 
-void VL_FadeIn (int start, int end, SDL_Color *palette, int steps)
+void VL_FadeIn (int start, int end, void *platettePtr, int steps)
 {
+    SDL_Color *palette = (SDL_Color *)platettePtr;
     int i,j,delta;
 
     VL_WaitVBL(1);
@@ -366,7 +365,7 @@ void VL_FadeIn (int start, int end, SDL_Color *palette, int steps)
             palette2[j].b = palette1[j].b + delta * i / steps;
         }
 
-        if(!usedoublebuffering || screenBits == 8) VL_WaitVBL(1);
+        if(!usedoublebuffering || GetScreenBits() == 8) VL_WaitVBL(1);
         VL_SetPalette(palette2, true);
     }
 
@@ -649,7 +648,7 @@ void VL_LatchToScreenScaledCoord(int which, int xsrc, int ysrc,
         //       SDL tries to map the colors...
         //       The result: All colors are mapped to black.
         //       So, we do the blit on our own...
-        if(screenBits != 8)
+        if(GetScreenBits() != 8)
         {
             VL_LockSurface((void*)source);
             byte *src = (byte *) source->pixels;

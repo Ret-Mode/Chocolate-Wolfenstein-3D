@@ -114,8 +114,8 @@ void VW_MeasurePropString (const char *string, word *width, word *height)
 
 void VH_UpdateScreen()
 {
-    SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, screen, NULL);
-    SDL_Flip(screen);
+    SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreenBuffer(), NULL);
+    SDL_Flip((SDL_Surface *)GetScreenBuffer());
 }
 
 
@@ -357,7 +357,7 @@ boolean FizzleFade (void *src, int x1, int y1,
     //can't rely on screen as dest b/c crt.cpp writes over it with screenBuffer
     //can't rely on screenBuffer as source for same reason: every flip it has to be updated
     SDL_Surface *source_copy = SDL_ConvertSurface(source, source->format, source->flags);
-    SDL_Surface *screen_copy = SDL_ConvertSurface(screen, screen->format, screen->flags);
+    SDL_Surface *screen_copy = SDL_ConvertSurface((SDL_Surface *)GetScreenBuffer(), (SDL_PixelFormat*)GetScreenFormat(), GetScreenFlags());
 
     byte *srcptr = VL_LockSurface((void*)source_copy);
     do
@@ -366,8 +366,8 @@ boolean FizzleFade (void *src, int x1, int y1,
         {
             VL_UnlockSurface((void*)source_copy);
             SDL_BlitSurface(screen_copy, NULL, (SDL_Surface *)GetScreenBuffer(), NULL);
-            SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, screen, NULL);
-            SDL_Flip(screen);
+            SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreenBuffer(), NULL);
+            SDL_Flip((SDL_Surface *)GetScreenBuffer());
             SDL_FreeSurface(source_copy);
             SDL_FreeSurface(screen_copy);
             return true;
@@ -408,17 +408,17 @@ boolean FizzleFade (void *src, int x1, int y1,
                 // copy one pixel
                 //
 
-                if(screenBits == 8)
+                if(GetScreenBits() == 8)
                 {
-                    *(destptr + (y1 + y) * screen->pitch + x1 + x)
+                    *(destptr + (y1 + y) * GetScreenPitch() + x1 + x)
                         = *(srcptr + (y1 + y) * source->pitch + x1 + x);
                 }
                 else
                 {
                     byte col = *(srcptr + (y1 + y) * source->pitch + x1 + x);
-                    uint32_t fullcol = SDL_MapRGB(screen->format, curpal[col].r, curpal[col].g, curpal[col].b);
-                    memcpy(destptr + (y1 + y) * screen->pitch + (x1 + x) * screen->format->BytesPerPixel,
-                        &fullcol, screen->format->BytesPerPixel);
+                    uint32_t fullcol = SDL_MapRGB((SDL_PixelFormat*)GetScreenFormat(), curpal[col].r, curpal[col].g, curpal[col].b);
+                    memcpy(destptr + (y1 + y) * GetScreenPitch() + (x1 + x) * GetScreenBytesPerPixel(),
+                        &fullcol, GetScreenBytesPerPixel());
                 }
 
                 if(rndval == 0)     // entire sequence has been completed
@@ -433,8 +433,8 @@ boolean FizzleFade (void *src, int x1, int y1,
 
         VL_UnlockSurface((void*)screen_copy);
         SDL_BlitSurface(screen_copy, NULL, (SDL_Surface *)GetScreenBuffer(), NULL);
-        SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, screen, NULL);
-        SDL_Flip(screen);
+        SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreenBuffer(), NULL);
+        SDL_Flip((SDL_Surface *)GetScreenBuffer());
 
         frame++;
         Delay(frame - GetTimeCount());        // don't go too fast
@@ -444,8 +444,8 @@ finished:
     VL_UnlockSurface((void*)source_copy);
     VL_UnlockSurface((void*)screen_copy);
     SDL_BlitSurface(screen_copy, NULL, (SDL_Surface *)GetScreenBuffer(), NULL);
-    SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, screen, NULL);
-    SDL_Flip(screen);
+    SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreenBuffer(), NULL);
+    SDL_Flip((SDL_Surface *)GetScreenBuffer());
     SDL_FreeSurface(source_copy);
     SDL_FreeSurface(screen_copy);
     return false;

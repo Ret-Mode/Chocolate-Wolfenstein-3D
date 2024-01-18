@@ -1579,7 +1579,7 @@ void    ThreeDRefresh (void)
         }
 #endif
         
-        SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, screen, NULL);
+        SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreen(), NULL);
         SDL_Flip(screen);
     }
 

@@ -1466,7 +1466,8 @@ void CheckParameters(int argc, char *argv[])
             }
             else
             {
-                screenBits = atoi(argv[i]);
+                /* unused */
+                unsigned screenBits = atoi(argv[i]);
                 switch(screenBits)
                 {
                     case 8:
