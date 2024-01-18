@@ -22,9 +22,18 @@ static SDL_Surface *screenBuffer;
 
 static unsigned screenBits;
 
-static SDL_Surface *screen;
-// static SDL_Surface *curSurface;
+static SDL_Surface *screen = NULL;
+static SDL_Surface *curSurface;
 // static SDL_Color gamepal[256];
+
+#define CASSERT(x) extern int ASSERT_COMPILE[((x) != 0) * 2 - 1];
+#define RGB(r, g, b) {(r)*255/63, (g)*255/63, (b)*255/63, 0}
+
+SDL_Color gamepal[]={
+    #include "wolfpal.inc"
+};
+
+CASSERT(lengthof(gamepal) == 256)
 
 // static SDL_Color palette1[256];
 // static SDL_Color palette2[256];
@@ -152,4 +161,24 @@ void *GetScreenFormat(void) {
 
 unsigned char GetScreenBytesPerPixel(void) {
     return screen->format->BytesPerPixel;
+}
+
+void *GetCurSurface(void) {
+    return (void*) curSurface;
+}
+
+void SetCurSurface(void *current) {
+    curSurface = (SDL_Surface *) current;
+}
+
+unsigned char *GetCurSurfacePixels(void) {
+    return (unsigned char*) curSurface->pixels;
+}
+
+void ClearCurrentSurface(unsigned int color) {
+    SDL_FillRect(curSurface, NULL, color);
+}
+
+void *GetGamePal(void) {
+    return (void*)gamepal;
 }

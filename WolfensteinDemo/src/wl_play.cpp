@@ -912,7 +912,7 @@ void InitRedShifts (void)
     for (i = 1; i <= NUMREDSHIFTS; i++)
     {
         workptr = redshifts[i - 1];
-        baseptr = gamepal;
+        baseptr = (SDL_Color *)GetGamePal();
 
         for (j = 0; j <= 255; j++)
         {
@@ -930,7 +930,7 @@ void InitRedShifts (void)
     for (i = 1; i <= NUMWHITESHIFTS; i++)
     {
         workptr = whiteshifts[i - 1];
-        baseptr = gamepal;
+        baseptr = (SDL_Color *)GetGamePal();
 
         for (j = 0; j <= 255; j++)
         {
@@ -1040,7 +1040,7 @@ void UpdatePaletteShifts (void)
     }
     else if (palshifted)
     {
-        VL_SetPalette (gamepal, false);        // back to normal
+        VL_SetPalette (GetGamePal(), false);        // back to normal
         palshifted = false;
     }
 }
@@ -1061,7 +1061,7 @@ void FinishPaletteShifts (void)
     if (palshifted)
     {
         palshifted = 0;
-        VL_SetPalette (gamepal, true);
+        VL_SetPalette (GetGamePal(), true);
     }
 }
 

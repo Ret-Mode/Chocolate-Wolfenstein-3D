@@ -19,8 +19,8 @@ void Quit (const char *error,...);
 
 //===========================================================================
 
-extern SDL_Surface *curSurface;
-extern SDL_Color gamepal[256];
+//extern SDL_Surface *curSurface;
+//extern SDL_Color gamepal[256];
 
 extern  boolean  fullscreen, usedoublebuffering;
 extern  unsigned screenWidth, screenHeight, screenPitch, bufferPitch, curPitch;
@@ -55,8 +55,8 @@ void VL_FadeIn      (int start, int end, void *palette, int steps);
 byte *VL_LockSurface(void *surface);
 void VL_UnlockSurface(void *surface);
 
-#define LOCK() VL_LockSurface((void*)curSurface)
-#define UNLOCK() VL_UnlockSurface((void*)curSurface)
+#define LOCK() VL_LockSurface(GetCurSurface())
+#define UNLOCK() VL_UnlockSurface(GetCurSurface())
 
 byte VL_GetPixel        (int x, int y);
 void VL_Plot            (int x, int y, int color);
@@ -70,14 +70,14 @@ void inline VL_Bar      (int x, int y, int width, int height, int color)
 }
 void inline VL_ClearScreen(int color)
 {
-    SDL_FillRect(curSurface, NULL, color);
+    ClearCurrentSurface(color);
 }
 
 void VL_MungePic                (byte *source, unsigned width, unsigned height);
 void VL_DrawPicBare             (int x, int y, byte *pic, int width, int height);
 void VL_MemToLatch              (byte *source, int width, int height,
-                                    SDL_Surface *destSurface, int x, int y);
-void VL_ScreenToScreen          (SDL_Surface *source, SDL_Surface *dest);
+                                    void *destSurface, int x, int y);
+void VL_ScreenToScreen          (void *source, void *dest);
 void VL_MemToScreenScaledCoord  (byte *source, int width, int height, int scx, int scy);
 void VL_MemToScreenScaledCoord  (byte *source, int origwidth, int origheight, int srcx, int srcy,
                                     int destx, int desty, int width, int height);

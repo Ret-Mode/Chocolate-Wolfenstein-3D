@@ -23,5 +23,10 @@ short GetScreenFlags(void);
 unsigned short GetScreenPitch(void);
 void *GetScreenFormat(void);
 unsigned char GetScreenBytesPerPixel(void);
+void *GetCurSurface(void);
+void SetCurSurface(void *current);
+unsigned char *GetCurSurfacePixels(void);
+void ClearCurrentSurface(unsigned int color);
+void *GetGamePal(void);
 
 #endif

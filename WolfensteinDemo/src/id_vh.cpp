@@ -114,8 +114,8 @@ void VW_MeasurePropString (const char *string, word *width, word *height)
 
 void VH_UpdateScreen()
 {
-    SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreenBuffer(), NULL);
-    SDL_Flip((SDL_Surface *)GetScreenBuffer());
+    SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreen(), NULL);
+    SDL_Flip((SDL_Surface *)GetScreen());
 }
 
 
@@ -239,7 +239,7 @@ void LoadLatchMem (void)
     {
         Quit("Unable to create surface for tiles!");
     }
-    SDL_SetColors(surf, gamepal, 0, 256);
+    SDL_SetColors(surf, (SDL_Color*)GetGamePal(), 0, 256);
 
     SetLatchPic(0, surf);
     CA_CacheGrChunk (STARTTILE8);
@@ -247,7 +247,7 @@ void LoadLatchMem (void)
 
     for (i=0;i<NUMTILE8;i++)
     {
-        VL_MemToLatch (src, 8, 8, surf, (i & 7) * 8, (i >> 3) * 8);
+        VL_MemToLatch (src, 8, 8, (void*)surf, (i & 7) * 8, (i >> 3) * 8);
         src += 64;
     }
     UNCACHEGRCHUNK (STARTTILE8);
@@ -267,11 +267,11 @@ void LoadLatchMem (void)
         {
             Quit("Unable to create surface for picture!");
         }
-        SDL_SetColors(surf, gamepal, 0, 256);
+        SDL_SetColors(surf, (SDL_Color*)GetGamePal(), 0, 256);
 
         SetLatchPic(2+i-start, surf);
         CA_CacheGrChunk (i);
-        VL_MemToLatch (grsegs[i], width, height, surf, 0, 0);
+        VL_MemToLatch (grsegs[i], width, height, (void*)surf, 0, 0);
         UNCACHEGRCHUNK(i);
     }
 }
@@ -357,7 +357,7 @@ boolean FizzleFade (void *src, int x1, int y1,
     //can't rely on screen as dest b/c crt.cpp writes over it with screenBuffer
     //can't rely on screenBuffer as source for same reason: every flip it has to be updated
     SDL_Surface *source_copy = SDL_ConvertSurface(source, source->format, source->flags);
-    SDL_Surface *screen_copy = SDL_ConvertSurface((SDL_Surface *)GetScreenBuffer(), (SDL_PixelFormat*)GetScreenFormat(), GetScreenFlags());
+    SDL_Surface *screen_copy = SDL_ConvertSurface((SDL_Surface *)GetScreen(), (SDL_PixelFormat*)GetScreenFormat(), GetScreenFlags());
 
     byte *srcptr = VL_LockSurface((void*)source_copy);
     do
@@ -366,8 +366,8 @@ boolean FizzleFade (void *src, int x1, int y1,
         {
             VL_UnlockSurface((void*)source_copy);
             SDL_BlitSurface(screen_copy, NULL, (SDL_Surface *)GetScreenBuffer(), NULL);
-            SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreenBuffer(), NULL);
-            SDL_Flip((SDL_Surface *)GetScreenBuffer());
+            SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreen(), NULL);
+            SDL_Flip((SDL_Surface *)GetScreen());
             SDL_FreeSurface(source_copy);
             SDL_FreeSurface(screen_copy);
             return true;
@@ -433,8 +433,8 @@ boolean FizzleFade (void *src, int x1, int y1,
 
         VL_UnlockSurface((void*)screen_copy);
         SDL_BlitSurface(screen_copy, NULL, (SDL_Surface *)GetScreenBuffer(), NULL);
-        SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreenBuffer(), NULL);
-        SDL_Flip((SDL_Surface *)GetScreenBuffer());
+        SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreen(), NULL);
+        SDL_Flip((SDL_Surface *)GetScreen());
 
         frame++;
         Delay(frame - GetTimeCount());        // don't go too fast
@@ -444,8 +444,8 @@ finished:
     VL_UnlockSurface((void*)source_copy);
     VL_UnlockSurface((void*)screen_copy);
     SDL_BlitSurface(screen_copy, NULL, (SDL_Surface *)GetScreenBuffer(), NULL);
-    SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreenBuffer(), NULL);
-    SDL_Flip((SDL_Surface *)GetScreenBuffer());
+    SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreen(), NULL);
+    SDL_Flip((SDL_Surface *)GetScreen());
     SDL_FreeSurface(source_copy);
     SDL_FreeSurface(screen_copy);
     return false;
