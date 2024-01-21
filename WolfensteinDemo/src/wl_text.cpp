@@ -618,7 +618,7 @@ void ShowArticle (char *article)
                 firstpage = false;
             }
         }
-        SDL_Delay(5);
+        DelayMilliseconds(5);
 
         LastScan = 0;
         ReadAnyControl(&ci);

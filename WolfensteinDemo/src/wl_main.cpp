@@ -1045,16 +1045,7 @@ static void InitGame()
     boolean didjukebox=false;
 
 
-    // initialize SDL
-#if defined _WIN32
-    putenv("SDL_VIDEODRIVER=directx");
-#endif
-    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0)
-    {
-        printf("Unable to init SDL: %s\n", SDL_GetError());
-        exit(1);
-    }
-    atexit(SDL_Quit);
+    InitGraphics();
 
     int numJoysticks = SDL_NumJoysticks();
     if(param_joystickindex && (param_joystickindex < -1 || param_joystickindex >= numJoysticks))
@@ -1237,7 +1228,7 @@ void Quit (const char *errorStr, ...)
         if (error && *error)
         {
             puts(error);
-            VW_WaitVBL(100);
+            DelayMilliseconds(100*8);
         }
         exit(1);
     }
@@ -1253,7 +1244,7 @@ void Quit (const char *errorStr, ...)
     {
 
         puts(error);
-        VW_WaitVBL(200);
+        DelayMilliseconds(200*8);
         exit(1);
     }
     else

@@ -114,7 +114,7 @@ void VW_MeasurePropString (const char *string, word *width, word *height)
 
 void VH_UpdateScreen()
 {
-    SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreen(), NULL);
+    ScreenToScreen(GetScreenBuffer(), GetScreen());
     SDL_Flip((SDL_Surface *)GetScreen());
 }
 
@@ -310,7 +310,7 @@ static const uint32_t rndmasks[] = {
 static unsigned int rndbits_y;
 static unsigned int rndmask;
 
-extern SDL_Color curpal[256];
+//extern SDL_Color curpal[256];
 
 // Returns the number of bits needed to represent the given value
 static int log2_ceil(uint32_t x)

@@ -7,6 +7,7 @@ int GetLatchPicHeight(int which);
 void SetLatchPic(int which, void *data);
 void DelayWolfTicks(int ticks);
 void DelayMilliseconds(int milliseconds);
+unsigned int GetMilliseconds(void);
 unsigned int GetWolfTicks(void);
 unsigned char *GraphicLockBytes(void *surface);
 void GraphicUnlockBytes(void *surface);
@@ -40,4 +41,6 @@ void ScreenToScreen (void *source, void *dest);
 unsigned char *GetSurfacePixels(void *surface);
 unsigned short GetSurfacePitch(void *surface);
 void LatchToScreenScaledCoord(int which, int xsrc, int ysrc, int width, int height, int scxdest, int scydest);
+void InitGraphics(void);
+
 #endif

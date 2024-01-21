@@ -66,6 +66,10 @@ unsigned int GetWolfTicks(void) {
     return (SDL_GetTicks()*7)/100;
 }
 
+unsigned int GetMilliseconds(void) {
+    return SDL_GetTicks();
+}
+
 unsigned char *GraphicLockBytes(void *surface)
 {
     SDL_Surface *src = (SDL_Surface*)surface;
@@ -276,4 +280,17 @@ void LatchToScreenScaledCoord(int which, int xsrc, int ysrc, int width, int heig
     SDL_Rect srcrect = { xsrc, ysrc, width, height };
     SDL_Rect destrect = { scxdest, scydest, 0, 0 }; // width and height are ignored
     SDL_BlitSurface((SDL_Surface *)source, &srcrect, (SDL_Surface*)GetCurSurface(), &destrect);
+}
+
+void InitGraphics(void) {
+        // initialize SDL
+#if defined _WIN32
+    putenv("SDL_VIDEODRIVER=directx");
+#endif
+    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0)
+    {
+        printf("Unable to init SDL: %s\n", SDL_GetError());
+        exit(1);
+    }
+    atexit(SDL_Quit);
 }

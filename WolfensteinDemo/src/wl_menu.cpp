@@ -1404,7 +1404,7 @@ MouseSensitivity (int)
     DrawMouseSens ();
     do
     {
-        SDL_Delay(5);
+        DelayMilliseconds(5);
         ReadAnyControl (&ci);
         switch (ci.dir)
         {
@@ -1672,7 +1672,7 @@ EnterCtrlData (int index, CustomCtrls * cust, void (*DrawRtn) (int), void (*Prin
             redraw = 0;
         }
 
-        SDL_Delay(5);
+        DelayMilliseconds(5);
         ReadAnyControl (&ci);
 
         if (type == MOUSE || type == JOYSTICK)
@@ -1718,7 +1718,7 @@ EnterCtrlData (int index, CustomCtrls * cust, void (*DrawRtn) (int), void (*Prin
                     lastFlashTime = GetTimeCount();
                     VW_UpdateScreen ();
                 }
-                else SDL_Delay(5);
+                else DelayMilliseconds(5);
 
                 //
                 // WHICH TYPE OF INPUT DO WE PROCESS?
