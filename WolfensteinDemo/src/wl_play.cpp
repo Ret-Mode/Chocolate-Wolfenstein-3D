@@ -299,9 +299,10 @@ void PollKeyboardMove (void)
 
 void PollMouseMove (void)
 {
-    int mousexmove, mouseymove;
+    int buttons, mousexmove, mouseymove;
 
-    SDL_GetMouseState(&mousexmove, &mouseymove);
+    ReadMouseState(&buttons, &mousexmove, &mouseymove);
+
     if(IN_IsInputGrabbed())
         IN_CenterMouse();
 
@@ -367,11 +368,11 @@ void PollControls (void)
     if (demoplayback || demorecord)   // demo recording and playback needs to be constant
     {
         // wait up to DEMOTICS Wolf tics
-        uint32_t curtime = SDL_GetTicks();
+        uint32_t curtime = GetMilliseconds();
         lasttimecount += DEMOTICS;
         int32_t timediff = (lasttimecount * 100) / 7 - curtime;
         if(timediff > 0)
-            SDL_Delay(timediff);
+            DelayMilliseconds(timediff);
 
         if(timediff < -2 * DEMOTICS)       // more than 2-times DEMOTICS behind?
             lasttimecount = (curtime * 7) / 100;    // yes, set to current timecount
@@ -878,16 +879,10 @@ void ContinueMusic (int offs)
 =============================================================================
 */
 
-#define NUMREDSHIFTS    6
-#define REDSTEPS        8
-
-#define NUMWHITESHIFTS  3
-#define WHITESTEPS      20
-#define WHITETICS       6
 
 
-SDL_Color redshifts[NUMREDSHIFTS][256];
-SDL_Color whiteshifts[NUMWHITESHIFTS][256];
+
+
 
 int damagecount, bonuscount;
 boolean palshifted;
@@ -899,52 +894,6 @@ boolean palshifted;
 =
 =====================
 */
-
-void InitRedShifts (void)
-{
-    SDL_Color *workptr, *baseptr;
-    int i, j, delta;
-
-
-//
-// fade through intermediate frames
-//
-    for (i = 1; i <= NUMREDSHIFTS; i++)
-    {
-        workptr = redshifts[i - 1];
-        baseptr = (SDL_Color *)GetGamePal();
-
-        for (j = 0; j <= 255; j++)
-        {
-            delta = 256 - baseptr->r;
-            workptr->r = baseptr->r + delta * i / REDSTEPS;
-            delta = -baseptr->g;
-            workptr->g = baseptr->g + delta * i / REDSTEPS;
-            delta = -baseptr->b;
-            workptr->b = baseptr->b + delta * i / REDSTEPS;
-            baseptr++;
-            workptr++;
-        }
-    }
-
-    for (i = 1; i <= NUMWHITESHIFTS; i++)
-    {
-        workptr = whiteshifts[i - 1];
-        baseptr = (SDL_Color *)GetGamePal();
-
-        for (j = 0; j <= 255; j++)
-        {
-            delta = 256 - baseptr->r;
-            workptr->r = baseptr->r + delta * i / WHITESTEPS;
-            delta = 248 - baseptr->g;
-            workptr->g = baseptr->g + delta * i / WHITESTEPS;
-            delta = 0-baseptr->b;
-            workptr->b = baseptr->b + delta * i / WHITESTEPS;
-            baseptr++;
-            workptr++;
-        }
-    }
-}
 
 
 /*
@@ -972,7 +921,7 @@ void ClearPaletteShifts (void)
 
 void StartBonusFlash (void)
 {
-    bonuscount = NUMWHITESHIFTS * WHITETICS;    // white shift palette
+    bonuscount = GetWhitePaletteShifts() * GetWhitePaletteSwapMs();
 }
 
 
@@ -1004,9 +953,9 @@ void UpdatePaletteShifts (void)
 
     if (bonuscount)
     {
-        white = bonuscount / WHITETICS + 1;
-        if (white > NUMWHITESHIFTS)
-            white = NUMWHITESHIFTS;
+        white = bonuscount / GetWhitePaletteSwapMs() + 1;
+        if (white > GetWhitePaletteShifts())
+            white = GetWhitePaletteShifts();
         bonuscount -= tics;
         if (bonuscount < 0)
             bonuscount = 0;
@@ -1018,8 +967,8 @@ void UpdatePaletteShifts (void)
     if (damagecount)
     {
         red = damagecount / 10 + 1;
-        if (red > NUMREDSHIFTS)
-            red = NUMREDSHIFTS;
+        if (red > GetRedPaletteShifts())
+            red = GetRedPaletteShifts();
 
         damagecount -= tics;
         if (damagecount < 0)
@@ -1030,12 +979,12 @@ void UpdatePaletteShifts (void)
 
     if (red)
     {
-        VL_SetPalette (redshifts[red - 1], false);
+        VL_SetPalette (GetRedPaletteShifted(red), false);
         palshifted = true;
     }
     else if (white)
     {
-        VL_SetPalette (whiteshifts[white - 1], false);
+        VL_SetPalette (GetWhitePaletteShifted(white), false);
         palshifted = true;
     }
     else if (palshifted)
@@ -1245,11 +1194,11 @@ void PlayLoop (void)
 //
         if (singlestep)
         {
-            VW_WaitVBL (singlestep);
+            DelayMilliseconds (singlestep*8);
             lasttimecount = GetTimeCount();
         }
         if (extravbls)
-            VW_WaitVBL (extravbls);
+            DelayMilliseconds (extravbls*8);
 
         if (demoplayback)
         {

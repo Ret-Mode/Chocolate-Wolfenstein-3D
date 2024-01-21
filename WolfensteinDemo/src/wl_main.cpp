@@ -1116,6 +1116,7 @@ static void InitGame()
 // initialize variables
 //
     InitRedShifts ();
+    InitWhiteShifts ();
     if(!didjukebox)
 
         FinishSignon();

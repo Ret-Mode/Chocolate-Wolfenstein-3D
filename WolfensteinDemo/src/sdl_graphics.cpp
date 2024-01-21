@@ -39,6 +39,16 @@ CASSERT(lengthof(gamepal) == 256)
 // static SDL_Color palette2[256];
 static SDL_Color curpal[256];
 
+#define NUMREDSHIFTS    6
+#define REDSTEPS        8
+
+#define NUMWHITESHIFTS  3
+#define WHITESTEPS      20
+#define WHITETICS       6
+
+static SDL_Color redshifts[NUMREDSHIFTS][256];
+static SDL_Color whiteshifts[NUMWHITESHIFTS][256];
+
 void *GetLatchPic(int which) {
     return (void*) latchpics[which];
 }
@@ -293,4 +303,99 @@ void InitGraphics(void) {
         exit(1);
     }
     atexit(SDL_Quit);
+}
+
+void ReadMouseState(int *btns, int *mx, int *my) {
+    int mousex, mousey, buttons;
+    buttons = SDL_GetMouseState(&mousex, &mousey);
+    int middlePressed = buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE);
+    int rightPressed = buttons & SDL_BUTTON(SDL_BUTTON_RIGHT);
+    buttons &= ~(SDL_BUTTON(SDL_BUTTON_MIDDLE) | SDL_BUTTON(SDL_BUTTON_RIGHT));
+    if(middlePressed) buttons |= 1 << 2;
+    if(rightPressed) buttons |= 1 << 1;
+
+    *mx = mousex;
+    *my = mousey;
+    *btns = buttons;
+}
+
+void CenterMouse(int width, int height) {
+    SDL_WarpMouse(width / 2, height / 2);
+}
+
+void InitRedShifts (void)
+{
+    SDL_Color *workptr, *baseptr;
+    int i, j, delta;
+
+
+//
+// fade through intermediate frames
+//
+    for (i = 1; i <= NUMREDSHIFTS; i++)
+    {
+        workptr = redshifts[i - 1];
+        baseptr = gamepal;
+
+        for (j = 0; j <= 255; j++)
+        {
+            delta = 256 - baseptr->r;
+            workptr->r = baseptr->r + delta * i / REDSTEPS;
+            delta = -baseptr->g;
+            workptr->g = baseptr->g + delta * i / REDSTEPS;
+            delta = -baseptr->b;
+            workptr->b = baseptr->b + delta * i / REDSTEPS;
+            baseptr++;
+            workptr++;
+        }
+    }
+}
+
+
+void InitWhiteShifts (void)
+{
+    SDL_Color *workptr, *baseptr;
+    int i, j, delta;
+    for (i = 1; i <= NUMWHITESHIFTS; i++)
+    {
+        workptr = whiteshifts[i - 1];
+        baseptr = gamepal;
+
+        for (j = 0; j <= 255; j++)
+        {
+            delta = 256 - baseptr->r;
+            workptr->r = baseptr->r + delta * i / WHITESTEPS;
+            delta = 248 - baseptr->g;
+            workptr->g = baseptr->g + delta * i / WHITESTEPS;
+            delta = 0-baseptr->b;
+            workptr->b = baseptr->b + delta * i / WHITESTEPS;
+            baseptr++;
+            workptr++;
+        }
+    }
+}
+
+int GetWhitePaletteShifts(void) {
+    return NUMWHITESHIFTS;
+}
+
+
+int GetRedPaletteShifts(void) {
+    return NUMREDSHIFTS;
+}
+
+int GetWhitePaletteSwapMs(void) {
+    return WHITETICS;
+}
+
+void* GetRedPaletteShifted(int which) {
+    return (void*)redshifts[which - 1];
+}
+
+void* GetWhitePaletteShifted(int which) {
+    return (void*)whiteshifts[which - 1];
+}
+
+void SaveBitmap(char *filename) {
+    SDL_SaveBMP((SDL_Surface *)GetCurSurface(), filename);
 }

@@ -585,7 +585,7 @@ boolean IN_UserInput(longword delay)
         IN_ProcessEvents();
         if (IN_CheckAck())
             return true;
-        SDL_Delay(5);
+        DelayMilliseconds(5);
     } while (GetTimeCount() - lasttime < delay);
     return(false);
 }
@@ -614,5 +614,5 @@ bool IN_IsInputGrabbed()
 
 void IN_CenterMouse()
 {
-    SDL_WarpMouse(screenWidth / 2, screenHeight / 2);
+    CenterMouse(screenWidth, screenHeight);
 }

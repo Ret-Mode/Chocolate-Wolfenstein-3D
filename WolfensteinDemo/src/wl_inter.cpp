@@ -248,7 +248,7 @@ BJ_Breathe (void)
     static int which = 0, max = 10;
     int pics[2] = { L_GUYPIC, L_GUY2PIC };
 
-    SDL_Delay(5);
+    DelayMilliseconds(5);
 
     if ((int32_t) GetTimeCount () - lastBreathTime > max)
     {
@@ -504,7 +504,7 @@ LevelCompleted (void)
         }
         if (ratio >= 100)
         {
-            VW_WaitVBL (VBLWAIT);
+            DelayMilliseconds (VBLWAIT*8);
             SD_StopSound ();
             bonus += PERCENT100AMT;
             ltoa (bonus, tempstr, 10);
@@ -515,7 +515,7 @@ LevelCompleted (void)
         }
         else if (!ratio)
         {
-            VW_WaitVBL (VBLWAIT);
+            DelayMilliseconds (VBLWAIT*8);
             SD_StopSound ();
             SD_PlaySound (NOBONUSSND);
         }
@@ -546,7 +546,7 @@ LevelCompleted (void)
         }
         if (ratio >= 100)
         {
-            VW_WaitVBL (VBLWAIT);
+            DelayMilliseconds (VBLWAIT*8);
             SD_StopSound ();
             bonus += PERCENT100AMT;
             ltoa (bonus, tempstr, 10);
@@ -557,7 +557,7 @@ LevelCompleted (void)
         }
         else if (!ratio)
         {
-            VW_WaitVBL (VBLWAIT);
+            DelayMilliseconds (VBLWAIT*8);
             SD_StopSound ();
             SD_PlaySound (NOBONUSSND);
         }
@@ -586,7 +586,7 @@ LevelCompleted (void)
         }
         if (ratio >= 100)
         {
-            VW_WaitVBL (VBLWAIT);
+            DelayMilliseconds (VBLWAIT*8);
             SD_StopSound ();
             bonus += PERCENT100AMT;
             ltoa (bonus, tempstr, 10);
@@ -597,7 +597,7 @@ LevelCompleted (void)
         }
         else if (!ratio)
         {
-            VW_WaitVBL (VBLWAIT);
+            DelayMilliseconds (VBLWAIT*8);
             SD_StopSound ();
             SD_PlaySound (NOBONUSSND);
         }

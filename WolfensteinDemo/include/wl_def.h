@@ -915,7 +915,6 @@ void    PlayLoop (void);
 
 void    CenterWindow(word w,word h);
 
-void    InitRedShifts (void);
 void    FinishPaletteShifts (void);
 
 void    RemoveObj (objtype *gone);

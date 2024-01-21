@@ -1841,7 +1841,7 @@ EnterCtrlData (int index, CustomCtrls * cust, void (*DrawRtn) (int), void (*Prin
                 while (!cust->allowed[which]);
                 redraw = 1;
                 SD_PlaySound (MOVEGUN1SND);
-                while (ReadAnyControl (&ci), ci.dir != dir_None) SDL_Delay(5);
+                while (ReadAnyControl (&ci), ci.dir != dir_None) DelayMilliseconds(5);
                 IN_ClearKeysDown ();
                 break;
 
@@ -1855,7 +1855,7 @@ EnterCtrlData (int index, CustomCtrls * cust, void (*DrawRtn) (int), void (*Prin
                 while (!cust->allowed[which]);
                 redraw = 1;
                 SD_PlaySound (MOVEGUN1SND);
-                while (ReadAnyControl (&ci), ci.dir != dir_None) SDL_Delay(5);
+                while (ReadAnyControl (&ci), ci.dir != dir_None) DelayMilliseconds(5);
                 IN_ClearKeysDown ();
                 break;
             case dir_North:
@@ -2195,7 +2195,7 @@ CP_ChangeView (int)
     do
     {
         CheckPause ();
-        SDL_Delay(5);
+        DelayMilliseconds(5);
         ReadAnyControl (&ci);
         switch (ci.dir)
         {
@@ -2601,7 +2601,7 @@ HandleMenu (CP_iteminfo * item_i, CP_itemtype * items, void (*routine) (int w))
                 routine (which);
             VW_UpdateScreen ();
         }
-        else SDL_Delay(5);
+        else DelayMilliseconds(5);
 
         CheckPause ();
 
@@ -2801,7 +2801,7 @@ DrawHalfStep (int x, int y)
     VWB_DrawPic (x, y, C_CURSOR1PIC);
     VW_UpdateScreen ();
     SD_PlaySound (MOVEGUN1SND);
-    SDL_Delay (8 * 100 / 7);
+    DelayMilliseconds (8 * 100 / 7);
 }
 
 
@@ -2843,7 +2843,7 @@ TicDelay (int count)
     int32_t startTime = GetTimeCount ();
     do
     {
-        SDL_Delay(5);
+        DelayMilliseconds(5);
         ReadAnyControl (&ci);
     }
     while ((int32_t) GetTimeCount () - startTime < count && ci.dir != dir_None);
@@ -2937,12 +2937,7 @@ ReadAnyControl (ControlInfo * ci)
     if (mouseenabled && IN_IsInputGrabbed())
     {
         int mousex, mousey, buttons;
-        buttons = SDL_GetMouseState(&mousex, &mousey);
-        int middlePressed = buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE);
-        int rightPressed = buttons & SDL_BUTTON(SDL_BUTTON_RIGHT);
-        buttons &= ~(SDL_BUTTON(SDL_BUTTON_MIDDLE) | SDL_BUTTON(SDL_BUTTON_RIGHT));
-        if(middlePressed) buttons |= 1 << 2;
-        if(rightPressed) buttons |= 1 << 1;
+        ReadMouseState(&buttons, &mousex, &mousey);
 
         if(mousey - CENTERY < -SENSITIVE)
         {
@@ -3049,7 +3044,7 @@ Confirm (const char *string)
             tick ^= 1;
             lastBlinkTime = GetTimeCount();
         }
-        else SDL_Delay(5);
+        else DelayMilliseconds(5);
 
     }
     while (!Keyboard[sc_Y] && !Keyboard[sc_N] && !Keyboard[sc_Escape] && !ci.button0 && !ci.button1);
@@ -3180,7 +3175,7 @@ CheckPause (void)
         }
 
         SoundStatus ^= 1;
-        VW_WaitVBL (3);
+        DelayMilliseconds(3*8);
         IN_ClearKeysDown ();
         Paused = false;
     }

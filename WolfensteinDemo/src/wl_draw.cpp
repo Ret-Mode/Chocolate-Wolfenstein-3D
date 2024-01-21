@@ -1044,12 +1044,12 @@ void CalcTics (void)
     if (lasttimecount > (int32_t) GetTimeCount())
         lasttimecount = GetTimeCount();    // if the game was paused a LONG time
 
-    uint32_t curtime = SDL_GetTicks();
+    uint32_t curtime = GetMilliseconds();
     tics = (curtime * 7) / 100 - lasttimecount;
     if(!tics)
     {
         // wait until end of current tic
-        SDL_Delay(((lasttimecount + 1) * 100) / 7 - curtime);
+        DelayMilliseconds(((lasttimecount + 1) * 100) / 7 - curtime);
         tics = 1;
     }
 
@@ -1524,7 +1524,7 @@ void    ThreeDRefresh (void)
     memset(spotvis,0,maparea);
     spotvis[player->tilex][player->tiley] = 1;       // Detect all sprites over player fix
 
-    vbuf = VL_LockSurface((SDL_Surface *)GetScreenBuffer());
+    vbuf = VL_LockSurface(GetScreenBuffer());
     vbuf+=screenofs;
     vbufPitch = bufferPitch;
 
@@ -1551,7 +1551,7 @@ void    ThreeDRefresh (void)
     if(Keyboard[sc_Tab] && viewsize == 21 && gamestate.weapon != -1)
         ShowActStatus();
 
-    VL_UnlockSurface((SDL_Surface *)GetScreenBuffer());
+    VL_UnlockSurface(GetScreenBuffer());
     vbuf = NULL;
 
 //

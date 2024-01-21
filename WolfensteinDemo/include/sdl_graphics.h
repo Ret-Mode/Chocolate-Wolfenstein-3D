@@ -42,5 +42,15 @@ unsigned char *GetSurfacePixels(void *surface);
 unsigned short GetSurfacePitch(void *surface);
 void LatchToScreenScaledCoord(int which, int xsrc, int ysrc, int width, int height, int scxdest, int scydest);
 void InitGraphics(void);
+void ReadMouseState(int *btns, int *mx, int *my);
+void CenterMouse(int width, int height);
+void InitRedShifts (void);
+void InitWhiteShifts (void);
+int GetWhitePaletteShifts(void);
+int GetRedPaletteShifts(void);
+int GetWhitePaletteSwapMs(void);
+void* GetRedPaletteShifted(int which);
+void* GetWhitePaletteShifted(int which);
+void SaveBitmap(char *filename);
 
 #endif
