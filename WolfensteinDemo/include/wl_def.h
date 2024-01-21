@@ -13,8 +13,8 @@
 // Win32
 #ifdef _WIN32
 #include <wtypes.h>
-#include "SDL.h"
-#include "SDL_syswm.h"
+//#include "SDL.h"
+//#include "SDL_syswm.h"
 #endif
 #if !defined(_WIN32)
 #   include <stdint.h>
@@ -39,6 +39,7 @@
 #include "audiowl6.h"
 #include "gfxv_apo.h"
 
+#include <cstdint>
 
 typedef uint8_t byte;
 typedef uint16_t word;

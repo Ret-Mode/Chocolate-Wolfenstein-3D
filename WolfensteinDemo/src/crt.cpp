@@ -64,14 +64,7 @@ void CRT_DAC(void){
     
     //Convert palette based framebuffer to RGB for OpenGL
     byte* pixelPointer = coloredFrameBuffer;
-    for (int i=0; i < 320*200; i++) {
-        unsigned char paletteIndex;
-        paletteIndex = GetScreenBufferPixel(i);
-        *pixelPointer++ = curpal[paletteIndex].r;
-        *pixelPointer++ = curpal[paletteIndex].g;
-        *pixelPointer++ = curpal[paletteIndex].b;
-    }
-    
+    ConvertPaletteToRGB(pixelPointer, 320, 200);    
 
     //Upload texture
     glBindTexture(GL_TEXTURE_2D, crtTexture);

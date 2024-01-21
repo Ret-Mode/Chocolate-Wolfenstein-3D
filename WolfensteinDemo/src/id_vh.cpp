@@ -416,7 +416,9 @@ boolean FizzleFade (void *src, int x1, int y1,
                 else
                 {
                     byte col = *(srcptr + (y1 + y) * source->pitch + x1 + x);
-                    uint32_t fullcol = SDL_MapRGB((SDL_PixelFormat*)GetScreenFormat(), curpal[col].r, curpal[col].g, curpal[col].b);
+                    int red, green, blue;
+                    GetCurrentPaletteColor(col, &red, &green, &blue);
+                    uint32_t fullcol = SDL_MapRGB((SDL_PixelFormat*)GetScreenFormat(), red, green, blue);
                     memcpy(destptr + (y1 + y) * GetScreenPitch() + (x1 + x) * GetScreenBytesPerPixel(),
                         &fullcol, GetScreenBytesPerPixel());
                 }

@@ -1071,16 +1071,7 @@ static void InitGame()
 #if defined _WIN32
     if(!fullscreen)
     {
-        struct SDL_SysWMinfo wmInfo;
-        SDL_VERSION(&wmInfo.version);
-
-        if(SDL_GetWMInfo(&wmInfo) != -1)
-        {
-            HWND hwndSDL = wmInfo.window;
-            DWORD style = GetWindowLong(hwndSDL, GWL_STYLE) & ~WS_SYSMENU;
-            SetWindowLong(hwndSDL, GWL_STYLE, style);
-            SetWindowPos(hwndSDL, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
-        }
+        CenterWindow();
     }
 #endif
 

@@ -37,7 +37,7 @@ CASSERT(lengthof(gamepal) == 256)
 
 // static SDL_Color palette1[256];
 // static SDL_Color palette2[256];
-// static SDL_Color curpal[256];
+static SDL_Color curpal[256];
 
 void *GetLatchPic(int which) {
     return (void*) latchpics[which];
@@ -56,6 +56,10 @@ int GetLatchPicHeight(int which) {
 
 void DelayWolfTicks(int ticks) {
     SDL_Delay(ticks * 100 / 7);
+}
+
+void DelayMilliseconds(int milliseconds) {
+    SDL_Delay(milliseconds);
 }
 
 unsigned int GetWolfTicks(void) {
@@ -126,6 +130,54 @@ void SetCurrentPaletteColor(int color, int red, int green, int blue, unsigned in
     }
 }
 
+void SetWholePalette(void *palette, int forceupdate) {
+    memcpy(curpal, (SDL_Color *)palette, sizeof(SDL_Color) * 256);
+
+    if(GetScreenBits() == 8)
+        SDL_SetPalette((SDL_Surface *)GetScreenBuffer(), SDL_PHYSPAL, (SDL_Color *)palette, 0, 256);
+    else
+    {
+        SDL_SetPalette((SDL_Surface*)GetCurSurface(), SDL_LOGPAL, (SDL_Color *)palette, 0, 256);
+        if(forceupdate)
+        {
+            SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreen(), NULL);
+            SDL_Flip((SDL_Surface *)GetScreen());
+        }
+    }
+}
+
+void ConvertPalette(unsigned char *srcpal, void *dest, int numColors) {
+    SDL_Color *destpal = (SDL_Color *)dest;
+    for(int i=0; i<numColors; i++)
+    {
+        destpal[i].r = *srcpal++ * 255 / 63;
+        destpal[i].g = *srcpal++ * 255 / 63;
+        destpal[i].b = *srcpal++ * 255 / 63;
+    }
+}
+
+void FillPalette(int red, int green, int blue) {
+    int i;
+    SDL_Color pal[256];
+
+    for(i=0; i<256; i++)
+    {
+        pal[i].r = red;
+        pal[i].g = green;
+        pal[i].b = blue;
+    }
+    SetWholePalette((void*)pal, true);
+}
+
+void GetWholePalette(void *palette) {
+    memcpy(palette, curpal, sizeof(SDL_Color) * 256);
+}
+
+void SetScreenPalette(void) {
+    SDL_SetColors((SDL_Surface*)GetScreen(), (SDL_Color*)GetGamePal(), 0, 256);
+    memcpy(curpal, GetGamePal(), sizeof(SDL_Color) * 256);
+}
+
 void SetWindowTitle(const char *title) {
     SDL_WM_SetCaption(title, NULL);
 }
@@ -179,6 +231,49 @@ void ClearCurrentSurface(unsigned int color) {
     SDL_FillRect(curSurface, NULL, color);
 }
 
+unsigned char *GetSurfacePixels(void *surface) {
+    return (unsigned char*)((SDL_Surface*)surface)->pixels;
+}
+
+unsigned short GetSurfacePitch(void *surface) {
+    return ((SDL_Surface*)surface)->pitch;
+}
+
 void *GetGamePal(void) {
     return (void*)gamepal;
+}
+
+void CenterWindow(void) {
+    // JUST FOR WIN32
+    struct SDL_SysWMinfo wmInfo;
+    SDL_VERSION(&wmInfo.version);
+
+    if(SDL_GetWMInfo(&wmInfo) != -1)
+    {
+        HWND hwndSDL = wmInfo.window;
+        DWORD style = GetWindowLong(hwndSDL, GWL_STYLE) & ~WS_SYSMENU;
+        SetWindowLong(hwndSDL, GWL_STYLE, style);
+        SetWindowPos(hwndSDL, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+    }
+}
+
+void ConvertPaletteToRGB(unsigned char *pixelPointer, int width, int height) {
+    for (int i=0; i < width*height; i++) {
+        unsigned char paletteIndex;
+        paletteIndex = GetScreenBufferPixel(i);
+        *pixelPointer++ = curpal[paletteIndex].r;
+        *pixelPointer++ = curpal[paletteIndex].g;
+        *pixelPointer++ = curpal[paletteIndex].b;
+    }
+}
+
+void ScreenToScreen (void *source, void *dest) {
+    SDL_BlitSurface((SDL_Surface *)source, NULL, (SDL_Surface *)dest, NULL);
+}
+
+void LatchToScreenScaledCoord(int which, int xsrc, int ysrc, int width, int height, int scxdest, int scydest) {
+    void *source = GetLatchPic(which);
+    SDL_Rect srcrect = { xsrc, ysrc, width, height };
+    SDL_Rect destrect = { scxdest, scydest, 0, 0 }; // width and height are ignored
+    SDL_BlitSurface((SDL_Surface *)source, &srcrect, (SDL_Surface*)GetCurSurface(), &destrect);
 }
