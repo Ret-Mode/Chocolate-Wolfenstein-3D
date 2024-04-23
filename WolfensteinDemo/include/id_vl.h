@@ -37,7 +37,7 @@ extern  unsigned bordercolor;
 // VGA hardware routines
 //
 
-#define VL_WaitVBL(a) SDL_Delay((a)*8)
+#define VL_WaitVBL(a) DelayVBL(a)//SDL_Delay((a)*8)
 
 void VL_SetVGAPlaneMode (void);
 void VL_SetTextMode (void);

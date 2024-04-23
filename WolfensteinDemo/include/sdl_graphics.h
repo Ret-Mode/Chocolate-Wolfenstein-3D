@@ -7,6 +7,7 @@ int GetLatchPicHeight(int which);
 void SetLatchPic(int which, void *data);
 void DelayWolfTicks(int ticks);
 void DelayMilliseconds(int milliseconds);
+void DelayVBL(int param);
 unsigned int GetMilliseconds(void);
 unsigned int GetWolfTicks(void);
 unsigned char *GraphicLockBytes(void *surface);

@@ -52,7 +52,8 @@ int SDL_Mus_Mix_GroupChannels(int from, int to, int tag) {
     return Mix_GroupChannels(from, to, tag);
 }
 
-void SDL_Mus_Mix_HookMusic(void (*mix_func) (void *udata, unsigned char *stream, int len), void *arg){
+void SDL_Mus_Mix_HookMusic(void *mf, void *arg){
+    void (*mix_func) (void *udata, unsigned char *stream, int len) = (void (*) (void *udata, unsigned char *stream, int len))mf;
     Mix_HookMusic(mix_func, arg);
 }
 

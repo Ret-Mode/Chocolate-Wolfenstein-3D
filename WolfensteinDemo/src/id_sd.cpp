@@ -166,7 +166,7 @@ void SD_SetPosition(int channel, int leftpos, int rightpos)
     }
 }
 
-Sint16 GetSample(float csample, byte *samples, int size)
+signed short GetSample(float csample, byte *samples, int size)
 {
     float s0=0, s1=0, s2=0;
     int cursample = (int) csample;
@@ -180,7 +180,7 @@ Sint16 GetSample(float csample, byte *samples, int size)
     int32_t intval = (int32_t) (val * 256);
     if(intval < -32768) intval = -32768;
     else if(intval > 32767) intval = 32767;
-    return (Sint16) intval;
+    return (signed short) intval;
 }
 
 void SD_PrepareSound(int which)
@@ -212,7 +212,7 @@ void SD_PrepareSound(int which)
 
     // alignment is correct, as wavebuffer comes from malloc
     // and sizeof(headchunk) % 4 == 0 and sizeof(wavechunk) % 4 == 0
-    Sint16 *newsamples = (Sint16 *)(void *) (wavebuffer + sizeof(headchunk)
+    signed short *newsamples = (signed short *)(void *) (wavebuffer + sizeof(headchunk)
         + sizeof(wavechunk));
     float cursample = 0.F;
     float samplestep = (float) ORIGSAMPLERATE / (float) param_samplerate;
@@ -561,7 +561,7 @@ SD_SetMusicMode(SMMode mode)
 
     SD_FadeOutMusic();
     while (SD_MusicPlaying())
-        SDL_Delay(5);
+        DelayMilliseconds(5);
 
     switch (mode)
     {
@@ -587,7 +587,7 @@ longword curAlLengthLeft = 0;
 int soundTimeCounter = 5;
 int samplesPerMusicTick;
 
-void SDL_IMFMusicPlayer(void *udata, Uint8 *stream, int len)
+void SDL_IMFMusicPlayer(void *udata, unsigned char *stream, int len)
 {
     int stereolen = len>>1;
     int sampleslen = stereolen>>1;
@@ -695,7 +695,7 @@ SD_Startup(void)
     YM3812Write(0,1,0x20); // Set WSE=1
 //    YM3812Write(0,8,0); // Set CSM=0 & SEL=0       // already set in for statement
 
-    SDL_Mus_Mix_HookMusic(SDL_IMFMusicPlayer, 0);
+    SDL_Mus_Mix_HookMusic((void*)SDL_IMFMusicPlayer, 0);
     SDL_Mus_Mix_ChannelFinished(SD_ChannelFinished);
     AdLibPresent = true;
     SoundBlasterPresent = true;
@@ -884,7 +884,7 @@ void
 SD_WaitSoundDone(void)
 {
     while (SD_SoundPlaying())
-        SDL_Delay(5);
+        DelayMilliseconds(5);
 }
 
 ///////////////////////////////////////////////////////////////////////////

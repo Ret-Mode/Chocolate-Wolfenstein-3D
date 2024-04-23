@@ -21,7 +21,7 @@ int SDL_Mus_Mix_ReserveChannels(int num);
 
 int SDL_Mus_Mix_GroupChannels(int from, int to, int tag);
 
-void SDL_Mus_Mix_HookMusic(void (*mix_func) (void *udata, unsigned char *stream, int len), void *arg);
+void SDL_Mus_Mix_HookMusic(void *mf, void *arg);
 
 void SDL_Mus_Mix_ChannelFinished(void (*channel_finished)(int channel));
 

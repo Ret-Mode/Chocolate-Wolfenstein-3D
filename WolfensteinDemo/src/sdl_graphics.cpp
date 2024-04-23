@@ -72,6 +72,10 @@ void DelayMilliseconds(int milliseconds) {
     SDL_Delay(milliseconds);
 }
 
+void DelayVBL(int param) {
+    SDL_Delay(param*8);
+}
+
 unsigned int GetWolfTicks(void) {
     return (SDL_GetTicks()*7)/100;
 }
