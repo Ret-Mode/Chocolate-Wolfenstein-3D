@@ -317,7 +317,7 @@ void ReadMouseState(int *btns, int *mx, int *my) {
     buttons &= ~(SDL_BUTTON(SDL_BUTTON_MIDDLE) | SDL_BUTTON(SDL_BUTTON_RIGHT));
     if(middlePressed) buttons |= 1 << 2;
     if(rightPressed) buttons |= 1 << 1;
-
+    
     *mx = mousex;
     *my = mousey;
     *btns = buttons;
@@ -402,4 +402,15 @@ void* GetWhitePaletteShifted(int which) {
 
 void SaveBitmap(char *filename) {
     SDL_SaveBMP((SDL_Surface *)GetCurSurface(), filename);
+}
+
+int GetMouseButtons(void) {
+    int buttons = SDL_GetMouseState(NULL, NULL);
+    int middlePressed = buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE);
+    int rightPressed = buttons & SDL_BUTTON(SDL_BUTTON_RIGHT);
+    buttons &= ~(SDL_BUTTON(SDL_BUTTON_MIDDLE) | SDL_BUTTON(SDL_BUTTON_RIGHT));
+    if(middlePressed) buttons |= 1 << 2;
+    if(rightPressed) buttons |= 1 << 1;
+
+    return buttons;
 }

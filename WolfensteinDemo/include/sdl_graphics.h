@@ -53,5 +53,6 @@ int GetWhitePaletteSwapMs(void);
 void* GetRedPaletteShifted(int which);
 void* GetWhitePaletteShifted(int which);
 void SaveBitmap(char *filename);
+int GetMouseButtons(void);
 
 #endif
