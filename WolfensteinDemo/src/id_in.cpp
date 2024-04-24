@@ -37,7 +37,7 @@ boolean forcegrabmouse;
 
 
 //  Global variables
-volatile boolean    Keyboard[SDLK_LAST];
+volatile boolean    Keyboard[sc_Last];
 volatile boolean    Paused;
 volatile char       LastASCII;
 volatile ScanCode   LastScan;
