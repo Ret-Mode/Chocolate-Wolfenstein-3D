@@ -1047,7 +1047,7 @@ static void InitGame()
 
     InitGraphics();
 
-    int numJoysticks = SDL_NumJoysticks();
+    int numJoysticks = GetNuberOfJoysticks();
     if(param_joystickindex && (param_joystickindex < -1 || param_joystickindex >= numJoysticks))
     {
         if(!numJoysticks)

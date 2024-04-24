@@ -10,19 +10,6 @@
 #define Chocolate_Wolfenstein_3D_crt_h
 
 
-// Win32
-#ifdef _WIN32
-#include <WTypes.h>
-#include <gl\GL.h>
-#include "SDL.h"
-#elif __linux__
-#include <GL/gl.h>
-#include "SDL/SDL.h"
-#else
-#include <OpenGL/gl.h>
-#include "SDL/SDL.h"
-#endif
-
 /*
  * CRT aspect ratio is 4:3, height will be infered.
  */

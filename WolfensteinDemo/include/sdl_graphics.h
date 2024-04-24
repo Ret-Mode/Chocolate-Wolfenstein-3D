@@ -54,5 +54,6 @@ void* GetRedPaletteShifted(int which);
 void* GetWhitePaletteShifted(int which);
 void SaveBitmap(char *filename);
 int GetMouseButtons(void);
+int GetNuberOfJoysticks(void);
 
 #endif
