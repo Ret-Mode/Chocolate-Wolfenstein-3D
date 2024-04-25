@@ -35,8 +35,8 @@ SDL_Color gamepal[]={
 
 CASSERT(lengthof(gamepal) == 256)
 
-// static SDL_Color palette1[256];
-// static SDL_Color palette2[256];
+static SDL_Color palette1[256];
+static SDL_Color palette2[256];
 static SDL_Color curpal[256];
 
 #define NUMREDSHIFTS    6
@@ -332,10 +332,6 @@ void InitRedShifts (void)
     SDL_Color *workptr, *baseptr;
     int i, j, delta;
 
-
-//
-// fade through intermediate frames
-//
     for (i = 1; i <= NUMREDSHIFTS; i++)
     {
         workptr = redshifts[i - 1];
@@ -400,6 +396,78 @@ void* GetWhitePaletteShifted(int which) {
     return (void*)whiteshifts[which - 1];
 }
 
+void PaletteFadeOut (int start, int end, int red, int green, int blue, int steps) {
+    int         i,j,orig,delta;
+    SDL_Color   *origptr, *newptr;
+
+    red = red * 255 / 63;
+    green = green * 255 / 63;
+    blue = blue * 255 / 63;
+
+    DelayMilliseconds(8);
+    GetWholePalette(palette1);
+    memcpy(palette2, palette1, sizeof(SDL_Color) * 256);
+
+    for (i=0;i<steps;i++)
+    {
+        origptr = &palette1[start];
+        newptr = &palette2[start];
+        for (j=start;j<=end;j++)
+        {
+            orig = origptr->r;
+            delta = red-orig;
+            newptr->r = orig + delta * i / steps;
+            orig = origptr->g;
+            delta = green-orig;
+            newptr->g = orig + delta * i / steps;
+            orig = origptr->b;
+            delta = blue-orig;
+            newptr->b = orig + delta * i / steps;
+            origptr++;
+            newptr++;
+        }
+
+        if(!usedoublebuffering || GetScreenBits() == 8) DelayMilliseconds(8);
+        SetWholePalette(palette2, true);
+    }
+
+    FillPalette(red,green,blue);
+}
+
+void PaletteFadeIn(int start, int end, void *platettePtr, int steps) {
+    SDL_Color *palette = (SDL_Color *)platettePtr;
+    int i,j,delta;
+
+    DelayMilliseconds(8);
+    GetWholePalette(palette1);
+    memcpy(palette2, palette1, sizeof(SDL_Color) * 256);
+
+//
+// fade through intermediate frames
+//
+    for (i=0;i<steps;i++)
+    {
+        for (j=start;j<=end;j++)
+        {
+            delta = palette[j].r-palette1[j].r;
+            palette2[j].r = palette1[j].r + delta * i / steps;
+            delta = palette[j].g-palette1[j].g;
+            palette2[j].g = palette1[j].g + delta * i / steps;
+            delta = palette[j].b-palette1[j].b;
+            palette2[j].b = palette1[j].b + delta * i / steps;
+        }
+
+        if(!usedoublebuffering || GetScreenBits() == 8) DelayMilliseconds(8);
+        SetWholePalette(palette2, true);
+    }
+
+//
+// final color
+//
+    SetWholePalette(palette, true);
+    screenfaded = false;
+}
+
 void SaveBitmap(char *filename) {
     SDL_SaveBMP((SDL_Surface *)GetCurSurface(), filename);
 }
@@ -417,4 +485,233 @@ int GetMouseButtons(void) {
 
 int GetNuberOfJoysticks(void) {
     return SDL_NumJoysticks();
+}
+
+void SetVGAMode(unsigned *scrWidth, unsigned *scrHeight, 
+                unsigned *scrPitch, unsigned *bufPitch, 
+                unsigned *currPitch, unsigned *sclFactor) {
+
+    SDL_WM_SetCaption("Wolfenstein 3D", NULL);
+    const SDL_VideoInfo *vidInfo = SDL_GetVideoInfo();
+    screenBits = vidInfo->vfmt->BitsPerPixel;
+
+    //Fab's CRT Hack
+    //Adjust height so the screen is 4:3 aspect ratio
+    *scrHeight=*scrWidth * 3.0/4.0;
+    
+    screen = SDL_SetVideoMode(*scrWidth, *scrHeight, screenBits,
+          (usedoublebuffering ? SDL_HWSURFACE | SDL_DOUBLEBUF : 0)
+        | (screenBits == 8 ? SDL_HWPALETTE : 0)
+        | (fullscreen ? SDL_FULLSCREEN : 0) | SDL_OPENGL | SDL_OPENGLBLIT);
+    
+
+    if(!screen)
+    {
+        printf("Unable to set %ix%ix%i video mode: %s\n", *scrWidth, *scrHeight, GetScreenBits(), SDL_GetError());
+        exit(1);
+    }
+    if((screen->flags & SDL_DOUBLEBUF) != SDL_DOUBLEBUF)
+        usedoublebuffering = false;
+    SDL_ShowCursor(SDL_DISABLE);
+
+    SDL_SetColors(screen, gamepal, 0, 256);
+    memcpy(curpal, gamepal, sizeof(SDL_Color) * 256);
+
+    //Fab's CRT Hack
+    CRT_Init(*scrWidth);
+    
+    //Fab's CRT Hack
+    *scrWidth=320;
+    *scrHeight=200;
+    
+    //SDL_Surface *screenBuffer = (SDL_Surface *)CreateScreenBuffer(gamepal, &bufferPitch, screenWidth, screenHeight);
+
+    screenBuffer = SDL_CreateRGBSurface(SDL_SWSURFACE, *scrWidth,
+        *scrHeight, 8, 0, 0, 0, 0);
+    if(!screenBuffer)
+    {
+        printf("Unable to create screen buffer surface: %s\n", SDL_GetError());
+        exit(1);
+    }
+    SDL_SetColors(screenBuffer, (SDL_Color*)gamepal, 0, 256);
+
+    *bufPitch = screenBuffer->pitch;
+
+    *scrPitch = screen->pitch;
+
+    curSurface = screenBuffer;
+    *currPitch = *bufPitch;
+
+    *sclFactor = *scrWidth/320;
+    if(*scrHeight/200 < *sclFactor) *sclFactor = *scrHeight/200;
+
+}
+
+void LoadLatchMemory (void) {
+    int i,width,height,start,end;
+    byte *src;
+    SDL_Surface *surf;
+
+//
+// tile 8s
+//
+    
+    surf = SDL_CreateRGBSurface(SDL_HWSURFACE, 8*8,
+        ((NUMTILE8 + 7) / 8) * 8, 8, 0, 0, 0, 0);
+    if(surf == NULL)
+    {
+        Quit("Unable to create surface for tiles!");
+    }
+    SDL_SetColors(surf, gamepal, 0, 256);
+
+    SetLatchPic(0, surf);
+    CA_CacheGrChunk (STARTTILE8);
+    src = grsegs[STARTTILE8];
+
+    for (i=0;i<NUMTILE8;i++)
+    {
+        VL_MemToLatch (src, 8, 8, (void*)surf, (i & 7) * 8, (i >> 3) * 8);
+        src += 64;
+    }
+    UNCACHEGRCHUNK (STARTTILE8);
+
+//
+// pics
+//
+    start = LATCHPICS_LUMP_START;
+    end = LATCHPICS_LUMP_END;
+
+    for (i=start;i<=end;i++)
+    {
+        width = pictable[i-STARTPICS].width;
+        height = pictable[i-STARTPICS].height;
+        surf = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
+        if(surf == NULL)
+        {
+            Quit("Unable to create surface for picture!");
+        }
+        SDL_SetColors(surf, gamepal, 0, 256);
+
+        latchpics[2+i-start] = surf;
+
+        CA_CacheGrChunk (i);
+        VL_MemToLatch (grsegs[i], width, height, (void*)surf, 0, 0);
+        UNCACHEGRCHUNK(i);
+    }
+}
+
+int SubFizzleFade (void *src, int x1, int y1,
+                       unsigned width, unsigned height, 
+                       unsigned frames, int abortable,
+                       int rndbits_y, int rndmask)
+{
+    SDL_Surface *source = (SDL_Surface*) src;
+    unsigned x, y, frame, pixperframe;
+    int32_t  rndval, lastrndval;
+    int      first = 1;
+
+    lastrndval = 0;
+    pixperframe = width * height / frames;
+
+    IN_StartAck ();
+
+    frame = GetWolfTicks();
+
+    //can't rely on screen as dest b/c crt.cpp writes over it with screenBuffer
+    //can't rely on screenBuffer as source for same reason: every flip it has to be updated
+    SDL_Surface *source_copy = SDL_ConvertSurface(source, source->format, source->flags);
+    SDL_Surface *screen_copy = SDL_ConvertSurface(screen, screen->format, screen->flags);
+
+    byte *srcptr = GraphicLockBytes((void*)source_copy);
+    do
+    {
+        if(abortable && IN_CheckAck ())
+        {
+            GraphicUnlockBytes((void*)source_copy);
+            SDL_BlitSurface(screen_copy, NULL, screenBuffer, NULL);
+            SDL_BlitSurface(screenBuffer, NULL, screen, NULL);
+            SDL_Flip((SDL_Surface *)GetScreen());
+            SDL_FreeSurface(source_copy);
+            SDL_FreeSurface(screen_copy);
+            return true;
+        }
+
+        byte *destptr = GraphicLockBytes((void*)screen_copy);
+
+        rndval = lastrndval;
+
+        // When using double buffering, we have to copy the pixels of the last AND the current frame.
+        // Only for the first frame, there is no "last frame"
+        for(int i = first; i < 2; i++)
+        {
+            for(unsigned p = 0; p < pixperframe; p++)
+            {
+                //
+                // seperate random value into x/y pair
+                //
+
+                x = rndval >> rndbits_y;
+                y = rndval & ((1 << rndbits_y) - 1);
+
+                //
+                // advance to next random element
+                //
+
+                rndval = (rndval >> 1) ^ (rndval & 1 ? 0 : rndmask);
+
+                if(x >= width || y >= height)
+                {
+                    if(rndval == 0)     // entire sequence has been completed
+                        goto finished;
+                    p--;
+                    continue;
+                }
+
+                //
+                // copy one pixel
+                //
+
+                if(screenBits == 8)
+                {
+                    *(destptr + (y1 + y) * screen->pitch + x1 + x)
+                        = *(srcptr + (y1 + y) * source->pitch + x1 + x);
+                }
+                else
+                {
+                    byte col = *(srcptr + (y1 + y) * source->pitch + x1 + x);
+                    int red, green, blue;
+                    GetCurrentPaletteColor(col, &red, &green, &blue);
+                    uint32_t fullcol = SDL_MapRGB(screen->format, red, green, blue);
+                    memcpy(destptr + (y1 + y) * screen->pitch + (x1 + x) * screen->format->BytesPerPixel,
+                        &fullcol, screen->format->BytesPerPixel);
+                }
+
+                if(rndval == 0)     // entire sequence has been completed
+                    goto finished;
+            }
+
+            if(!i || first) lastrndval = rndval;
+        }
+
+        // If there is no double buffering, we always use the "first frame" case
+        if(usedoublebuffering) first = 0;
+
+        GraphicUnlockBytes((void*)screen_copy);
+        SDL_BlitSurface(screen_copy, NULL, screenBuffer, NULL);
+        SDL_BlitSurface(screenBuffer, NULL, screen, NULL);
+        SDL_Flip(screen);
+
+        frame++;
+        Delay(frame - GetWolfTicks());        // don't go too fast
+    } while (1);
+
+finished:
+    GraphicUnlockBytes((void*)source_copy);
+    GraphicUnlockBytes((void*)screen_copy);
+    SDL_BlitSurface(screen_copy, NULL, screenBuffer, NULL);
+    SDL_BlitSurface(screenBuffer, NULL, screen, NULL);
+    SDL_Flip(screen);
+    SDL_FreeSurface(source_copy);
+    SDL_FreeSurface(screen_copy);
+    return false;
 }

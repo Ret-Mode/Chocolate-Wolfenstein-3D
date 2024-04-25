@@ -39,7 +39,6 @@ unsigned scaleFactor;
 boolean  screenfaded;
 unsigned bordercolor;
 
-SDL_Color palette1[256], palette2[256];
 
 
 
@@ -72,56 +71,13 @@ void    VL_Shutdown (void)
 
 void    VL_SetVGAPlaneMode (void)
 {
-    SetWindowTitle("Wolfenstein 3D");
-
-    SetScreenBits();
-
-    //Fab's CRT Hack
-    //Adjust height so the screen is 4:3 aspect ratio
-    screenHeight=screenWidth * 3.0/4.0;
-    
-    void *screen = SDL_SetVideoMode(screenWidth, screenHeight, GetScreenBits(),
-          (usedoublebuffering ? SDL_HWSURFACE | SDL_DOUBLEBUF : 0)
-        | (GetScreenBits() == 8 ? SDL_HWPALETTE : 0)
-        | (fullscreen ? SDL_FULLSCREEN : 0) | SDL_OPENGL | SDL_OPENGLBLIT);
-    
-    SetScreen(screen);
-
-    if(!GetScreen())
-    {
-        printf("Unable to set %ix%ix%i video mode: %s\n", screenWidth, screenHeight, GetScreenBits(), SDL_GetError());
-        exit(1);
-    }
-    if((GetScreenFlags() & SDL_DOUBLEBUF) != SDL_DOUBLEBUF)
-        usedoublebuffering = false;
-    SDL_ShowCursor(SDL_DISABLE);
-
-    SetScreenPalette();
-
-    //Fab's CRT Hack
-    CRT_Init(screenWidth);
-    
-    //Fab's CRT Hack
-    screenWidth=320;
-    screenHeight=200;
-    
-    SDL_Surface *screenBuffer = (SDL_Surface *)CreateScreenBuffer(GetGamePal(), &bufferPitch, screenWidth, screenHeight);
-
-    screenPitch = GetScreenPitch();
-
-    SetCurSurface(screenBuffer);
-    curPitch = bufferPitch;
-
-    scaleFactor = screenWidth/320;
-    if(screenHeight/200 < scaleFactor) scaleFactor = screenHeight/200;
-    
-    
+    SetVGAMode(&screenWidth, &screenHeight, 
+                &screenPitch, &bufferPitch, 
+                &curPitch, &scaleFactor);
     pixelangle = (short *) malloc(screenWidth * sizeof(short));
     CHECKMALLOCRESULT(pixelangle);
     wallheight = (int *) malloc(screenWidth * sizeof(int));
     CHECKMALLOCRESULT(wallheight);
-    
-    
 }
 
 /*
@@ -236,48 +192,7 @@ void VL_GetPalette (void *palette)
 
 void VL_FadeOut (int start, int end, int red, int green, int blue, int steps)
 {
-    int         i,j,orig,delta;
-    SDL_Color   *origptr, *newptr;
-
-    red = red * 255 / 63;
-    green = green * 255 / 63;
-    blue = blue * 255 / 63;
-
-    DelayMilliseconds(8);
-    VL_GetPalette(palette1);
-    memcpy(palette2, palette1, sizeof(SDL_Color) * 256);
-
-//
-// fade through intermediate frames
-//
-    for (i=0;i<steps;i++)
-    {
-        origptr = &palette1[start];
-        newptr = &palette2[start];
-        for (j=start;j<=end;j++)
-        {
-            orig = origptr->r;
-            delta = red-orig;
-            newptr->r = orig + delta * i / steps;
-            orig = origptr->g;
-            delta = green-orig;
-            newptr->g = orig + delta * i / steps;
-            orig = origptr->b;
-            delta = blue-orig;
-            newptr->b = orig + delta * i / steps;
-            origptr++;
-            newptr++;
-        }
-
-        if(!usedoublebuffering || GetScreenBits() == 8) DelayMilliseconds(8);
-        VL_SetPalette (palette2, true);
-    }
-
-//
-// final color
-//
-    VL_FillPalette (red,green,blue);
-
+    PaletteFadeOut(start, end, red, green, blue, steps);
     screenfaded = true;
 }
 
@@ -290,39 +205,9 @@ void VL_FadeOut (int start, int end, int red, int green, int blue, int steps)
 =================
 */
 
-void VL_FadeIn (int start, int end, void *platettePtr, int steps)
+void VL_FadeIn (int start, int end, void *palettePtr, int steps)
 {
-    SDL_Color *palette = (SDL_Color *)platettePtr;
-    int i,j,delta;
-
-    DelayMilliseconds(8);
-    VL_GetPalette(palette1);
-    memcpy(palette2, palette1, sizeof(SDL_Color) * 256);
-
-//
-// fade through intermediate frames
-//
-    for (i=0;i<steps;i++)
-    {
-        for (j=start;j<=end;j++)
-        {
-            delta = palette[j].r-palette1[j].r;
-            palette2[j].r = palette1[j].r + delta * i / steps;
-            delta = palette[j].g-palette1[j].g;
-            palette2[j].g = palette1[j].g + delta * i / steps;
-            delta = palette[j].b-palette1[j].b;
-            palette2[j].b = palette1[j].b + delta * i / steps;
-        }
-
-        if(!usedoublebuffering || GetScreenBits() == 8) DelayMilliseconds(8);
-        VL_SetPalette(palette2, true);
-    }
-
-//
-// final color
-//
-    VL_SetPalette (palette, true);
-    screenfaded = false;
+    PaletteFadeIn(start, end, palettePtr, steps);
 }
 
 /*

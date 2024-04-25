@@ -1,6 +1,9 @@
 #ifndef __SDL_WOLF_KEYS_H__
 #define __SDL_WOLF_KEYS_H__
 
+#ifndef KEYS_LOADED
+#define KEYS_LOADED
+
 #ifdef _WIN32
 #include "SDL.h"
 //#include "SDL_syswm.h"
@@ -92,8 +95,8 @@ typedef int     ScanCode;
 #define key_None        0
 #define sc_Last         SDLK_LAST
 
-#define KEYS_LOADED
-
 const char *GetScanName (ScanCode scan);
+
+#endif 
 
 #endif

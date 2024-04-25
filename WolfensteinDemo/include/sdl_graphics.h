@@ -52,8 +52,18 @@ int GetRedPaletteShifts(void);
 int GetWhitePaletteSwapMs(void);
 void* GetRedPaletteShifted(int which);
 void* GetWhitePaletteShifted(int which);
+void PaletteFadeOut (int start, int end, int red, int green, int blue, int steps);
+void PaletteFadeIn(int start, int end, void *platettePtr, int steps);
 void SaveBitmap(char *filename);
 int GetMouseButtons(void);
 int GetNuberOfJoysticks(void);
+void SetVGAMode(unsigned *scrWidth, unsigned *scrHeight, 
+                unsigned *scrPitch, unsigned *bufPitch, 
+                unsigned *currPitch, unsigned *sclFactor);
+void LoadLatchMemory (void);
+int SubFizzleFade (void *src, int x1, int y1,
+                       unsigned width, unsigned height, 
+                       unsigned frames, int abortable,
+                       int rndbits_y, int rndmask);
 
 #endif

@@ -225,55 +225,7 @@ void LatchDrawPicScaledCoord (unsigned scx, unsigned scy, unsigned picnum)
 
 void LoadLatchMem (void)
 {
-    int i,width,height,start,end;
-    byte *src;
-    SDL_Surface *surf;
-
-//
-// tile 8s
-//
-    
-    surf = SDL_CreateRGBSurface(SDL_HWSURFACE, 8*8,
-        ((NUMTILE8 + 7) / 8) * 8, 8, 0, 0, 0, 0);
-    if(surf == NULL)
-    {
-        Quit("Unable to create surface for tiles!");
-    }
-    SDL_SetColors(surf, (SDL_Color*)GetGamePal(), 0, 256);
-
-    SetLatchPic(0, surf);
-    CA_CacheGrChunk (STARTTILE8);
-    src = grsegs[STARTTILE8];
-
-    for (i=0;i<NUMTILE8;i++)
-    {
-        VL_MemToLatch (src, 8, 8, (void*)surf, (i & 7) * 8, (i >> 3) * 8);
-        src += 64;
-    }
-    UNCACHEGRCHUNK (STARTTILE8);
-
-//
-// pics
-//
-    start = LATCHPICS_LUMP_START;
-    end = LATCHPICS_LUMP_END;
-
-    for (i=start;i<=end;i++)
-    {
-        width = pictable[i-STARTPICS].width;
-        height = pictable[i-STARTPICS].height;
-        surf = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
-        if(surf == NULL)
-        {
-            Quit("Unable to create surface for picture!");
-        }
-        SDL_SetColors(surf, (SDL_Color*)GetGamePal(), 0, 256);
-
-        SetLatchPic(2+i-start, surf);
-        CA_CacheGrChunk (i);
-        VL_MemToLatch (grsegs[i], width, height, (void*)surf, 0, 0);
-        UNCACHEGRCHUNK(i);
-    }
+    LoadLatchMemory();
 }
 
 //==========================================================================
@@ -310,8 +262,6 @@ static const uint32_t rndmasks[] = {
 static unsigned int rndbits_y;
 static unsigned int rndmask;
 
-//extern SDL_Color curpal[256];
-
 // Returns the number of bits needed to represent the given value
 static int log2_ceil(uint32_t x)
 {
@@ -342,113 +292,5 @@ void VH_Startup()
 boolean FizzleFade (void *src, int x1, int y1,
     unsigned width, unsigned height, unsigned frames, boolean abortable)
 {
-    SDL_Surface *source = (SDL_Surface*) src;
-    unsigned x, y, frame, pixperframe;
-    int32_t  rndval, lastrndval;
-    int      first = 1;
-
-    lastrndval = 0;
-    pixperframe = width * height / frames;
-
-    IN_StartAck ();
-
-    frame = GetTimeCount();
-
-    //can't rely on screen as dest b/c crt.cpp writes over it with screenBuffer
-    //can't rely on screenBuffer as source for same reason: every flip it has to be updated
-    SDL_Surface *source_copy = SDL_ConvertSurface(source, source->format, source->flags);
-    SDL_Surface *screen_copy = SDL_ConvertSurface((SDL_Surface *)GetScreen(), (SDL_PixelFormat*)GetScreenFormat(), GetScreenFlags());
-
-    byte *srcptr = VL_LockSurface((void*)source_copy);
-    do
-    {
-        if(abortable && IN_CheckAck ())
-        {
-            VL_UnlockSurface((void*)source_copy);
-            SDL_BlitSurface(screen_copy, NULL, (SDL_Surface *)GetScreenBuffer(), NULL);
-            SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreen(), NULL);
-            SDL_Flip((SDL_Surface *)GetScreen());
-            SDL_FreeSurface(source_copy);
-            SDL_FreeSurface(screen_copy);
-            return true;
-        }
-
-        byte *destptr = VL_LockSurface((void*)screen_copy);
-
-        rndval = lastrndval;
-
-        // When using double buffering, we have to copy the pixels of the last AND the current frame.
-        // Only for the first frame, there is no "last frame"
-        for(int i = first; i < 2; i++)
-        {
-            for(unsigned p = 0; p < pixperframe; p++)
-            {
-                //
-                // seperate random value into x/y pair
-                //
-
-                x = rndval >> rndbits_y;
-                y = rndval & ((1 << rndbits_y) - 1);
-
-                //
-                // advance to next random element
-                //
-
-                rndval = (rndval >> 1) ^ (rndval & 1 ? 0 : rndmask);
-
-                if(x >= width || y >= height)
-                {
-                    if(rndval == 0)     // entire sequence has been completed
-                        goto finished;
-                    p--;
-                    continue;
-                }
-
-                //
-                // copy one pixel
-                //
-
-                if(GetScreenBits() == 8)
-                {
-                    *(destptr + (y1 + y) * GetScreenPitch() + x1 + x)
-                        = *(srcptr + (y1 + y) * source->pitch + x1 + x);
-                }
-                else
-                {
-                    byte col = *(srcptr + (y1 + y) * source->pitch + x1 + x);
-                    int red, green, blue;
-                    GetCurrentPaletteColor(col, &red, &green, &blue);
-                    uint32_t fullcol = SDL_MapRGB((SDL_PixelFormat*)GetScreenFormat(), red, green, blue);
-                    memcpy(destptr + (y1 + y) * GetScreenPitch() + (x1 + x) * GetScreenBytesPerPixel(),
-                        &fullcol, GetScreenBytesPerPixel());
-                }
-
-                if(rndval == 0)     // entire sequence has been completed
-                    goto finished;
-            }
-
-            if(!i || first) lastrndval = rndval;
-        }
-
-        // If there is no double buffering, we always use the "first frame" case
-        if(usedoublebuffering) first = 0;
-
-        VL_UnlockSurface((void*)screen_copy);
-        SDL_BlitSurface(screen_copy, NULL, (SDL_Surface *)GetScreenBuffer(), NULL);
-        SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreen(), NULL);
-        SDL_Flip((SDL_Surface *)GetScreen());
-
-        frame++;
-        Delay(frame - GetTimeCount());        // don't go too fast
-    } while (1);
-
-finished:
-    VL_UnlockSurface((void*)source_copy);
-    VL_UnlockSurface((void*)screen_copy);
-    SDL_BlitSurface(screen_copy, NULL, (SDL_Surface *)GetScreenBuffer(), NULL);
-    SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreen(), NULL);
-    SDL_Flip((SDL_Surface *)GetScreen());
-    SDL_FreeSurface(source_copy);
-    SDL_FreeSurface(screen_copy);
-    return false;
+    return SubFizzleFade(src, x1, y1, width, height, frames, abortable, rndbits_y, rndmask);
 }

@@ -14,9 +14,8 @@
 
 
 #include "sdl_keys.h"
-#ifndef KEYS_LOADED
 #include "empty_keys.h"
-#endif
+
 
 typedef enum        {
                         demo_Off,demo_Record,demo_Playback,demo_PlayDone
