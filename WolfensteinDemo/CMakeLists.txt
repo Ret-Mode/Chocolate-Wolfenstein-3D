@@ -1,5 +1,4 @@
 add_executable(WolfensteinDemo
-   src/crt.cpp
    src/fmopl.cpp
    src/id_ca.cpp  
    src/id_in.cpp  
@@ -21,14 +20,28 @@ add_executable(WolfensteinDemo
    src/wl_state.cpp
    src/wl_play.cpp  
    src/wl_text.cpp
-   src/sdl_music.cpp
-   src/sdl_graphics.cpp
-   src/sdl_keys.cpp
    )
 
 target_compile_definitions(WolfensteinDemo PRIVATE GOODTIMES)
 target_compile_definitions(WolfensteinDemo PRIVATE CARMACIZED)
 target_compile_definitions(WolfensteinDemo PRIVATE UPLOAD)
+
+target_include_directories(WolfensteinDemo PRIVATE ${OPENGL_INCLUDE_DIRS})
+target_link_libraries(WolfensteinDemo ${OPENGL_LIBRARIES})
+
+# only when building with SDL
+target_sources(WolfensteinDemo PRIVATE
+   src/crt.cpp
+   src/sdl_music.cpp
+   src/sdl_graphics.cpp
+   src/sdl_keys.cpp
+   )
+target_include_directories(WolfensteinDemo PRIVATE ${SDL_INCLUDE_DIR})
+target_include_directories(WolfensteinDemo PRIVATE ${SDL_MIXER_INCLUDE_DIR})
+
+target_link_libraries(WolfensteinDemo ${SDL_LIBRARIES})
+target_link_libraries(WolfensteinDemo ${SDL_MIXER_LIBRARIES})
+
 
 if (WIN32)
    set_target_properties(WolfensteinDemo PROPERTIES FOLDER ${CMAKE_CURRENT_BINARY_DIR})
@@ -44,14 +57,7 @@ if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
    -Wsequence-point)
 endif()
 
-target_include_directories(WolfensteinDemo PRIVATE ${SDL_INCLUDE_DIR})
-target_include_directories(WolfensteinDemo PRIVATE ${SDL_MIXER_INCLUDE_DIR})
 
-target_include_directories(WolfensteinDemo PRIVATE ${OPENGL_INCLUDE_DIRS})
-
-target_link_libraries(WolfensteinDemo ${SDL_LIBRARIES})
-target_link_libraries(WolfensteinDemo ${SDL_MIXER_LIBRARIES})
-target_link_libraries(WolfensteinDemo ${OPENGL_LIBRARIES})
 
 if (WIN32)
    target_link_libraries(WolfensteinDemo legacy_stdio_definitions.lib)
