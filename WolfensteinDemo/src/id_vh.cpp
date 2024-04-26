@@ -115,7 +115,8 @@ void VW_MeasurePropString (const char *string, word *width, word *height)
 void VH_UpdateScreen()
 {
     ScreenToScreen(GetScreenBuffer(), GetScreen());
-    SDL_Flip((SDL_Surface *)GetScreen());
+    //SDL_Flip((SDL_Surface *)GetScreen());
+    CRT_DAC();
 }
 
 

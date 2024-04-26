@@ -14,3 +14,5 @@ build
 data/*
 SDL/*
 SDL_mixer/*
+glad/*
+GLFW/*

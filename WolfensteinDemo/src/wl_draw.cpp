@@ -1581,7 +1581,8 @@ void    ThreeDRefresh (void)
         ScreenToScreen (GetScreenBuffer(), GetScreen());
         
         //SDL_BlitSurface((SDL_Surface *), NULL, (SDL_Surface *), NULL);
-        SDL_Flip(screen);
+        //SDL_Flip(screen);
+        CRT_DAC();
     }
 
 #ifndef REMDEBUG

@@ -65,5 +65,15 @@ int SubFizzleFade (void *src, int x1, int y1,
                        unsigned width, unsigned height, 
                        unsigned frames, int abortable,
                        int rndbits_y, int rndmask);
+void GetJoystickDelta(int *dx,int *dy);
+void GetJoystickFineDelta(int *dx, int *dy);
+int GetJoystickButtons(void);
+int IsJoystickPresent(void);
+void WaitAndProcessEvents(void);
+void ProcessEvents(void );
+int IsInputGrabbed(void);
+void JoystickShutdown(void);
+void JoystickStartup(void);
+void CheckIsJoystickCorrect(void);
 
 #endif

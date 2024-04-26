@@ -1280,7 +1280,7 @@ static inline longword READLONGWORD(byte *&ptr)
 //By Fabien: This prevents SDL from drawing the surface, openGL does it instead.
 #include "crt.h"
 //Fab's CRT Hack
-#define SDL_Flip(x) CRT_DAC()
+//#define SDL_Flip(x) CRT_DAC()
 
 
 

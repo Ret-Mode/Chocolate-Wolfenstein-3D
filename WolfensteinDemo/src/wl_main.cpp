@@ -85,8 +85,6 @@ boolean param_nowait = false;
 int     param_difficulty = 1;           // default is "normal"
 int     param_tedlevel = -1;            // default is not to start a level
 int     param_joystickindex = 0;
-
-
 int     param_joystickhat = -1;
 int     param_samplerate = 44100;
 int     param_audiobuffer = 2048 / (44100 / param_samplerate);
@@ -1047,15 +1045,7 @@ static void InitGame()
 
     InitGraphics();
 
-    int numJoysticks = GetNuberOfJoysticks();
-    if(param_joystickindex && (param_joystickindex < -1 || param_joystickindex >= numJoysticks))
-    {
-        if(!numJoysticks)
-            printf("No joysticks are available to SDL!\n");
-        else
-            printf("The joystick index must be between -1 and %i!\n", numJoysticks - 1);
-        exit(1);
-    }
+    CheckIsJoystickCorrect();
 
     SignonScreen ();
 
