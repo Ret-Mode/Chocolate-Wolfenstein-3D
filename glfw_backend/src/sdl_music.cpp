@@ -52,49 +52,49 @@ int SDL_Mus_Mix_GroupChannels(int from, int to, int tag) {
     return Mix_GroupChannels(from, to, tag);
 }
 
-void SDL_Mus_Mix_HookMusic(void *mf, void *arg){
-    void (*mix_func) (void *udata, unsigned char *stream, int len) = (void (*) (void *udata, unsigned char *stream, int len))mf;
-    Mix_HookMusic(mix_func, arg);
-}
+// void SDL_Mus_Mix_HookMusic(void *mf, void *arg){
+//     void (*mix_func) (void *udata, unsigned char *stream, int len) = (void (*) (void *udata, unsigned char *stream, int len))mf;
+//     Mix_HookMusic(mix_func, arg);
+// }
 
-void SDL_Mus_Mix_ChannelFinished(void (*channel_finished)(int channel)) {
-    Mix_ChannelFinished(channel_finished);
-}
+// void SDL_Mus_Mix_ChannelFinished(void (*channel_finished)(int channel)) {
+//     Mix_ChannelFinished(channel_finished);
+// }
 
 void SDL_Mus_Mix_FreeAllChunks(void) {
-    int i;
-    for (i = 0; i < STARTMUSIC - STARTDIGISOUNDS; ++i) {
-        if(SoundChunks[i]) {
-            Mix_FreeChunk(SoundChunks[i]);
-        }
-    }
+    // int i;
+    // for (i = 0; i < STARTMUSIC - STARTDIGISOUNDS; ++i) {
+    //     if(SoundChunks[i]) {
+    //         Mix_FreeChunk(SoundChunks[i]);
+    //     }
+    // }
 }
 
-int SDL_Mus_Startup(int frequency, int chunksize) {
-    if(SDL_Mus_Mix_OpenAudio(frequency, AUDIO_S16, 2, chunksize))
-    {
-        printf("Unable to open audio: %s\n", SDL_Mus_Mix_GetError());
-        return 0;
-    }
+// int SDL_Mus_Startup(int frequency, int chunksize) {
+//     if(SDL_Mus_Mix_OpenAudio(frequency, AUDIO_S16, 2, chunksize))
+//     {
+//         printf("Unable to open audio: %s\n", SDL_Mus_Mix_GetError());
+//         return 0;
+//     }
 
-    SDL_Mus_Mix_ReserveChannels(2);  // reserve player and boss weapon channels
-    SDL_Mus_Mix_GroupChannels(2, MIX_CHANNELS-1, 1); // group remaining channels
+//     SDL_Mus_Mix_ReserveChannels(2);  // reserve player and boss weapon channels
+//     SDL_Mus_Mix_GroupChannels(2, MIX_CHANNELS-1, 1); // group remaining channels
 
-    return !0;
-}
+//     return !0;
+// }
 
 int SDL_Mus_PlayChunk(int channel, int which) {
-    Mix_Chunk *sample = SoundChunks[which];
-    if(sample == NULL)
-    {
-        printf("SoundChunks[%i] is NULL!\n", which);
-        return 0;
-    }
+    // Mix_Chunk *sample = SoundChunks[which];
+    // if(sample == NULL)
+    // {
+    //     printf("SoundChunks[%i] is NULL!\n", which);
+    //     return 0;
+    // }
 
-    if(Mix_PlayChannel(channel, sample, 0) == -1)
-    {
-        printf("Unable to play sound: %s\n", SDL_Mus_Mix_GetError());
-        return 0;
-    }
-    return channel;
+    // if(Mix_PlayChannel(channel, sample, 0) == -1)
+    // {
+    //     printf("Unable to play sound: %s\n", SDL_Mus_Mix_GetError());
+    //     return 0;
+    // }
+    return 0;
 }
