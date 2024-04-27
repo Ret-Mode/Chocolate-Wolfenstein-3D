@@ -2,7 +2,6 @@
 
 #include <string.h>
 #include "wl_def.h"
-#include "crt.h"
 #include "sdl_graphics.h"
 #pragma hdrstop
 

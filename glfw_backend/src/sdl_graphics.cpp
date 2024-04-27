@@ -1,5 +1,6 @@
 #include "sdl_graphics.h"
 #include "wl_def.h"
+#include "crt.h"
 
 #ifdef _WIN32
 
