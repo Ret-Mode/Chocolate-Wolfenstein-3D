@@ -29,19 +29,25 @@ target_compile_definitions(WolfensteinDemo PRIVATE UPLOAD)
 target_include_directories(WolfensteinDemo PRIVATE ${OPENGL_INCLUDE_DIRS})
 target_link_libraries(WolfensteinDemo ${OPENGL_LIBRARIES})
 
+set(backend "sdl-backend" CACHE STRING
+  "graphics backend")
+
+set_property(CACHE backend PROPERTY STRINGS "sdl-backend" "glfw-backend")
+
 # only when building with SDL
-target_sources(WolfensteinDemo PRIVATE
-   src/crt.cpp
-   src/sdl_music.cpp
-   src/sdl_graphics.cpp
-   src/sdl_keys.cpp
-   )
-target_include_directories(WolfensteinDemo PRIVATE ${SDL_INCLUDE_DIR})
-target_include_directories(WolfensteinDemo PRIVATE ${SDL_MIXER_INCLUDE_DIR})
+if(backend STREQUAL "sdl-backend")
+   target_sources(WolfensteinDemo PRIVATE
+      src/crt.cpp
+      src/sdl_music.cpp
+      src/sdl_graphics.cpp
+      src/sdl_keys.cpp
+      )
+   target_include_directories(WolfensteinDemo PRIVATE ${SDL_INCLUDE_DIR})
+   target_include_directories(WolfensteinDemo PRIVATE ${SDL_MIXER_INCLUDE_DIR})
 
-target_link_libraries(WolfensteinDemo ${SDL_LIBRARIES})
-target_link_libraries(WolfensteinDemo ${SDL_MIXER_LIBRARIES})
-
+   target_link_libraries(WolfensteinDemo ${SDL_LIBRARIES})
+   target_link_libraries(WolfensteinDemo ${SDL_MIXER_LIBRARIES})
+endif()
 
 if (WIN32)
    set_target_properties(WolfensteinDemo PROPERTIES FOLDER ${CMAKE_CURRENT_BINARY_DIR})
