@@ -306,6 +306,7 @@ void *GetGamePal(void) {
 
 void CenterWindow(void) {
     // JUST FOR WIN32
+    #ifdef _WIN32
     struct SDL_SysWMinfo wmInfo;
     SDL_VERSION(&wmInfo.version);
 
@@ -316,6 +317,7 @@ void CenterWindow(void) {
         SetWindowLong(hwndSDL, GWL_STYLE, style);
         SetWindowPos(hwndSDL, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
     }
+    #endif
 }
 
 void ConvertPaletteToRGB(unsigned char *pixelPointer, int width, int height) {
@@ -330,6 +332,7 @@ void ConvertPaletteToRGB(unsigned char *pixelPointer, int width, int height) {
 
 void ScreenToScreen (void *source, void *dest) {
     SDL_BlitSurface((SDL_Surface *)source, NULL, (SDL_Surface *)dest, NULL);
+    CRT_DAC();
 }
 
 void LatchToScreenScaledCoord(int which, int xsrc, int ysrc, int width, int height, int scxdest, int scydest) {
