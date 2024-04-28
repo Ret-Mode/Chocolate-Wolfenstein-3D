@@ -87,7 +87,9 @@ void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uin
     //mix_func(NULL, (unsigned char *)pOutput, frameCount*4);
     ma_uint64 readed;
     ma_engine_read_pcm_frames(&engine, pOutput, frameCount, &readed);
-    
+    // FILE *f = fopen("raw2.bin", "ab");
+    // fwrite(pOutput, frameCount*4, 1, f);
+    // fclose(f);
 }
 
 
@@ -101,7 +103,7 @@ int SDL_Mus_Startup(int frequency, int chunksize) {
 
     ma_device_config config;
     config = ma_device_config_init(ma_device_type_playback);
-    config.playback.format   = ma_format_s16;   // Set to ma_format_unknown to use the device's native format.
+    config.playback.format   = ma_format_f32;   // Set to ma_format_unknown to use the device's native format.
     config.playback.channels = 2;               // Set to 0 to use the device's native channel count.
     config.sampleRate        = 44100;           // Set to 0 to use the device's native sample rate.
     config.dataCallback      = data_callback;   // This function will be called when miniaudio needs more data.
@@ -137,14 +139,14 @@ void SDL_Mus_Mix_HookMusic(void *mf, void *arg){
         return;  // Failed to initialize the engine.
     }
 
-    // result = ma_sound_init_from_data_source(&engine, &music, MA_SOUND_FLAG_STREAM, NULL, &musicObject);
-    // if (result != MA_SUCCESS) {
-    //     return;  // Failed to initialize the engine.
-    // }
-    // result = ma_sound_start(&musicObject);
-    // if (result != MA_SUCCESS) {
-    //     return;  // Failed to initialize the engine.
-    // }
+    result = ma_sound_init_from_data_source(&engine, &music, MA_SOUND_FLAG_STREAM, NULL, &musicObject);
+    if (result != MA_SUCCESS) {
+        return;  // Failed to initialize the engine.
+    }
+    result = ma_sound_start(&musicObject);
+    if (result != MA_SUCCESS) {
+        return;  // Failed to initialize the engine.
+    }
 
 }
 
