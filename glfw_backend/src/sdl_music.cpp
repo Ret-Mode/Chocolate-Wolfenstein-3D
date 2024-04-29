@@ -61,14 +61,14 @@ int SDL_Mus_Mix_GroupChannels(int from, int to, int tag) {
 //     Mix_ChannelFinished(channel_finished);
 // }
 
-void SDL_Mus_Mix_FreeAllChunks(void) {
-    // int i;
-    // for (i = 0; i < STARTMUSIC - STARTDIGISOUNDS; ++i) {
-    //     if(SoundChunks[i]) {
-    //         Mix_FreeChunk(SoundChunks[i]);
-    //     }
-    // }
-}
+// void SDL_Mus_Mix_FreeAllChunks(void) {
+//     // int i;
+//     // for (i = 0; i < STARTMUSIC - STARTDIGISOUNDS; ++i) {
+//     //     if(SoundChunks[i]) {
+//     //         Mix_FreeChunk(SoundChunks[i]);
+//     //     }
+//     // }
+// }
 
 // int SDL_Mus_Startup(int frequency, int chunksize) {
 //     if(SDL_Mus_Mix_OpenAudio(frequency, AUDIO_S16, 2, chunksize))
