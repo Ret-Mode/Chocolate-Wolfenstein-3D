@@ -16,7 +16,7 @@ option(BUILD_SPEAR_FULL "Build Spear" OFF)
 set(backend "glfw-backend" CACHE STRING
   "graphics backend")
 
-set_property(CACHE backend PROPERTY STRINGS "sdl-backend" "glfw-backend")
+set_property(CACHE backend PROPERTY STRINGS "glfw-backend" "sdl-backend" )
 
 # only when building with SDL
 if(backend STREQUAL "sdl-backend")

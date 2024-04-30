@@ -32,16 +32,8 @@ int SDL_Mus_Mix_SetPanning(int channel, unsigned char left, unsigned char right)
     return Mix_SetPanning(channel, left, right);
 }
 
-void SDL_Mus_Mix_LoadWAV_RW(int which, void *mem, int size, int freeSrc) {
-    SoundChunks[which] = Mix_LoadWAV_RW(SDL_RWFromMem(mem, size), freeSrc);
-}
-
 int SDL_Mus_Mix_OpenAudio(int frequency, unsigned short format, int channels, int chunksize){
     return Mix_OpenAudio(frequency, format, channels, chunksize);
-}
-
-char * SDL_Mus_Mix_GetError(void) {
-    return Mix_GetError();
 }
 
 int SDL_Mus_Mix_ReserveChannels(int num) {

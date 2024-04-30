@@ -11,15 +11,7 @@ int SDL_Mus_Mix_GroupOldest(int tag);
 
 int SDL_Mus_Mix_SetPanning(int channel, unsigned char left, unsigned char right);
 
-void SDL_Mus_Mix_LoadWAV_RW(int which, void *mem, int size, int freeSrc);
-
-int SDL_Mus_Mix_OpenAudio(int frequency, unsigned short format, int channels, int chunksize);
-
-char SDL_Mus_Mix_GetError(void);
-
-int SDL_Mus_Mix_ReserveChannels(int num);
-
-int SDL_Mus_Mix_GroupChannels(int from, int to, int tag);
+void SDL_Mus_Mix_Load8bit7042(int which, unsigned char *origsamples, int size, int frequency);
 
 void SDL_Mus_Mix_HookMusic(void *mf, void *arg);
 
