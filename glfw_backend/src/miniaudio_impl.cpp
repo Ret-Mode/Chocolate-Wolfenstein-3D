@@ -108,7 +108,6 @@ ma_result soundFileVtable_on_read(ma_data_source* pDataSource, void* pFramesOut,
     if (f->data == NULL) 
     {
         *pFramesRead = 0;
-        //memset(pFramesOut, 0x80, frameCount);
         return MA_SUCCESS;
     }
     ma_uint64 toRead = f->size - f->position;
@@ -167,6 +166,7 @@ static ma_data_source_vtable soundFileVtable =
 
 void soundFile_end_callback(void* pUserData, ma_sound* pSound)
 {
+    printf("Ended");
     if (channel_finished && pUserData) {
         channel_finished(*(int*)pUserData);
     }
@@ -281,12 +281,12 @@ int SDL_Mus_Startup(int frequency, int chunksize) {
 
     result = ma_engine_init(&e_config, &engine);
     if (result != MA_SUCCESS) {
-        return 0;  // Failed to initialize the engine.
+        return 0;
     }
 
     result = ma_engine_start(&engine);
     if (result != MA_SUCCESS) {
-        return 0;  // Failed to initialize the engine.
+        return 0;
     }
 
     return !0;
@@ -294,20 +294,19 @@ int SDL_Mus_Startup(int frequency, int chunksize) {
 
 void SDL_Mus_Mix_HookMusic(void *mf, void *arg){
     mix_func = (void (*) (void *udata, unsigned char *stream, int len))mf;
-    //ma_device_start(&device);
     ma_result result = musicFile_init(&music);
     if (result != MA_SUCCESS) {
-        return;  // Failed to initialize the engine.
+        return; 
     }
 
     result = ma_sound_init_from_data_source(&engine, &music, MA_SOUND_FLAG_STREAM, NULL, &musicObject);
     if (result != MA_SUCCESS) {
-        return;  // Failed to initialize the engine.
+        return;
     }
 
     result = ma_sound_start(&musicObject);
     if (result != MA_SUCCESS) {
-        return;  // Failed to initialize the engine.
+        return;
     }
 
     initSndFx(&engine);
@@ -321,6 +320,8 @@ int SDL_Mus_Mix_HaltChannel(int channel) {
         for (int i = 0; i < MIX_CHANNELS; ++i) {
             ma_sound_stop(&sndFx.arr[i].snd);
         }
+    } else {
+        ma_sound_stop(&sndFx.arr[channel].snd);
     }
 
     return 0;
@@ -334,12 +335,12 @@ void SDL_Mus_Mix_FreeAllChunks(void) {
     ma_result result;
     result = ma_sound_stop(&musicObject);
     if (result != MA_SUCCESS) {
-        return;  // Failed to initialize the engine.
+        return;
     }
     ma_sound_uninit(&musicObject);
     result = ma_engine_stop(&engine);
     if (result != MA_SUCCESS) {
-        return;  // Failed to initialize the engine.
+        return;
     }
 
     unintiSndFx();
