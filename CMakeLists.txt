@@ -40,7 +40,6 @@ if(backend STREQUAL "sdl-backend")
 elseif(backend STREQUAL "glfw-backend")
     set(backendFiles
     ../glfw_backend/src/crt.cpp
-    ../glfw_backend/src/sdl_music.cpp
     ../glfw_backend/src/sdl_graphics.cpp
     ../glfw_backend/src/sdl_keys.cpp
     ../glfw_backend/src/miniaudio_impl.cpp

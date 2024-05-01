@@ -3,12 +3,13 @@
 #include "sdl_music.h"
 #include "wl_def.h"
 
+#define MIX_CHANNELS	8
 static ma_device device;
 static ma_engine engine;
 
 static void (*mix_func) (void *udata, unsigned char *stream, int len);
 static void (*channel_finished)(int channel);
-
+globalsoundpos channelSoundPos[MIX_CHANNELS];
 
 struct SoundBuffer_t {
     ma_uint64 size;
@@ -33,8 +34,6 @@ ma_result musicFileVtable_on_get_data_format(ma_data_source* pDataSource, ma_for
     *pFormat = ma_format_s16;
     *pChannels = 2;
     *pSampleRate = 44100;
-    //pChannelMap[0] = MA_CHANNEL_LEFT;
-    //pChannelMap[0] = MA_CHANNEL_RIGHT;
     return MA_SUCCESS;
 }
 
@@ -55,11 +54,11 @@ ma_result musicFileVtable_on_set_looping(ma_data_source* pDataSource, ma_bool32 
 static ma_data_source_vtable musicFileVtable =
 {
     musicFileVtable_on_read,
-    musicFileVtable_on_seek,  /* No-op for noise. */
+    musicFileVtable_on_seek,
     musicFileVtable_on_get_data_format,
-    musicFileVtable_on_get_cursor,   /* onGetCursor. No notion of a cursor for noise. */
-    musicFileVtable_on_get_length,   /* onGetLength. No notion of a length for noise. */
-    NULL,   /* onSetLooping */
+    musicFileVtable_on_get_cursor,
+    musicFileVtable_on_get_length,
+    NULL,
     0
 };
 
@@ -157,18 +156,20 @@ ma_result soundFileVtable_on_get_length(ma_data_source* pDataSource, ma_uint64* 
 static ma_data_source_vtable soundFileVtable =
 {
     soundFileVtable_on_read,
-    soundFileVtable_on_seek,  /* No-op for noise. */
+    soundFileVtable_on_seek,
     soundFileVtable_on_get_data_format,
-    soundFileVtable_on_get_cursor,   /* onGetCursor. No notion of a cursor for noise. */
-    soundFileVtable_on_get_length,   /* onGetLength. No notion of a length for noise. */
-    NULL,   /* onSetLooping */
+    soundFileVtable_on_get_cursor,
+    soundFileVtable_on_get_length,
+    NULL,
     0
 };
 
 
 void soundFile_end_callback(void* pUserData, ma_sound* pSound)
 {
-    printf("Sound ended");
+    if (channel_finished && pUserData) {
+        channel_finished(*(int*)pUserData);
+    }
 }
 
 
@@ -201,46 +202,74 @@ void soundFile_uninit(soundFile* pMyDataSource)
 static musicFile music;
 static ma_sound musicObject;
 
-
-static soundFile soundFiles[10];
-static ma_sound sounds[10];
-
 struct soundFx_t {
-    struct soundFx_t *next;
     soundFile sf;
     ma_sound snd;
+    int index;
 };
 
 static struct soundFXs {
-    struct soundFx_t *playing;
-    struct soundFx_t *stopped;
-    struct soundFx_t arr[10];
+    struct soundFx_t arr[MIX_CHANNELS];
+    int lastPlayed;
 } sndFx;
 
 
 static void initSndFx(ma_engine *engine) {
     ma_result result;
-    sndFx.playing = NULL;
-    sndFx.stopped = sndFx.arr;
-    struct soundFx_t *arrVal = sndFx.arr + sizeof(sndFx.arr)/sizeof(*sndFx.arr) - 1;
-    arrVal->next = NULL;
-    while (arrVal != sndFx.arr) {
-        arrVal -= 1;
-        arrVal->next = arrVal + 1;
 
-        result = soundFile_init(&arrVal->sf);
+    for(int i = 0; i < MIX_CHANNELS; ++i) {
+        result = soundFile_init(&sndFx.arr[i].sf);
         if (result != MA_SUCCESS) {
            return;  // Failed to initialize the engine.
         }
 
-        result = ma_sound_init_from_data_source(engine, &arrVal->sf, 0, NULL, &arrVal->snd);
+        result = ma_sound_init_from_data_source(engine, &sndFx.arr[i].sf, 0, NULL, &sndFx.arr[i].snd);
         if (result != MA_SUCCESS) {
             return;  // Failed to initialize the engine.
         }
-        arrVal->snd.endCallback = soundFile_end_callback;
+        sndFx.arr[i].index = i;
+        sndFx.arr[i].snd.endCallback = soundFile_end_callback;
+        sndFx.arr[i].snd.pEndCallbackUserData = &sndFx.arr[i].index;
+    }
+
+    sndFx.lastPlayed = 2;
+}
+
+void unintiSndFx(void) {
+    for(int i = 0; i < MIX_CHANNELS; ++i) {
+        ma_sound_stop(&sndFx.arr[i].snd);
+        ma_sound_uninit(&sndFx.arr[i].snd);
+        soundFile_uninit(&sndFx.arr[i].sf);
     }
 }
 
+
+int SDL_Mus_Mix_GroupAvailable(int tag) {
+    int ret = sndFx.lastPlayed++;
+    if (sndFx.lastPlayed >= MIX_CHANNELS) {
+        sndFx.lastPlayed = 2;
+    }
+    return ret;
+}
+
+
+int SDL_Mus_Mix_GroupOldest(int tag){
+    int ret = sndFx.lastPlayed++;
+    if (sndFx.lastPlayed >= MIX_CHANNELS) {
+        sndFx.lastPlayed = 2;
+    }
+    return ret;
+}
+
+
+int SDL_Mus_GetChannelNumber(void) {
+    return MIX_CHANNELS;
+}
+
+int SDL_Mus_Mix_SetPanning(int channel, unsigned char left, unsigned char right) {
+    ma_sound_set_pan(&sndFx.arr[channel].snd, ((right - left)/256.f));
+    return 0;
+}
 
 
 int SDL_Mus_Startup(int frequency, int chunksize) {
@@ -275,10 +304,7 @@ void SDL_Mus_Mix_HookMusic(void *mf, void *arg){
     if (result != MA_SUCCESS) {
         return;  // Failed to initialize the engine.
     }
-    result = ma_sound_set_end_callback(&musicObject, soundFile_end_callback, NULL);
-    if (result != MA_SUCCESS) {
-        return;  // Failed to initialize the engine.
-    }
+
     result = ma_sound_start(&musicObject);
     if (result != MA_SUCCESS) {
         return;  // Failed to initialize the engine.
@@ -291,19 +317,17 @@ void SDL_Mus_Mix_HookMusic(void *mf, void *arg){
 int SDL_Mus_Mix_HaltChannel(int channel) {
     ma_result result;
 
-    while (sndFx.playing) {
-        struct soundFx_t *arrVal = sndFx.playing; 
-        result = ma_sound_stop(&arrVal->snd);
-        sndFx.playing = arrVal->next;
-        arrVal->next = sndFx.stopped;
-        sndFx.stopped = arrVal;
+    if (channel == -1) {
+        for (int i = 0; i < MIX_CHANNELS; ++i) {
+            ma_sound_stop(&sndFx.arr[i].snd);
+        }
     }
 
     return 0;
 }
 
 void SDL_Mus_Mix_ChannelFinished(void (*cf)(int channel)) {
-    
+    channel_finished = cf;
 }
 
 void SDL_Mus_Mix_FreeAllChunks(void) {
@@ -317,6 +341,9 @@ void SDL_Mus_Mix_FreeAllChunks(void) {
     if (result != MA_SUCCESS) {
         return;  // Failed to initialize the engine.
     }
+
+    unintiSndFx();
+
     ma_engine_uninit(&engine);
 
     for (int i = 0; i < STARTMUSIC - STARTDIGISOUNDS; ++i) {
@@ -335,32 +362,12 @@ void SDL_Mus_Mix_Load8bit7042(int which, unsigned char *origsamples, int size, i
 }
 
 int SDL_Mus_PlayChunk(int channel, int which) {
-    soundFx_t *empty = sndFx.stopped;
-    soundFx_t *playing = sndFx.playing;
-    if (empty != NULL) {
-        sndFx.stopped = empty->next;
-        empty->next = NULL;
-    } else {
-        assert (playing != NULL);
-        empty = playing;
-        sndFx.playing = empty->next;
-        empty->next = NULL;
-        ma_sound_stop(&empty->snd);
-    }
 
-    empty->sf.data = SoundBuffer[which].data;
-    empty->sf.position = 0;
-    empty->sf.size = SoundBuffer[which].size;
+    ma_sound_stop(&sndFx.arr[channel].snd);
+    sndFx.arr[channel].sf.data = SoundBuffer[which].data;
+    sndFx.arr[channel].sf.position = 0;
+    sndFx.arr[channel].sf.size = SoundBuffer[which].size;
+    ma_sound_start(&sndFx.arr[channel].snd);
     
-    if (sndFx.playing == NULL) {
-        sndFx.playing = empty;
-    } else {
-        playing = sndFx.playing;
-        while (playing->next != NULL) {
-            playing = playing->next;
-        }
-        playing->next = empty;
-    }
-    ma_sound_start(&empty->snd);
     return 0;
 }
