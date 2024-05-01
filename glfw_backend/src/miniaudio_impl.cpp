@@ -108,7 +108,8 @@ ma_result soundFileVtable_on_read(ma_data_source* pDataSource, void* pFramesOut,
     soundFile *f = (soundFile *)pDataSource;
     if (f->data == NULL) 
     {
-        memset(pFramesOut, 0x80, frameCount);
+        *pFramesRead = 0;
+        //memset(pFramesOut, 0x80, frameCount);
         return MA_SUCCESS;
     }
     ma_uint64 toRead = f->size - f->position;
@@ -116,16 +117,19 @@ ma_result soundFileVtable_on_read(ma_data_source* pDataSource, void* pFramesOut,
         toRead = frameCount;
         memcpy(pFramesOut, f->data + f->position, toRead);
         *pFramesRead = toRead;
-        return MA_AT_END;
+        f->position += toRead;
+        //return MA_AT_END;
+        return MA_SUCCESS;
     }
     memcpy(pFramesOut, f->data + f->position, toRead);
+    f->position += toRead;
     *pFramesRead = toRead;
     return MA_SUCCESS;
 }
 
 ma_result soundFileVtable_on_seek(ma_data_source* pDataSource, ma_uint64 frameIndex) {
     soundFile *f = (soundFile *)pDataSource;
-    if (f->size < frameIndex) {
+    if (f->size > frameIndex) {
         f->position = frameIndex;
     } else {
         f->position = f->size;
@@ -201,6 +205,43 @@ static ma_sound musicObject;
 static soundFile soundFiles[10];
 static ma_sound sounds[10];
 
+struct soundFx_t {
+    struct soundFx_t *next;
+    soundFile sf;
+    ma_sound snd;
+};
+
+static struct soundFXs {
+    struct soundFx_t *playing;
+    struct soundFx_t *stopped;
+    struct soundFx_t arr[10];
+} sndFx;
+
+
+static void initSndFx(ma_engine *engine) {
+    ma_result result;
+    sndFx.playing = NULL;
+    sndFx.stopped = sndFx.arr;
+    struct soundFx_t *arrVal = sndFx.arr + sizeof(sndFx.arr)/sizeof(*sndFx.arr) - 1;
+    arrVal->next = NULL;
+    while (arrVal != sndFx.arr) {
+        arrVal -= 1;
+        arrVal->next = arrVal + 1;
+
+        result = soundFile_init(&arrVal->sf);
+        if (result != MA_SUCCESS) {
+           return;  // Failed to initialize the engine.
+        }
+
+        result = ma_sound_init_from_data_source(engine, &arrVal->sf, 0, NULL, &arrVal->snd);
+        if (result != MA_SUCCESS) {
+            return;  // Failed to initialize the engine.
+        }
+        arrVal->snd.endCallback = soundFile_end_callback;
+    }
+}
+
+
 
 int SDL_Mus_Startup(int frequency, int chunksize) {
     ma_result result;
@@ -234,15 +275,35 @@ void SDL_Mus_Mix_HookMusic(void *mf, void *arg){
     if (result != MA_SUCCESS) {
         return;  // Failed to initialize the engine.
     }
+    result = ma_sound_set_end_callback(&musicObject, soundFile_end_callback, NULL);
+    if (result != MA_SUCCESS) {
+        return;  // Failed to initialize the engine.
+    }
     result = ma_sound_start(&musicObject);
     if (result != MA_SUCCESS) {
         return;  // Failed to initialize the engine.
     }
 
+    initSndFx(&engine);
+
+}
+
+int SDL_Mus_Mix_HaltChannel(int channel) {
+    ma_result result;
+
+    while (sndFx.playing) {
+        struct soundFx_t *arrVal = sndFx.playing; 
+        result = ma_sound_stop(&arrVal->snd);
+        sndFx.playing = arrVal->next;
+        arrVal->next = sndFx.stopped;
+        sndFx.stopped = arrVal;
+    }
+
+    return 0;
 }
 
 void SDL_Mus_Mix_ChannelFinished(void (*cf)(int channel)) {
-    channel_finished = cf;
+    
 }
 
 void SDL_Mus_Mix_FreeAllChunks(void) {
@@ -271,4 +332,35 @@ void SDL_Mus_Mix_Load8bit7042(int which, unsigned char *origsamples, int size, i
     SoundBuffer[which].size = size;
     SoundBuffer[which].data = (unsigned char *)malloc(size);
     memcpy(SoundBuffer[which].data, origsamples, size);
+}
+
+int SDL_Mus_PlayChunk(int channel, int which) {
+    soundFx_t *empty = sndFx.stopped;
+    soundFx_t *playing = sndFx.playing;
+    if (empty != NULL) {
+        sndFx.stopped = empty->next;
+        empty->next = NULL;
+    } else {
+        assert (playing != NULL);
+        empty = playing;
+        sndFx.playing = empty->next;
+        empty->next = NULL;
+        ma_sound_stop(&empty->snd);
+    }
+
+    empty->sf.data = SoundBuffer[which].data;
+    empty->sf.position = 0;
+    empty->sf.size = SoundBuffer[which].size;
+    
+    if (sndFx.playing == NULL) {
+        sndFx.playing = empty;
+    } else {
+        playing = sndFx.playing;
+        while (playing->next != NULL) {
+            playing = playing->next;
+        }
+        playing->next = empty;
+    }
+    ma_sound_start(&empty->snd);
+    return 0;
 }
