@@ -226,7 +226,8 @@ void LatchDrawPicScaledCoord (unsigned scx, unsigned scy, unsigned picnum)
 
 void LoadLatchMem (void)
 {
-    LoadLatchMemory();
+    LoadLatchMemory(NUMTILE8, STARTTILE8, LATCHPICS_LUMP_START,
+                      LATCHPICS_LUMP_END, STARTPICS);
 }
 
 //==========================================================================

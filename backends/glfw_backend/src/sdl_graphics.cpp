@@ -1,4 +1,5 @@
 #include "sdl_graphics.h"
+#include "sdl_keys.h"
 #include "external_data.h"
 //#include "wl_def.h"
 #include "crt.h"
@@ -57,6 +58,13 @@ static SDL_Color curpal[256];
 #define NUMWHITESHIFTS  3
 #define WHITESTEPS      20
 #define WHITETICS       6
+
+extern byte *grsegs[];
+typedef struct
+{
+    int16_t width,height;
+} pictabletype;
+extern pictabletype *pictable;
 
 static SDL_Color redshifts[NUMREDSHIFTS][256];
 static SDL_Color whiteshifts[NUMWHITESHIFTS][256];
@@ -617,7 +625,8 @@ void SetVGAMode(unsigned *scrWidth, unsigned *scrHeight,
 
 }
 
-void LoadLatchMemory (void) {
+void LoadLatchMemory (int NUMTILE8, int STARTTILE8, int LATCHPICS_LUMP_START,
+                      int LATCHPICS_LUMP_END, int STARTPICS) {
     int i,width,height,start,end;
     byte *src;
     SDL_Surface *surf;
@@ -774,7 +783,7 @@ int SubFizzleFade (void *src, int x1, int y1,
         CRT_DAC();
 
         frame++;
-        Delay(frame - GetWolfTicks());        // don't go too fast
+        SDL_Delay((frame - GetWolfTicks()) * 100 / 7);
     } while (1);
 
 finished:

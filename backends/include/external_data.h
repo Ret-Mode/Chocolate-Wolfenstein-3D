@@ -10,6 +10,7 @@
 // Win32
 #ifdef _WIN32
 #   include <wtypes.h>
+#   include <stdint.h>
 #endif
 #if !defined(_WIN32)
 #   include <stdint.h>
@@ -26,6 +27,11 @@ typedef uint32_t longword;
 typedef int8_t boolean;
 #endif
 typedef void * memptr;
+
+// typedef struct
+// {
+//     int16_t width,height;
+// } pictabletype;
 
 void Quit(const char *errorStr, ...);
 
@@ -55,12 +61,18 @@ extern boolean MousePresent;
 extern boolean forcegrabmouse;
 extern int JoyNumButtons;
 extern boolean  screenfaded;
+
+extern volatile boolean    Keyboard[];
+extern volatile boolean    Paused;
+extern volatile char       LastASCII;
+
 // extern byte    **grsegs;
 // extern pictabletype    *pictable;
 void CA_CacheGrChunk (int chunk);
 void VL_MemToLatch(byte *source, int width, int height,
     void *destSurface, int x, int y);
-
+void    IN_StartAck(void);
+boolean IN_CheckAck (void);
 
 #define UNCACHEGRCHUNK(chunk) {if(grsegs[chunk]) {free(grsegs[chunk]); grsegs[chunk]=NULL;}}
 

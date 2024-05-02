@@ -249,6 +249,7 @@ void unintiSndFx(void) {
 void SetAmountOfSounds(int amount) {
     soundsAmount = amount;
     SoundBuffer = (struct SoundBuffer_t *)malloc(sizeof(struct SoundBuffer_t) * amount);
+    memset(SoundBuffer, 0x0, sizeof(struct SoundBuffer_t) * amount);
 }
 
 int SDL_Mus_Mix_GroupAvailable(int tag) {
@@ -356,11 +357,15 @@ void SDL_Mus_Mix_FreeAllChunks(void) {
     ma_engine_uninit(&engine);
 
     for (int i = 0; i < soundsAmount; ++i) {
-        free(SoundBuffer[i].data);
-        SoundBuffer[i].data = NULL;
-        SoundBuffer[i].size = 0;
+        if (SoundBuffer[i].data != NULL) {
+            free(SoundBuffer[i].data);
+            SoundBuffer[i].data = NULL;
+            SoundBuffer[i].size = 0;
+        }
+
     }
     free(SoundBuffer);
+    SoundBuffer = NULL;
 }
 
 void SDL_Mus_Mix_Load8bit7042(int which, unsigned char *origsamples, int size, int frequency)
