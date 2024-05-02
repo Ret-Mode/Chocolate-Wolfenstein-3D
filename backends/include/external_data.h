@@ -53,7 +53,8 @@ extern int     param_joystickindex;
 extern int     param_joystickhat;
 extern int     param_samplerate;
 extern int     param_audiobuffer;
-
+extern uint8_t **PMPages;
+extern int ChunksInFile;
 extern int     param_mission;
 extern boolean param_goodtimes;
 extern boolean param_ignorenumchunks;

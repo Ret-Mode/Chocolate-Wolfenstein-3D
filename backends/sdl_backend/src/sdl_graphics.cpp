@@ -1,5 +1,7 @@
 #include "sdl_graphics.h"
-#include "wl_def.h"
+#include "sdl_keys.h"
+#include "external_data.h"
+//#include "wl_def.h"
 #include "crt.h"
 
 #ifdef _WIN32
@@ -18,7 +20,8 @@ extern "C" FILE * __cdecl __iob_func(void)
 #include <SDL/SDL.h>
 #endif
 
-static SDL_Surface *latchpics[NUMLATCHPICS];
+//static SDL_Surface *latchpics[NUMLATCHPICS];
+static SDL_Surface **latchpics;
 static SDL_Surface *screenBuffer;
 
 static unsigned screenBits;
@@ -27,14 +30,23 @@ static SDL_Surface *screen = NULL;
 static SDL_Surface *curSurface;
 // static SDL_Color gamepal[256];
 
+#define lengthof(x) (sizeof(x) / sizeof(*(x)))
+#define endof(x)    ((x) + lengthof(x))
 #define CASSERT(x) extern int ASSERT_COMPILE[((x) != 0) * 2 - 1];
 #define WOLF_RGB(r, g, b) {(r)*255/63, (g)*255/63, (b)*255/63, 0}
 
-SDL_Color gamepal[]={
+static SDL_Color wolfGamepal[]={
     #include "wolfpal.inc"
 };
 
-CASSERT(lengthof(gamepal) == 256)
+static SDL_Color sodGamepal[]={
+    #include "wolfpal.inc"
+};
+
+CASSERT(lengthof(wolfGamepal) == 256)
+CASSERT(lengthof(sodGamepal) == 256)
+
+SDL_Color *gamepal = NULL;
 
 static SDL_Color palette1[256];
 static SDL_Color palette2[256];
@@ -46,6 +58,13 @@ static SDL_Color curpal[256];
 #define NUMWHITESHIFTS  3
 #define WHITESTEPS      20
 #define WHITETICS       6
+
+extern byte *grsegs[];
+typedef struct
+{
+    int16_t width,height;
+} pictabletype;
+extern pictabletype *pictable;
 
 static SDL_Color redshifts[NUMREDSHIFTS][256];
 static SDL_Color whiteshifts[NUMWHITESHIFTS][256];
@@ -90,6 +109,18 @@ byte SpecialNames[] =   // ASCII for 0xe0 prefixed codes
     0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,    // 6
     0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0       // 7
 };
+
+void SetNumberOfPictures(int number) {
+    latchpics = (SDL_Surface **)malloc(sizeof(SDL_Surface *) * number);
+}
+
+void SetWolfPallette(void) {
+    gamepal = wolfGamepal;
+}
+
+void SetSodPallette(void) {
+    gamepal = sodGamepal;
+}
 
 void *GetLatchPic(int which) {
     return (void*) latchpics[which];
@@ -594,7 +625,8 @@ void SetVGAMode(unsigned *scrWidth, unsigned *scrHeight,
 
 }
 
-void LoadLatchMemory (void) {
+void LoadLatchMemory (int NUMTILE8, int STARTTILE8, int LATCHPICS_LUMP_START,
+                      int LATCHPICS_LUMP_END, int STARTPICS) {
     int i,width,height,start,end;
     byte *src;
     SDL_Surface *surf;
@@ -751,7 +783,7 @@ int SubFizzleFade (void *src, int x1, int y1,
         CRT_DAC();
 
         frame++;
-        Delay(frame - GetWolfTicks());        // don't go too fast
+        SDL_Delay((frame - GetWolfTicks()) * 100 / 7);
     } while (1);
 
 finished:

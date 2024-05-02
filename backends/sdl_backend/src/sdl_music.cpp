@@ -8,7 +8,7 @@
 #endif
 
 //#include "id_sd.h"
-
+#include "external_data.h"
 static int soundsAmount;
 
 typedef struct
@@ -39,7 +39,9 @@ globalsoundpos channelSoundPos[MIX_CHANNELS];
 void SetAmountOfSounds(int amount) {
     soundsAmount = amount;
     SoundChunks = (Mix_Chunk **)malloc(sizeof(Mix_Chunk *) * amount);
+    memset(SoundChunks, 0x0, sizeof(Mix_Chunk *) * amount);
     SoundBuffers = (byte **)malloc(sizeof(byte *) * amount);
+    memset(SoundBuffers, 0x0, sizeof(byte *) * amount);
 }
 
 int SDL_Mus_GetChannelNumber(void) {
@@ -80,7 +82,7 @@ static signed short GetSample(float csample, byte *samples, int size)
 }
 
 void SDL_Mus_Mix_Load8bit7042(int which, unsigned char *origsamples, int size, int frequency) {
-    if(origsamples + size >= PM_GetEnd())
+    if(origsamples + size >= PMPages[ChunksInFile])
         Quit("SD_PrepareSound(%i): Sound reaches out of page file!\n", which);
 
     int destsamples = (int) ((float) size * (float) param_samplerate

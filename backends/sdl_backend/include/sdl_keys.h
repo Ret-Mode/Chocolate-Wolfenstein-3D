@@ -96,6 +96,7 @@ typedef int     ScanCode;
 #define sc_Last         SDLK_LAST
 
 const char *GetScanName (ScanCode scan);
+extern  volatile ScanCode   LastScan;
 
 #endif 
 
