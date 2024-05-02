@@ -30,6 +30,7 @@
 #include "wl_def.h"
 #include "fmopl.h"
 #include "sdl_music.h"
+#include "external_data.h"
 
 #pragma hdrstop
 
@@ -159,38 +160,6 @@ void SD_PrepareSound(int which)
 
     byte *origsamples = PM_GetSound(page);
     SDL_Mus_Mix_Load8bit7042(which, origsamples, size, ORIGSAMPLERATE);
-    // if(origsamples + size >= PM_GetEnd())
-    //     Quit("SD_PrepareSound(%i): Sound reaches out of page file!\n", which);
-
-    // int destsamples = (int) ((float) size * (float) param_samplerate
-    //     / (float) ORIGSAMPLERATE);
-
-    // byte *wavebuffer = (byte *) malloc(sizeof(headchunk) + sizeof(wavechunk)
-    //     + destsamples * 2);     // dest are 16-bit samples
-    // if(wavebuffer == NULL)
-    //     Quit("Unable to allocate wave buffer for sound %i!\n", which);
-
-    // headchunk head = {{'R','I','F','F'}, 0, {'W','A','V','E'},
-    //     {'f','m','t',' '}, 0x10, 0x0001, 1, (unsigned int)param_samplerate, (unsigned int)param_samplerate*2, 2, 16};
-    // wavechunk dhead = {{'d', 'a', 't', 'a'}, (unsigned int)destsamples*2};
-    // head.filelenminus8 = sizeof(head) + destsamples*2;  // (sizeof(dhead)-8 = 0)
-    // memcpy(wavebuffer, &head, sizeof(head));
-    // memcpy(wavebuffer+sizeof(head), &dhead, sizeof(dhead));
-
-    // // alignment is correct, as wavebuffer comes from malloc
-    // // and sizeof(headchunk) % 4 == 0 and sizeof(wavechunk) % 4 == 0
-    // signed short *newsamples = (signed short *)(void *) (wavebuffer + sizeof(headchunk)
-    //     + sizeof(wavechunk));
-    // float cursample = 0.F;
-    // float samplestep = (float) ORIGSAMPLERATE / (float) param_samplerate;
-    // for(int i=0; i<destsamples; i++, cursample+=samplestep)
-    // {
-    //     newsamples[i] = GetSample((float)size * (float)i / (float)destsamples,
-    //         origsamples, size);
-    // }
-    // SoundBuffers[which] = wavebuffer;
-
-    // SDL_Mus_Mix_LoadWAV_RW(which, wavebuffer, sizeof(headchunk) + sizeof(wavechunk) + destsamples * 2, 1);
 }
 
 int SD_PlayDigitized(word which,int leftpos,int rightpos)

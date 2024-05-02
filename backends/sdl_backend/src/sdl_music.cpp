@@ -1,4 +1,4 @@
-#include "wl_def.h"
+//#include "wl_def.h"
 #ifdef _WIN32
 #include "SDL_mixer.h"
 #elif __linux__
@@ -7,7 +7,9 @@
 #include <SDL/SDL_mixer.h>
 #endif
 
-#include "id_sd.h"
+//#include "id_sd.h"
+
+static int soundsAmount;
 
 typedef struct
 {
@@ -30,9 +32,15 @@ typedef struct
     longword chunklength;
 } wavechunk;
 
-static Mix_Chunk *SoundChunks[ STARTMUSIC - STARTDIGISOUNDS];
-static byte      *SoundBuffers[STARTMUSIC - STARTDIGISOUNDS];
+static Mix_Chunk **SoundChunks;
+static byte      **SoundBuffers;
 globalsoundpos channelSoundPos[MIX_CHANNELS];
+
+void SetAmountOfSounds(int amount) {
+    soundsAmount = amount;
+    SoundChunks = (Mix_Chunk **)malloc(sizeof(Mix_Chunk *) * amount);
+    SoundBuffers = (byte **)malloc(sizeof(byte *) * amount);
+}
 
 int SDL_Mus_GetChannelNumber(void) {
     return MIX_CHANNELS;
@@ -120,16 +128,19 @@ void SDL_Mus_Mix_ChannelFinished(void (*channel_finished)(int channel)) {
 
 void SDL_Mus_Mix_FreeAllChunks(void) {
     int i;
-    for (i = 0; i < STARTMUSIC - STARTDIGISOUNDS; ++i) {
+    for (i = 0; i < soundsAmount; ++i) {
         if(SoundChunks[i]) {
             Mix_FreeChunk(SoundChunks[i]);
         }
     }
 
-    for(int i = 0; i < STARTMUSIC - STARTDIGISOUNDS; i++)
+    for(int i = 0; i < soundsAmount; i++)
     {
         if(SoundBuffers[i]) free(SoundBuffers[i]);
     }
+
+    free(SoundChunks);
+    free(SoundBuffers);
 }
 
 int SDL_Mus_Startup(int frequency, int chunksize) {

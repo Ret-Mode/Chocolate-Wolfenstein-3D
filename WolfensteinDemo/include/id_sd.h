@@ -103,8 +103,6 @@ typedef struct
     word    values[1];
 } MusicGroup;
 
-extern globalsoundpos channelSoundPos[];
-
 // Global variables
 extern  boolean         AdLibPresent,
                         SoundBlasterPresent,

@@ -20,6 +20,8 @@
 #include "SDL/SDL.h"
 #endif
 
+#include "sdl_graphics.h"
+#include "external_data.h"
 static int width;
 static int height;
 
@@ -62,7 +64,7 @@ void CRT_Init(int _width){
     SDL_GL_SwapBuffers();
 }
 
-#include "id_vl.h"
+//#include "id_vl.h"
 void CRT_DAC(void){
     
     //Convert palette based framebuffer to RGB for OpenGL

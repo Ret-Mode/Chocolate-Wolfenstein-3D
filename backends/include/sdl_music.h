@@ -14,13 +14,7 @@ int SDL_Mus_Startup(int frequency, int chunksize);
 int SDL_Mus_PlayChunk(int channel, int which);
 void SetAmountOfSounds(int amount);
 
-typedef struct
-{
-    int valid;
-    int globalsoundx, globalsoundy;
-} globalsoundpos;
 
-extern globalsoundpos channelSoundPos[];
 
 
 #endif // __SDL_MUSIC__

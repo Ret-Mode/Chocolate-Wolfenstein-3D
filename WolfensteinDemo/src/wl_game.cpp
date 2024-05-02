@@ -12,6 +12,7 @@
 
 #include "sdl_music.h"
 #include "sdl_graphics.h"
+#include "external_data.h"
 /*
 =============================================================================
 

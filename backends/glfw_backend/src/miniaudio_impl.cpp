@@ -1,6 +1,7 @@
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio.h"
 #include "sdl_music.h"
+#include "external_data.h"
 //#include "wl_def.h"
 
 #define MIX_CHANNELS	8

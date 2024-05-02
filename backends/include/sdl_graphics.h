@@ -1,6 +1,8 @@
 #ifndef __SDL_GRAPHICS__
 #define __SDL_GRAPHICS__
 
+void SetWolfPallette(void);
+void SetSodPallette(void);
 void *GetLatchPic(int which);
 int GetLatchPicWidth(int which);
 int GetLatchPicHeight(int which);

@@ -1,5 +1,6 @@
 #include "sdl_graphics.h"
-#include "wl_def.h"
+#include "external_data.h"
+//#include "wl_def.h"
 #include "crt.h"
 
 #ifdef _WIN32
@@ -30,11 +31,18 @@ static SDL_Surface *curSurface;
 #define CASSERT(x) extern int ASSERT_COMPILE[((x) != 0) * 2 - 1];
 #define WOLF_RGB(r, g, b) {(r)*255/63, (g)*255/63, (b)*255/63, 0}
 
-SDL_Color gamepal[]={
+static SDL_Color wolfGamepal[]={
     #include "wolfpal.inc"
 };
 
-CASSERT(lengthof(gamepal) == 256)
+static SDL_Color sodGamepal[]={
+    #include "wolfpal.inc"
+};
+
+CASSERT(lengthof(wolfGamepal) == 256)
+CASSERT(lengthof(sodGamepal) == 256)
+
+SDL_Color *gamepal = NULL;
 
 static SDL_Color palette1[256];
 static SDL_Color palette2[256];
@@ -90,6 +98,14 @@ byte SpecialNames[] =   // ASCII for 0xe0 prefixed codes
     0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,    // 6
     0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0       // 7
 };
+
+void SetWolfPallette(void) {
+    gamepal = wolfGamepal;
+}
+
+void SetSodPallette(void) {
+    gamepal = sodGamepal;
+}
 
 void *GetLatchPic(int which) {
     return (void*) latchpics[which];
