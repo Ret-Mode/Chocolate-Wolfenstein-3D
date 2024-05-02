@@ -1,6 +1,7 @@
 #ifndef __SDL_GRAPHICS__
 #define __SDL_GRAPHICS__
 
+void SetNumberOfPictures(int number);
 void SetWolfPallette(void);
 void SetSodPallette(void);
 void *GetLatchPic(int which);

@@ -74,6 +74,7 @@ void    VL_SetVGAPlaneMode (void)
                 &screenPitch, &bufferPitch, 
                 &curPitch, &scaleFactor);
     SetWolfPallette();
+    SetNumberOfPictures(NUMLATCHPICS);
     pixelangle = (short *) malloc(screenWidth * sizeof(short));
     CHECKMALLOCRESULT(pixelangle);
     wallheight = (int *) malloc(screenWidth * sizeof(int));

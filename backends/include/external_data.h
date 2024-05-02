@@ -37,4 +37,31 @@ typedef struct
 
 extern globalsoundpos channelSoundPos[];
 
+extern  boolean  fullscreen, usedoublebuffering;
+
+extern boolean param_debugmode;
+extern boolean param_nowait;
+extern int     param_difficulty;           // default is "normal"
+extern int     param_tedlevel;            // default is not to start a level
+extern int     param_joystickindex;
+extern int     param_joystickhat;
+extern int     param_samplerate;
+extern int     param_audiobuffer;
+
+extern int     param_mission;
+extern boolean param_goodtimes;
+extern boolean param_ignorenumchunks;
+extern boolean MousePresent;
+extern boolean forcegrabmouse;
+extern int JoyNumButtons;
+extern boolean  screenfaded;
+// extern byte    **grsegs;
+// extern pictabletype    *pictable;
+void CA_CacheGrChunk (int chunk);
+void VL_MemToLatch(byte *source, int width, int height,
+    void *destSurface, int x, int y);
+
+
+#define UNCACHEGRCHUNK(chunk) {if(grsegs[chunk]) {free(grsegs[chunk]); grsegs[chunk]=NULL;}}
+
 #endif

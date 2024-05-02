@@ -19,7 +19,8 @@ extern "C" FILE * __cdecl __iob_func(void)
 #include <SDL/SDL.h>
 #endif
 
-static SDL_Surface *latchpics[NUMLATCHPICS];
+//static SDL_Surface *latchpics[NUMLATCHPICS];
+static SDL_Surface **latchpics;
 static SDL_Surface *screenBuffer;
 
 static unsigned screenBits;
@@ -28,6 +29,8 @@ static SDL_Surface *screen = NULL;
 static SDL_Surface *curSurface;
 // static SDL_Color gamepal[256];
 
+#define lengthof(x) (sizeof(x) / sizeof(*(x)))
+#define endof(x)    ((x) + lengthof(x))
 #define CASSERT(x) extern int ASSERT_COMPILE[((x) != 0) * 2 - 1];
 #define WOLF_RGB(r, g, b) {(r)*255/63, (g)*255/63, (b)*255/63, 0}
 
@@ -98,6 +101,10 @@ byte SpecialNames[] =   // ASCII for 0xe0 prefixed codes
     0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,    // 6
     0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0       // 7
 };
+
+void SetNumberOfPictures(int number) {
+    latchpics = (SDL_Surface **)malloc(sizeof(SDL_Surface *) * number);
+}
 
 void SetWolfPallette(void) {
     gamepal = wolfGamepal;
