@@ -11,6 +11,7 @@
 #define alOut(n,b) YM3812Write(0, n, b)
 
 #include "sdl_graphics.h"
+#include "sdl_music.h"
 #define TickBase        70      // 70Hz per tick - used as a base for timer 0
 
 typedef enum
@@ -101,12 +102,6 @@ typedef struct
     word    length;
     word    values[1];
 } MusicGroup;
-
-typedef struct
-{
-    int valid;
-    fixed globalsoundx, globalsoundy;
-} globalsoundpos;
 
 extern globalsoundpos channelSoundPos[];
 
