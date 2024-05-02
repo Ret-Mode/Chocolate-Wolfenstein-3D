@@ -1,7 +1,7 @@
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio.h"
 #include "sdl_music.h"
-#include "wl_def.h"
+//#include "wl_def.h"
 
 #define MIX_CHANNELS	8
 static ma_device device;
@@ -9,14 +9,15 @@ static ma_engine engine;
 
 static void (*mix_func) (void *udata, unsigned char *stream, int len);
 static void (*channel_finished)(int channel);
+
 globalsoundpos channelSoundPos[MIX_CHANNELS];
 
 struct SoundBuffer_t {
     ma_uint64 size;
     unsigned char *data;
 };
-
-static struct SoundBuffer_t SoundBuffer[STARTMUSIC - STARTDIGISOUNDS];
+static int soundsAmount = 0;
+static struct SoundBuffer_t *SoundBuffer;
 
 
 
@@ -244,6 +245,11 @@ void unintiSndFx(void) {
 }
 
 
+void SetAmountOfSounds(int amount) {
+    soundsAmount = amount;
+    SoundBuffer = (struct SoundBuffer_t *)malloc(sizeof(struct SoundBuffer_t) * amount);
+}
+
 int SDL_Mus_Mix_GroupAvailable(int tag) {
     int ret = sndFx.lastPlayed++;
     if (sndFx.lastPlayed >= MIX_CHANNELS) {
@@ -348,16 +354,17 @@ void SDL_Mus_Mix_FreeAllChunks(void) {
 
     ma_engine_uninit(&engine);
 
-    for (int i = 0; i < STARTMUSIC - STARTDIGISOUNDS; ++i) {
+    for (int i = 0; i < soundsAmount; ++i) {
         free(SoundBuffer[i].data);
         SoundBuffer[i].data = NULL;
         SoundBuffer[i].size = 0;
     }
+    free(SoundBuffer);
 }
 
 void SDL_Mus_Mix_Load8bit7042(int which, unsigned char *origsamples, int size, int frequency)
 {
-    assert (which < STARTMUSIC - STARTDIGISOUNDS);
+    assert (which < soundsAmount);
     SoundBuffer[which].size = size;
     SoundBuffer[which].data = (unsigned char *)malloc(size);
     memcpy(SoundBuffer[which].data, origsamples, size);

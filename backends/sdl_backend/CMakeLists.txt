@@ -1,46 +1,19 @@
-message(${CMAKE_SOURCE_DIR})
-message(${CMAKE_CURRENT_SOURCE_DIR})
+find_package(SDL REQUIRED)
+find_package(SDL_mixer REQUIRED)
+find_package(OpenGL REQUIRED)
 
-set(backend "glfw-backend" CACHE STRING
-  "graphics backend")
+add_library(backendLibSdl STATIC
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/crt.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/sdl_graphics.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/sdl_keys.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/sdl_music.cpp")
 
-set_property(CACHE backend PROPERTY STRINGS "glfw-backend" "sdl-backend" )
+target_include_directories(backendLibSdl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(backendLibSdl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+target_include_directories(backendLibSdl PUBLIC ${OPENGL_INCLUDE_DIRS})
+target_include_directories(backendLibSdl PUBLIC ${SDL_INCLUDE_DIR})
+target_include_directories(backendLibSdl PUBLIC ${SDL_MIXER_INCLUDE_DIR})
 
-# only when building with SDL
-if(backend STREQUAL "sdl-backend")
-   set(backendFiles
-      ../sdl_backend/src/crt.cpp
-      ../sdl_backend/src/sdl_music.cpp
-      ../sdl_backend/src/sdl_graphics.cpp
-      ../sdl_backend/src/sdl_keys.cpp
-      )
-    
-    set(backendIncludes
-        ../sdl_backend/include
-        ${SDL_INCLUDE_DIR}
-        ${SDL_MIXER_INCLUDE_DIR}
-      )
-
-    set(backendLibs
-      ${SDL_LIBRARIES}
-      ${SDL_MIXER_LIBRARIES}
-    )
-elseif(backend STREQUAL "glfw-backend")
-    set(backendFiles
-    ../glfw_backend/src/crt.cpp
-    ../glfw_backend/src/sdl_graphics.cpp
-    ../glfw_backend/src/sdl_keys.cpp
-    ../glfw_backend/src/miniaudio_impl.cpp
-    )
-
-    set(backendIncludes
-    ../glfw_backend/include
-    ${SDL_INCLUDE_DIR}
-    ${SDL_MIXER_INCLUDE_DIR}
-    )
-
-    set(backendLibs
-    ${SDL_LIBRARIES}
-    ${SDL_MIXER_LIBRARIES}
-    )
-endif()
+target_link_libraries(backendLibSdl PUBLIC ${OPENGL_LIBRARIES})
+target_link_libraries(backendLibSdl PUBLIC ${SDL_LIBRARIES})
+target_link_libraries(backendLibSdl PUBLIC ${SDL_MIXER_LIBRARIES})

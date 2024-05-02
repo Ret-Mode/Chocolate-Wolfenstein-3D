@@ -646,6 +646,7 @@ SD_Startup(void)
     if (!SDL_Mus_Startup(param_samplerate, param_audiobuffer)) {
         return;
     }
+    SetAmountOfSounds(STARTMUSIC - STARTDIGISOUNDS);
 
     // Init music
 
