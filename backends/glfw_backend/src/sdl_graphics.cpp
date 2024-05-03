@@ -751,7 +751,10 @@ int SubFizzleFade (void *src, int x1, int y1,
         CRT_DAC();
 
         frame++;
-        Delay(frame - GetWolfTicks());        // don't go too fast
+        unsigned int val = frame - GetWolfTicks();
+        if(val>0) {
+            DelayWolfTicks(val);
+        }
     } while (1);
 
 finished:

@@ -13,6 +13,7 @@ build
 .vscode
 data/*
 SDL/*
+SDL2/*
 SDL_mixer/*
 glad/*
 GLFW/*
