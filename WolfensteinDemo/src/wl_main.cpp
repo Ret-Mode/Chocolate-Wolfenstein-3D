@@ -1621,9 +1621,12 @@ void CheckParameters(int argc, char *argv[])
 ==========================
 */
 
+int funnnc(void);
+
+
 int main (int argc, char *argv[])
 {
-
+    funnnc();
     CheckParameters(argc, argv);
 
     CheckForEpisodes();
