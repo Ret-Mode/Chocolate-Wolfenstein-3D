@@ -72,8 +72,12 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
+
+static void resize_callback(GLFWwindow* window, int width, int height) {
+    glViewport(0,0, width, height);
+}
  
-int funnnc(void)
+int initGlfw(void)
 {
     glfwSetErrorCallback(error_callback);
  
@@ -84,7 +88,7 @@ int funnnc(void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
  
-    window = glfwCreateWindow(640, 480, "OpenGL Triangle", NULL, NULL);
+    window = glfwCreateWindow(640, 480, "Chocolate Wolfenstein 3d", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -92,7 +96,7 @@ int funnnc(void)
     }
  
     glfwSetKeyCallback(window, key_callback);
- 
+    glfwSetWindowSizeCallback(window, resize_callback);
     glfwMakeContextCurrent(window);
     gladLoadGL();
     //gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
@@ -165,13 +169,7 @@ int funnnc(void)
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     glfwSwapBuffers(window);
-    glfwPollEvents();
 
- 
-    // glfwDestroyWindow(window);
- 
-    // glfwTerminate();
-    //exit(EXIT_SUCCESS);
     return 0;
 }
 
@@ -386,6 +384,8 @@ void LatchToScreenScaledCoord(int which, int xsrc, int ysrc, int width, int heig
 extern void _InitGraphics(void);
 void InitGraphics(void) {
     _InitGraphics();
+    initGlfw();
+    atexit(glfwTerminate);
 }
 
 extern void _ReadMouseState(int *btns, int *mx, int *my);
