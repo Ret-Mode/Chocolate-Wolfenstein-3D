@@ -25,13 +25,16 @@ static unsigned screenBits;
 
 static SDL_Surface *screen = NULL;
 static SDL_Surface *curSurface;
-// static SDL_Color gamepal[256];
 
 #define CASSERT(x) extern int ASSERT_COMPILE[((x) != 0) * 2 - 1];
 #define WOLF_RGB(r, g, b) {(r)*255/63, (g)*255/63, (b)*255/63, 0}
 
 SDL_Color gamepal[]={
+    #if defined (SPEAR) || defined (SPEARDEMO)
+    #include "sodpal.inc"
+    #else
     #include "wolfpal.inc"
+    #endif
 };
 
 CASSERT(lengthof(gamepal) == 256)

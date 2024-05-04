@@ -25,13 +25,16 @@ static unsigned screenBits;
 
 static SDL_Surface *screen = NULL;
 static SDL_Surface *curSurface;
-// static SDL_Color gamepal[256];
 
 #define CASSERT(x) extern int ASSERT_COMPILE[((x) != 0) * 2 - 1];
 #define WOLF_RGB(r, g, b) {(r)*255/63, (g)*255/63, (b)*255/63, 0}
 
 SDL_Color gamepal[]={
+    #if defined (SPEAR) || defined (SPEARDEMO)
+    #include "sodpal.inc"
+    #else
     #include "wolfpal.inc"
+    #endif
 };
 
 CASSERT(lengthof(gamepal) == 256)
@@ -91,42 +94,42 @@ byte SpecialNames[] =   // ASCII for 0xe0 prefixed codes
     0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0       // 7
 };
 
-void *GetLatchPic(int which) {
+void *_GetLatchPic(int which) {
     return (void*) latchpics[which];
 }
 
-void SetLatchPic(int which, void *data) {
+void _SetLatchPic(int which, void *data) {
     latchpics[which] = (SDL_Surface *)data;
 }
 
-int GetLatchPicWidth(int which) {
+int _GetLatchPicWidth(int which) {
     return latchpics[which]->w;
 }
-int GetLatchPicHeight(int which) {
+int _GetLatchPicHeight(int which) {
     return latchpics[which]->h;
 }
 
-void DelayWolfTicks(int ticks) {
+void _DelayWolfTicks(int ticks) {
     SDL_Delay(ticks * 100 / 7);
 }
 
-void DelayMilliseconds(int milliseconds) {
+void _DelayMilliseconds(int milliseconds) {
     SDL_Delay(milliseconds);
 }
 
-void DelayVBL(int param) {
+void _DelayVBL(int param) {
     SDL_Delay(param*8);
 }
 
-unsigned int GetWolfTicks(void) {
+unsigned int _GetWolfTicks(void) {
     return (SDL_GetTicks()*7)/100;
 }
 
-unsigned int GetMilliseconds(void) {
+unsigned int _GetMilliseconds(void) {
     return SDL_GetTicks();
 }
 
-unsigned char *GraphicLockBytes(void *surface)
+unsigned char *_GraphicLockBytes(void *surface)
 {
     SDL_Surface *src = (SDL_Surface*)surface;
     if(SDL_MUSTLOCK(src))
@@ -137,7 +140,7 @@ unsigned char *GraphicLockBytes(void *surface)
     return (unsigned char *) src->pixels;
 }
 
-void GraphicUnlockBytes(void *surface)
+void _GraphicUnlockBytes(void *surface)
 {
     SDL_Surface *src = (SDL_Surface*)surface;
     if(SDL_MUSTLOCK(src))
@@ -146,7 +149,7 @@ void GraphicUnlockBytes(void *surface)
     }
 }
 
-void *CreateScreenBuffer(void *gamepal, unsigned int *bufferPitch, unsigned int screenWidth, unsigned int screenHeight) {
+void *_CreateScreenBuffer(void *gamepal, unsigned int *bufferPitch, unsigned int screenWidth, unsigned int screenHeight) {
     screenBuffer = SDL_CreateRGBSurface(SDL_SWSURFACE, screenWidth,
         screenHeight, 8, 0, 0, 0, 0);
     if(!screenBuffer)
@@ -161,22 +164,22 @@ void *CreateScreenBuffer(void *gamepal, unsigned int *bufferPitch, unsigned int 
     return (void *)screenBuffer;
 }
 
-void *GetScreenBuffer(void) {
+void *_GetScreenBuffer(void) {
     return (void *)screenBuffer;
 }
 
-unsigned char GetScreenBufferPixel(int offset) {
+unsigned char _GetScreenBufferPixel(int offset) {
     return ((uint8_t*)screenBuffer->pixels)[offset];
 }
 
-void GetCurrentPaletteColor(int color, int *red, int *green, int *blue) {
+void _GetCurrentPaletteColor(int color, int *red, int *green, int *blue) {
     SDL_Color *col = &curpal[color];
     *red = col->r;
     *green = col->g;
     *blue = col->b;
 }
 
-void SetCurrentPaletteColor(int color, int red, int green, int blue, unsigned int screenBits) {
+void _SetCurrentPaletteColor(int color, int red, int green, int blue, unsigned int screenBits) {
     SDL_Color col = { red, green, blue };
     curpal[color] = col;
 
@@ -185,30 +188,33 @@ void SetCurrentPaletteColor(int color, int red, int green, int blue, unsigned in
     else
     {
         SDL_SetPalette(curSurface, SDL_LOGPAL, &col, color, 1);
-        SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, screen, NULL);
+        SDL_BlitSurface((SDL_Surface *)_GetScreenBuffer(), NULL, screen, NULL);
         //SDL_Flip(screen);
         CRT_DAC();
     }
 }
 
-void SetWholePalette(void *palette, int forceupdate) {
+extern unsigned _GetScreenBits(void);
+extern void *_GetCurSurface(void);
+extern void *_GetScreen(void) ;
+void _SetWholePalette(void *palette, int forceupdate) {
     memcpy(curpal, (SDL_Color *)palette, sizeof(SDL_Color) * 256);
 
-    if(GetScreenBits() == 8)
-        SDL_SetPalette((SDL_Surface *)GetScreenBuffer(), SDL_PHYSPAL, (SDL_Color *)palette, 0, 256);
+    if(_GetScreenBits() == 8)
+        SDL_SetPalette((SDL_Surface *)_GetScreenBuffer(), SDL_PHYSPAL, (SDL_Color *)palette, 0, 256);
     else
     {
-        SDL_SetPalette((SDL_Surface*)GetCurSurface(), SDL_LOGPAL, (SDL_Color *)palette, 0, 256);
+        SDL_SetPalette((SDL_Surface*)_GetCurSurface(), SDL_LOGPAL, (SDL_Color *)palette, 0, 256);
         if(forceupdate)
         {
-            SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreen(), NULL);
+            SDL_BlitSurface((SDL_Surface *)_GetScreenBuffer(), NULL, (SDL_Surface *)_GetScreen(), NULL);
             //SDL_Flip((SDL_Surface *)GetScreen());
             CRT_DAC();
         }
     }
 }
 
-void ConvertPalette(unsigned char *srcpal, void *dest, int numColors) {
+void _ConvertPalette(unsigned char *srcpal, void *dest, int numColors) {
     SDL_Color *destpal = (SDL_Color *)dest;
     for(int i=0; i<numColors; i++)
     {
@@ -218,7 +224,7 @@ void ConvertPalette(unsigned char *srcpal, void *dest, int numColors) {
     }
 }
 
-void FillPalette(int red, int green, int blue) {
+void _FillPalette(int red, int green, int blue) {
     int i;
     SDL_Color pal[256];
 
@@ -228,84 +234,85 @@ void FillPalette(int red, int green, int blue) {
         pal[i].g = green;
         pal[i].b = blue;
     }
-    SetWholePalette((void*)pal, true);
+    _SetWholePalette((void*)pal, true);
 }
 
-void GetWholePalette(void *palette) {
+void _GetWholePalette(void *palette) {
     memcpy(palette, curpal, sizeof(SDL_Color) * 256);
 }
 
-void SetScreenPalette(void) {
-    SDL_SetColors((SDL_Surface*)GetScreen(), (SDL_Color*)GetGamePal(), 0, 256);
-    memcpy(curpal, GetGamePal(), sizeof(SDL_Color) * 256);
+extern void *_GetGamePal(void);
+void _SetScreenPalette(void) {
+    SDL_SetColors((SDL_Surface*)_GetScreen(), (SDL_Color*)_GetGamePal(), 0, 256);
+    memcpy(curpal, _GetGamePal(), sizeof(SDL_Color) * 256);
 }
 
-void SetWindowTitle(const char *title) {
+void _SetWindowTitle(const char *title) {
     SDL_WM_SetCaption(title, NULL);
 }
 
-void SetScreenBits(void) {
+void _SetScreenBits(void) {
     const SDL_VideoInfo *vidInfo = SDL_GetVideoInfo();
     screenBits = vidInfo->vfmt->BitsPerPixel;
 }
 
-unsigned GetScreenBits(void) {
+unsigned _GetScreenBits(void) {
     return screenBits;
 }
 
-void SetScreen(void *screenPtr) {
+void _SetScreen(void *screenPtr) {
     screen = (SDL_Surface *)screenPtr;
 }
 
-void *GetScreen(void) {
+void *_GetScreen(void) {
     return (void *) screen;
 }
 
-short GetScreenFlags(void) {
+short _GetScreenFlags(void) {
     return screen->flags;
 }
 
-unsigned short GetScreenPitch(void) {
+unsigned short _GetScreenPitch(void) {
     return screen->pitch;
 }
 
-void *GetScreenFormat(void) {
+void *_GetScreenFormat(void) {
     return (void *)screen->format;
 }
 
-unsigned char GetScreenBytesPerPixel(void) {
+unsigned char _GetScreenBytesPerPixel(void) {
     return screen->format->BytesPerPixel;
 }
 
-void *GetCurSurface(void) {
+void *_GetCurSurface(void) {
     return (void*) curSurface;
 }
 
-void SetCurSurface(void *current) {
+void _SetCurSurface(void *current) {
     curSurface = (SDL_Surface *) current;
 }
 
-unsigned char *GetCurSurfacePixels(void) {
+unsigned char *_GetCurSurfacePixels(void) {
     return (unsigned char*) curSurface->pixels;
 }
 
-void ClearCurrentSurface(unsigned int color) {
+void _ClearCurrentSurface(unsigned int color) {
     SDL_FillRect(curSurface, NULL, color);
 }
 
-unsigned char *GetSurfacePixels(void *surface) {
+unsigned char *_GetSurfacePixels(void *surface) {
     return (unsigned char*)((SDL_Surface*)surface)->pixels;
 }
 
-unsigned short GetSurfacePitch(void *surface) {
+unsigned short _GetSurfacePitch(void *surface) {
     return ((SDL_Surface*)surface)->pitch;
 }
 
-void *GetGamePal(void) {
+void *_GetGamePal(void) {
     return (void*)gamepal;
 }
 
-void CenterWindow(void) {
+void _CenterWindow(void) {
     // JUST FOR WIN32
     #ifdef _WIN32
     struct SDL_SysWMinfo wmInfo;
@@ -321,29 +328,29 @@ void CenterWindow(void) {
     #endif
 }
 
-void ConvertPaletteToRGB(unsigned char *pixelPointer, int width, int height) {
+void _ConvertPaletteToRGB(unsigned char *pixelPointer, int width, int height) {
     for (int i=0; i < width*height; i++) {
         unsigned char paletteIndex;
-        paletteIndex = GetScreenBufferPixel(i);
+        paletteIndex = _GetScreenBufferPixel(i);
         *pixelPointer++ = curpal[paletteIndex].r;
         *pixelPointer++ = curpal[paletteIndex].g;
         *pixelPointer++ = curpal[paletteIndex].b;
     }
 }
 
-void ScreenToScreen (void *source, void *dest) {
+void _ScreenToScreen (void *source, void *dest) {
     SDL_BlitSurface((SDL_Surface *)source, NULL, (SDL_Surface *)dest, NULL);
     CRT_DAC();
 }
 
-void LatchToScreenScaledCoord(int which, int xsrc, int ysrc, int width, int height, int scxdest, int scydest) {
-    void *source = GetLatchPic(which);
+void _LatchToScreenScaledCoord(int which, int xsrc, int ysrc, int width, int height, int scxdest, int scydest) {
+    void *source = _GetLatchPic(which);
     SDL_Rect srcrect = { xsrc, ysrc, width, height };
     SDL_Rect destrect = { scxdest, scydest, 0, 0 }; // width and height are ignored
-    SDL_BlitSurface((SDL_Surface *)source, &srcrect, (SDL_Surface*)GetCurSurface(), &destrect);
+    SDL_BlitSurface((SDL_Surface *)source, &srcrect, (SDL_Surface*)_GetCurSurface(), &destrect);
 }
 
-void InitGraphics(void) {
+void _InitGraphics(void) {
         // initialize SDL
 #if defined _WIN32
     putenv("SDL_VIDEODRIVER=directx");
@@ -356,7 +363,7 @@ void InitGraphics(void) {
     atexit(SDL_Quit);
 }
 
-void ReadMouseState(int *btns, int *mx, int *my) {
+void _ReadMouseState(int *btns, int *mx, int *my) {
     int mousex, mousey, buttons;
     buttons = SDL_GetMouseState(&mousex, &mousey);
     int middlePressed = buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE);
@@ -370,11 +377,11 @@ void ReadMouseState(int *btns, int *mx, int *my) {
     *btns = buttons;
 }
 
-void CenterMouse(int width, int height) {
+void _CenterMouse(int width, int height) {
     SDL_WarpMouse(width / 2, height / 2);
 }
 
-void InitRedShifts (void)
+void _InitRedShifts (void)
 {
     SDL_Color *workptr, *baseptr;
     int i, j, delta;
@@ -399,7 +406,7 @@ void InitRedShifts (void)
 }
 
 
-void InitWhiteShifts (void)
+void _InitWhiteShifts (void)
 {
     SDL_Color *workptr, *baseptr;
     int i, j, delta;
@@ -422,28 +429,28 @@ void InitWhiteShifts (void)
     }
 }
 
-int GetWhitePaletteShifts(void) {
+int _GetWhitePaletteShifts(void) {
     return NUMWHITESHIFTS;
 }
 
 
-int GetRedPaletteShifts(void) {
+int _GetRedPaletteShifts(void) {
     return NUMREDSHIFTS;
 }
 
-int GetWhitePaletteSwapMs(void) {
+int _GetWhitePaletteSwapMs(void) {
     return WHITETICS;
 }
 
-void* GetRedPaletteShifted(int which) {
+void *_GetRedPaletteShifted(int which) {
     return (void*)redshifts[which - 1];
 }
 
-void* GetWhitePaletteShifted(int which) {
+void *_GetWhitePaletteShifted(int which) {
     return (void*)whiteshifts[which - 1];
 }
 
-void PaletteFadeOut (int start, int end, int red, int green, int blue, int steps) {
+void _PaletteFadeOut (int start, int end, int red, int green, int blue, int steps) {
     int         i,j,orig,delta;
     SDL_Color   *origptr, *newptr;
 
@@ -451,8 +458,8 @@ void PaletteFadeOut (int start, int end, int red, int green, int blue, int steps
     green = green * 255 / 63;
     blue = blue * 255 / 63;
 
-    DelayMilliseconds(8);
-    GetWholePalette(palette1);
+    _DelayMilliseconds(8);
+    _GetWholePalette(palette1);
     memcpy(palette2, palette1, sizeof(SDL_Color) * 256);
 
     for (i=0;i<steps;i++)
@@ -474,19 +481,19 @@ void PaletteFadeOut (int start, int end, int red, int green, int blue, int steps
             newptr++;
         }
 
-        if(!usedoublebuffering || GetScreenBits() == 8) DelayMilliseconds(8);
-        SetWholePalette(palette2, true);
+        if(!usedoublebuffering || _GetScreenBits() == 8) _DelayMilliseconds(8);
+        _SetWholePalette(palette2, true);
     }
 
-    FillPalette(red,green,blue);
+    _FillPalette(red,green,blue);
 }
 
-void PaletteFadeIn(int start, int end, void *platettePtr, int steps) {
+void _PaletteFadeIn(int start, int end, void *platettePtr, int steps) {
     SDL_Color *palette = (SDL_Color *)platettePtr;
     int i,j,delta;
 
-    DelayMilliseconds(8);
-    GetWholePalette(palette1);
+    _DelayMilliseconds(8);
+    _GetWholePalette(palette1);
     memcpy(palette2, palette1, sizeof(SDL_Color) * 256);
 
 //
@@ -504,22 +511,22 @@ void PaletteFadeIn(int start, int end, void *platettePtr, int steps) {
             palette2[j].b = palette1[j].b + delta * i / steps;
         }
 
-        if(!usedoublebuffering || GetScreenBits() == 8) DelayMilliseconds(8);
-        SetWholePalette(palette2, true);
+        if(!usedoublebuffering || _GetScreenBits() == 8) _DelayMilliseconds(8);
+        _SetWholePalette(palette2, true);
     }
 
 //
 // final color
 //
-    SetWholePalette(palette, true);
+    _SetWholePalette(palette, true);
     screenfaded = false;
 }
 
-void SaveBitmap(char *filename) {
-    SDL_SaveBMP((SDL_Surface *)GetCurSurface(), filename);
+void _SaveBitmap(char *filename) {
+    SDL_SaveBMP((SDL_Surface *)_GetCurSurface(), filename);
 }
 
-int GetMouseButtons(void) {
+int _GetMouseButtons(void) {
     int buttons = SDL_GetMouseState(NULL, NULL);
     int middlePressed = buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE);
     int rightPressed = buttons & SDL_BUTTON(SDL_BUTTON_RIGHT);
@@ -530,11 +537,11 @@ int GetMouseButtons(void) {
     return buttons;
 }
 
-int GetNuberOfJoysticks(void) {
+int _GetNuberOfJoysticks(void) {
     return SDL_NumJoysticks();
 }
 
-void SetVGAMode(unsigned *scrWidth, unsigned *scrHeight, 
+void _SetVGAMode(unsigned *scrWidth, unsigned *scrHeight, 
                 unsigned *scrPitch, unsigned *bufPitch, 
                 unsigned *currPitch, unsigned *sclFactor) {
 
@@ -554,7 +561,7 @@ void SetVGAMode(unsigned *scrWidth, unsigned *scrHeight,
 
     if(!screen)
     {
-        printf("Unable to set %ix%ix%i video mode: %s\n", *scrWidth, *scrHeight, GetScreenBits(), SDL_GetError());
+        printf("Unable to set %ix%ix%i video mode: %s\n", *scrWidth, *scrHeight, _GetScreenBits(), SDL_GetError());
         exit(1);
     }
     if((screen->flags & SDL_DOUBLEBUF) != SDL_DOUBLEBUF)
@@ -594,7 +601,7 @@ void SetVGAMode(unsigned *scrWidth, unsigned *scrHeight,
 
 }
 
-void LoadLatchMemory (void) {
+void _LoadLatchMemory (void) {
     int i,width,height,start,end;
     byte *src;
     SDL_Surface *surf;
@@ -611,7 +618,7 @@ void LoadLatchMemory (void) {
     }
     SDL_SetColors(surf, gamepal, 0, 256);
 
-    SetLatchPic(0, surf);
+    _SetLatchPic(0, surf);
     CA_CacheGrChunk (STARTTILE8);
     src = grsegs[STARTTILE8];
 
@@ -647,7 +654,7 @@ void LoadLatchMemory (void) {
     }
 }
 
-int SubFizzleFade (void *src, int x1, int y1,
+int _SubFizzleFade (void *src, int x1, int y1,
                        unsigned width, unsigned height, 
                        unsigned frames, int abortable,
                        int rndbits_y, int rndmask)
@@ -662,19 +669,19 @@ int SubFizzleFade (void *src, int x1, int y1,
 
     IN_StartAck ();
 
-    frame = GetWolfTicks();
+    frame = _GetWolfTicks();
 
     //can't rely on screen as dest b/c crt.cpp writes over it with screenBuffer
     //can't rely on screenBuffer as source for same reason: every flip it has to be updated
     SDL_Surface *source_copy = SDL_ConvertSurface(source, source->format, source->flags);
     SDL_Surface *screen_copy = SDL_ConvertSurface(screen, screen->format, screen->flags);
 
-    byte *srcptr = GraphicLockBytes((void*)source_copy);
+    byte *srcptr = _GraphicLockBytes((void*)source_copy);
     do
     {
         if(abortable && IN_CheckAck ())
         {
-            GraphicUnlockBytes((void*)source_copy);
+            _GraphicUnlockBytes((void*)source_copy);
             SDL_BlitSurface(screen_copy, NULL, screenBuffer, NULL);
             SDL_BlitSurface(screenBuffer, NULL, screen, NULL);
             //SDL_Flip((SDL_Surface *)GetScreen());
@@ -684,7 +691,7 @@ int SubFizzleFade (void *src, int x1, int y1,
             return true;
         }
 
-        byte *destptr = GraphicLockBytes((void*)screen_copy);
+        byte *destptr = _GraphicLockBytes((void*)screen_copy);
 
         rndval = lastrndval;
 
@@ -728,7 +735,7 @@ int SubFizzleFade (void *src, int x1, int y1,
                 {
                     byte col = *(srcptr + (y1 + y) * source->pitch + x1 + x);
                     int red, green, blue;
-                    GetCurrentPaletteColor(col, &red, &green, &blue);
+                    _GetCurrentPaletteColor(col, &red, &green, &blue);
                     uint32_t fullcol = SDL_MapRGB(screen->format, red, green, blue);
                     memcpy(destptr + (y1 + y) * screen->pitch + (x1 + x) * screen->format->BytesPerPixel,
                         &fullcol, screen->format->BytesPerPixel);
@@ -744,22 +751,22 @@ int SubFizzleFade (void *src, int x1, int y1,
         // If there is no double buffering, we always use the "first frame" case
         if(usedoublebuffering) first = 0;
 
-        GraphicUnlockBytes((void*)screen_copy);
+        _GraphicUnlockBytes((void*)screen_copy);
         SDL_BlitSurface(screen_copy, NULL, screenBuffer, NULL);
         SDL_BlitSurface(screenBuffer, NULL, screen, NULL);
         //SDL_Flip(screen);
         CRT_DAC();
 
         frame++;
-        unsigned int val = frame - GetWolfTicks();
+        unsigned int val = frame - _GetWolfTicks();
         if(val>0) {
-            DelayWolfTicks(val);
+            _DelayWolfTicks(val);
         }
     } while (1);
 
 finished:
-    GraphicUnlockBytes((void*)source_copy);
-    GraphicUnlockBytes((void*)screen_copy);
+    _GraphicUnlockBytes((void*)source_copy);
+    _GraphicUnlockBytes((void*)screen_copy);
     SDL_BlitSurface(screen_copy, NULL, screenBuffer, NULL);
     SDL_BlitSurface(screenBuffer, NULL, screen, NULL);
     //SDL_Flip(screen);
@@ -769,7 +776,7 @@ finished:
     return false;
 }
 
-void GetJoystickDelta(int *dx,int *dy) {
+void _GetJoystickDelta(int *dx,int *dy) {
     if(!Joystick)
     {
         *dx = *dy = 0;
@@ -804,7 +811,7 @@ void GetJoystickDelta(int *dx,int *dy) {
     *dy = y;
 }
 
-void GetJoystickFineDelta(int *dx, int *dy) {
+void _GetJoystickFineDelta(int *dx, int *dy) {
     if(!Joystick)
     {
         *dx = 0;
@@ -826,7 +833,7 @@ void GetJoystickFineDelta(int *dx, int *dy) {
     *dy = y;
 }
 
-int GetJoystickButtons(void) {
+int _GetJoystickButtons(void) {
     if(!Joystick) return 0;
 
     SDL_JoystickUpdate();
@@ -837,7 +844,7 @@ int GetJoystickButtons(void) {
     return res;
 }
 
-int IsJoystickPresent(void) {
+int _IsJoystickPresent(void) {
     return Joystick != NULL;
 }
 
@@ -940,7 +947,7 @@ static void processEvent(SDL_Event *event)
     }
 }
 
-void WaitAndProcessEvents(void) {
+void _WaitAndProcessEvents(void) {
     SDL_Event event;
     if(!SDL_WaitEvent(&event)) return;
     do
@@ -950,7 +957,7 @@ void WaitAndProcessEvents(void) {
     while(SDL_PollEvent(&event));
 }
 
-void ProcessEvents(void ) {
+void _ProcessEvents(void ) {
     SDL_Event event;
 
     while (SDL_PollEvent(&event))
@@ -959,17 +966,17 @@ void ProcessEvents(void ) {
     }
 }
 
-int IsInputGrabbed(void) {
+int _IsInputGrabbed(void) {
     return GrabInput;
 }
 
-void JoystickShutdown(void) {
+void _JoystickShutdown(void) {
     if(Joystick) {
         SDL_JoystickClose(Joystick);
     }
 }
 
-void JoystickStartup(void) {
+void _JoystickStartup(void) {
     if(param_joystickindex >= 0 && param_joystickindex < SDL_NumJoysticks())
     {
         Joystick = SDL_JoystickOpen(param_joystickindex);
@@ -992,8 +999,8 @@ void JoystickStartup(void) {
     }
 }
 
-void CheckIsJoystickCorrect(void) {
-    int numJoysticks = GetNuberOfJoysticks();
+void _CheckIsJoystickCorrect(void) {
+    int numJoysticks = _GetNuberOfJoysticks();
     if(param_joystickindex && (param_joystickindex < -1 || param_joystickindex >= numJoysticks))
     {
         if(!numJoysticks)
