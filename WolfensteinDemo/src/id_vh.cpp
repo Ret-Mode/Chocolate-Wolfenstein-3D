@@ -127,7 +127,8 @@ void VWB_DrawTile8 (int x, int y, int tile)
 
 void VWB_DrawTile8M (int x, int y, int tile)
 {
-    VL_MemToScreen (((byte *)grsegs[STARTTILE8M])+tile*64,8,8,x,y);
+    //VL_MemToScreen (((byte *)grsegs[STARTTILE8M])+tile*64,8,8,x,y);
+    VL_MemToScreenScaledCoord(((byte *)grsegs[STARTTILE8M])+tile*64, 8, 8, scaleFactor*x, scaleFactor*y);
 }
 
 void VWB_DrawPic (int x, int y, int chunknum)
@@ -140,7 +141,8 @@ void VWB_DrawPic (int x, int y, int chunknum)
     width = pictable[picnum].width;
     height = pictable[picnum].height;
 
-    VL_MemToScreen (grsegs[chunknum],width,height,x,y);
+    //VL_MemToScreen (grsegs[chunknum],width,height,x,y);
+    VL_MemToScreenScaledCoord(grsegs[chunknum], width, height, scaleFactor*x, scaleFactor*y);
 }
 
 void VWB_DrawPicScaledCoord (int scx, int scy, int chunknum)
