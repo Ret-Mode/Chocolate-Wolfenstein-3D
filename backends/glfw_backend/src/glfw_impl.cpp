@@ -20,7 +20,7 @@ struct wolfColor_t {
     uint8_t alpha;
 };
 
-struct wolfColor_t gamepal[]={
+static struct wolfColor_t gamepal[]={
     #if defined (SPEAR) || defined (SPEARDEMO)
     #include "sodpal.inc"
     #else
@@ -41,25 +41,31 @@ static const Vertex vertices[3] =
     { {   0.f,  0.6f }, { 0.f, 0.f, 1.f } }
 };
  
+static GLuint paletteTexture;
+static GLuint imageTexture; 
+
 static const char* vertex_shader_text =
 "#version 330\n"
 "uniform mat4 MVP;\n"
 "in vec3 vCol;\n"
 "in vec2 vPos;\n"
-"out vec3 color;\n"
+"out vec2 pPos;\n"
 "void main()\n"
 "{\n"
 "    gl_Position = MVP * vec4(vPos, 0.0, 1.0);\n"
-"    color = vCol;\n"
+"    pPos = vPos;\n"
 "}\n";
  
 static const char* fragment_shader_text =
 "#version 330\n"
-"in vec3 color;\n"
+"in vec2 pPos;\n"
+"uniform sampler1D paletteTexture;\n"
+"uniform usampler2D imageTexture;\n"
 "out vec4 fragment;\n"
 "void main()\n"
 "{\n"
-"    fragment = vec4(color, 1.0);\n"
+"uvec4 coords = texture(imageTexture,pPos);\n"
+"    fragment = texture(paletteTexture, float(coords.x) / 255.0);\n"
 "}\n";
  
 static void error_callback(int error, const char* description)
@@ -104,6 +110,29 @@ int initGlfw(void)
  
     // NOTE: OpenGL error checks have been omitted for brevity
  
+    /* create palette texture */
+    paletteTexture;
+    glActiveTexture(GL_TEXTURE1);
+    glGenTextures(1, &paletteTexture);
+    
+    glBindTexture(GL_TEXTURE_1D, paletteTexture);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, gamepal);
+    GLenum glerr;
+
+    /* create image texture */
+    imageTexture;
+    glActiveTexture(GL_TEXTURE2);
+    glGenTextures(1, &imageTexture);
+    glBindTexture(GL_TEXTURE_2D, imageTexture);
+    uint8_t *tempData = (uint8_t*)malloc(320*200);
+    for (int i = 0; i < 320*200; ++i) {
+        tempData[i] = 0;
+    }
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, 320, 200, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, tempData);
+    free(tempData);
+
     GLuint vertex_buffer;
     glGenBuffers(1, &vertex_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
@@ -112,20 +141,76 @@ int initGlfw(void)
     const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
     glCompileShader(vertex_shader);
+    {
+        GLint isCompiled = 0;
+        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &isCompiled);
+        if(isCompiled == GL_FALSE)
+        {
+            GLint maxLength = 0;
+            glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &maxLength);
+
+            // The maxLength includes the NULL character
+            GLchar *errorLog = (GLchar *)malloc(maxLength+1);
+            glGetShaderInfoLog(vertex_shader, maxLength, &maxLength, errorLog);
+            printf("vs:%s", errorLog);
+            free(errorLog);
+        }
+    }
  
     const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);
     glCompileShader(fragment_shader);
  
+    {
+        GLint isCompiled = 0;
+        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &isCompiled);
+        if(isCompiled == GL_FALSE)
+        {
+            GLint maxLength = 0;
+            glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &maxLength);
+
+            // The maxLength includes the NULL character
+            GLchar *errorLog = (GLchar *)malloc(maxLength+1);
+            glGetShaderInfoLog(vertex_shader, maxLength, &maxLength, errorLog);
+            printf("fs:%s", errorLog);
+            free(errorLog);
+        }
+    }
+
     const GLuint program = glCreateProgram();
     glAttachShader(program, vertex_shader);
     glAttachShader(program, fragment_shader);
     glLinkProgram(program);
- 
+
+    {
+        GLint isLinked = 0;
+        glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
+        if (isLinked == GL_FALSE)
+        {
+            GLint maxLength = 0;
+            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+
+            // The maxLength includes the NULL character
+            GLchar *infoLog = (GLchar *)malloc(maxLength+1);
+            
+            glGetProgramInfoLog(program, maxLength, &maxLength, infoLog);
+            printf("prog:%s", infoLog);
+            free(infoLog);
+        }
+    }
+
     const GLint mvp_location = glGetUniformLocation(program, "MVP");
     const GLint vpos_location = glGetAttribLocation(program, "vPos");
     const GLint vcol_location = glGetAttribLocation(program, "vCol");
- 
+    const GLint paletteTexture_location = glGetUniformLocation(program, "paletteTexture");
+    if (paletteTexture_location) {
+        glUniform1i(paletteTexture_location, 1);
+    }
+    const GLint imageTexture_location = glGetUniformLocation(program, "imageTexture");
+    if (imageTexture_location) {
+        glUniform1i(imageTexture_location, 2);
+    }
+
     GLuint vertex_array;
     glGenVertexArrays(1, &vertex_array);
     glBindVertexArray(vertex_array);
