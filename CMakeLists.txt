@@ -11,6 +11,8 @@ option(BUILD_SPEAR_FULL "Build Spear" OFF)
 
 add_subdirectory(backends)
 
+set(buildDoxygen ON CACHE BOOL "build doxygen")
+
 if (BUILD_WOLF_DEMO)
     add_subdirectory(WolfensteinDemo)
 endif()

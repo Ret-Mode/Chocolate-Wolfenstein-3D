@@ -44,8 +44,6 @@ if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
    -Wsequence-point)
 endif()
 
-
-
 if (WIN32)
    target_link_libraries(WolfensteinDemo legacy_stdio_definitions.lib)
 endif()
@@ -89,3 +87,8 @@ else()
    #set_target_properties(WolfensteinDemo PROPERTIES FOLDER ${CMAKE_CURRENT_BINARY_DIR})
 endif ()
 
+if (buildDoxygen)
+   find_path(DOXYGEN_PATH doxygen REQUIRED)
+   add_custom_target(documentation COMMAND ${DOXYGEN_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/doxygenGlfw WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+   add_dependencies(WolfensteinDemo documentation)
+endif()

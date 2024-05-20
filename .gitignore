@@ -17,3 +17,5 @@ SDL2/*
 SDL_mixer/*
 glad/*
 GLFW/*
+html/*
+latex/*

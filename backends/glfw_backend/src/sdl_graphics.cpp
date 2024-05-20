@@ -1098,8 +1098,12 @@ void VL_BarScaledCoord (int scx, int scy, int scwidth, int scheight, int color)
     GraphicUnlockBytes(GetCurSurface());
 }
 
+extern void _VL_MemToScreenScaledCoord (unsigned char *source, int width, int height, int destx, int desty);
+
 void VL_MemToScreenScaledCoord (byte *source, int width, int height, int destx, int desty)
 {
+    _VL_MemToScreenScaledCoord(source, width, height, destx, desty);
+
     assert(destx >= 0 && destx + width * scaleFactor <= screenWidth
             && desty >= 0 && desty + height * scaleFactor <= screenHeight
             && "VL_MemToScreenScaledCoord: Destination rectangle out of bounds!");

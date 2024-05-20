@@ -128,8 +128,8 @@ int initGlfw(void)
     for (int i = 0; i < 320*200; ++i) {
         tempData[i] = 0;
     }
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, 320, 200, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, tempData);
     free(tempData);
 
@@ -291,6 +291,7 @@ void DelayMilliseconds(int milliseconds) {
 
 extern void _DelayVBL(int param);
 void DelayVBL(int param) {
+
     _DelayVBL(param);
 }
 
@@ -633,4 +634,17 @@ void JoystickStartup(void) {
 extern void _CheckIsJoystickCorrect(void);
 void CheckIsJoystickCorrect(void) {
     _CheckIsJoystickCorrect();
+}
+
+
+
+
+
+
+void _VL_MemToScreenScaledCoord (unsigned char *source, int width, int height, int destx, int desty)
+{
+    glActiveTexture(GL_TEXTURE2);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, width, height, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, source);
+    glActiveTexture(GL_TEXTURE0);
+
 }
