@@ -65,7 +65,7 @@ static const char* fragment_shader_text =
 "void main()\n"
 "{\n"
 "uvec4 coords = texture(imageTexture,pPos);\n"
-"    fragment = texture(paletteTexture, float(coords.x) / 255.0);\n"
+"    fragment = texture(paletteTexture, float(pPos.x));\n"
 "}\n";
  
 static void error_callback(int error, const char* description)
@@ -126,7 +126,7 @@ int initGlfw(void)
     glBindTexture(GL_TEXTURE_2D, imageTexture);
     uint8_t *tempData = (uint8_t*)malloc(320*200);
     for (int i = 0; i < 320*200; ++i) {
-        tempData[i] = 0;
+        tempData[i] = 20;
     }
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
