@@ -627,12 +627,23 @@ void CheckIsJoystickCorrect(void) {
 void VL_MemToScreenScaledCoord (unsigned char *source, int width, int height, int destx, int desty)
 {
     unsigned char *pixels = (unsigned char *)malloc(width * height);
-    for (int j = 0; j < height; ++j) {
-        for (int i = 0; i < width; ++i) {
-            int foffset = ((i & 3) * (width >> 2) * height) + (i >> 2) + j * (width >>2);
-            pixels[(height - j - 1) * width + i] = source[foffset];
+    // for (int j = 0; j < height; ++j) {
+    //     for (int i = 0; i < width; ++i) {
+    //         int foffset = ((i & 3) * (width >> 2) * height) + (i >> 2) + j * (width >>2);
+    //         pixels[(height - j - 1) * width + i] = source[foffset];
+    //    }
+    // }
+
+    for (int j = 0; j < 4; ++j) {
+        for (int k = height-1; k >= 0; --k) {
+            int offset = j;
+            for (int i = 0; i < width/4; ++i) {
+                pixels[k * width + offset] = *source++;
+                offset = (offset + 4) % width;
+            }
        }
     }
+
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glActiveTexture(GL_TEXTURE2);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, width, height, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, pixels);
