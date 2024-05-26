@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <stdint.h>
  
-#define WOLF_RGB(r, g, b) {(r)*255/63, (g)*255/63, (b)*255/63, 0}
+#define WOLF_RGB(r, g, b) {(r)*255/63, (g)*255/63, (b)*255/63, 1}
 
 static GLFWwindow* window;
 struct wolfColor_t {
@@ -26,18 +26,6 @@ static struct wolfColor_t gamepal[]={
     #else
     #include "wolfpal.inc"
     #endif
-};
-
-typedef struct Vertex
-{
-    float pos[2];
-} Vertex;
- 
-static const Vertex vertices[3] =
-{
-    { { -0.6f, -0.4f } },
-    { {  0.6f, -0.4f } },
-    { {   0.f,  0.6f } }
 };
  
 static GLuint paletteTexture;
@@ -103,15 +91,30 @@ int initGlfw(void)
     glfwSetWindowSizeCallback(window, resize_callback);
     glfwMakeContextCurrent(window);
     gladLoadGL();
-    //gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+
     glfwSwapInterval(1);
  
+    GLuint vboRects;
+    glGenVertexArrays(1, &vboRects);
+    glBindVertexArray(vboRects);
+
+    GLuint vertex_buffer;
+    glGenBuffers(1, &vertex_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+    float fData[] = {-1.f, -1.f, 1.f, -1.f, -1.f, 1.f,
+                    1.f, 1.f, 1.f, -1.f, -1.f, 1.f};
+    glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), fData, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0);
+
  
     /* create palette texture */
     paletteTexture;
-    glActiveTexture(GL_TEXTURE1);
+    glActiveTexture(GL_TEXTURE0);
     glGenTextures(1, &paletteTexture);
     
+    // fix alpha
+    gamepal[255].alpha = 0;
     glBindTexture(GL_TEXTURE_1D, paletteTexture);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA8UI, 256, 0, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE, gamepal);
@@ -120,11 +123,12 @@ int initGlfw(void)
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glGenerateMipmap(GL_TEXTURE_1D);
     GLenum glerr;
 
     /* create image texture */
     imageTexture;
-    glActiveTexture(GL_TEXTURE2);
+    glActiveTexture(GL_TEXTURE1);
     glGenTextures(1, &imageTexture);
     glBindTexture(GL_TEXTURE_2D, imageTexture);
     uint8_t *tempData = (uint8_t*)malloc(320*200);
@@ -137,91 +141,32 @@ int initGlfw(void)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 320, 200, 0, GL_RED, GL_UNSIGNED_BYTE, tempData);
+    glGenerateMipmap(GL_TEXTURE_2D);
     free(tempData);
-
-    GLuint vertex_buffer;
-    glGenBuffers(1, &vertex_buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
  
     const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex_shader, 1, &vertSource, NULL);
     glCompileShader(vertex_shader);
-    {
-        GLint isCompiled = 0;
-        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &isCompiled);
-        if(isCompiled == GL_FALSE)
-        {
-            GLint maxLength = 0;
-            glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &maxLength);
-
-            // The maxLength includes the NULL character
-            GLchar *errorLog = (GLchar *)malloc(maxLength+1);
-            glGetShaderInfoLog(vertex_shader, maxLength, &maxLength, errorLog);
-            printf("vs:%s", errorLog);
-            free(errorLog);
-        }
-    }
+    
  
     const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragment_shader, 1, &fragSource, NULL);
     glCompileShader(fragment_shader);
- 
-    {
-        GLint isCompiled = 0;
-        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &isCompiled);
-        if(isCompiled == GL_FALSE)
-        {
-            GLint maxLength = 0;
-            glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &maxLength);
-
-            // The maxLength includes the NULL character
-            GLchar *errorLog = (GLchar *)malloc(maxLength+1);
-            glGetShaderInfoLog(vertex_shader, maxLength, &maxLength, errorLog);
-            printf("fs:%s", errorLog);
-            free(errorLog);
-        }
-    }
 
     const GLuint program = glCreateProgram();
     glAttachShader(program, vertex_shader);
     glAttachShader(program, fragment_shader);
     glLinkProgram(program);
-
-    {
-        GLint isLinked = 0;
-        glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
-        if (isLinked == GL_FALSE)
-        {
-            GLint maxLength = 0;
-            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
-
-            // The maxLength includes the NULL character
-            GLchar *infoLog = (GLchar *)malloc(maxLength+1);
-            
-            glGetProgramInfoLog(program, maxLength, &maxLength, infoLog);
-            printf("prog:%s", infoLog);
-            free(infoLog);
-        }
-    }
-
     glUseProgram(program);
-    const GLint vpos_location = glGetAttribLocation(program, "vPos");
+
     const GLint paletteTexture_location = glGetUniformLocation(program, "paletteTexture");
-    if (paletteTexture_location) {
-        glUniform1i(paletteTexture_location, 1);
+    if (paletteTexture_location >= 0) {
+        glUniform1i(paletteTexture_location, 0);
     }
     const GLint imageTexture_location = glGetUniformLocation(program, "imageTexture");
-    if (imageTexture_location) {
-        glUniform1i(imageTexture_location, 2);
+    if (imageTexture_location >= 0) {
+        glUniform1i(imageTexture_location, 1);
     }
-
-    GLuint vertex_array;
-    glGenVertexArrays(1, &vertex_array);
-    glBindVertexArray(vertex_array);
-    glEnableVertexAttribArray(vpos_location);
-    glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE,
-                          sizeof(Vertex), NULL);
  
 
     int width, height;
@@ -231,8 +176,8 @@ int initGlfw(void)
     glViewport(0, 0, width, height);
     glClear(GL_COLOR_BUFFER_BIT);
     
-    glBindVertexArray(vertex_array);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindVertexArray(vboRects);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 
 
     glfwSwapBuffers(window);
@@ -582,7 +527,7 @@ void WaitAndProcessEvents(void) {
     if (window) {
         glfwWaitEvents();
         glfwPollEvents();
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
         glfwSwapBuffers(window);
         if (glfwWindowShouldClose(window)) {
             exit(0);
@@ -593,7 +538,7 @@ void WaitAndProcessEvents(void) {
 void ProcessEvents(void) {
     if (window) {
         glfwPollEvents();
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
         glfwSwapBuffers(window);
         if (glfwWindowShouldClose(window)) {
             exit(0);
@@ -622,20 +567,9 @@ void CheckIsJoystickCorrect(void) {
     ;
 }
 
-
-
-
-
-
 void VL_MemToScreenScaledCoord (unsigned char *source, int width, int height, int destx, int desty)
 {
     unsigned char *pixels = (unsigned char *)malloc(width * height);
-    // for (int j = 0; j < height; ++j) {
-    //     for (int i = 0; i < width; ++i) {
-    //         int foffset = ((i & 3) * (width >> 2) * height) + (i >> 2) + j * (width >>2);
-    //         pixels[(height - j - 1) * width + i] = source[foffset];
-    //    }
-    // }
 
     for (int j = 0; j < 4; ++j) {
         for (int k = height-1; k >= 0; --k) {
@@ -646,23 +580,19 @@ void VL_MemToScreenScaledCoord (unsigned char *source, int width, int height, in
             }
        }
     }
-    glActiveTexture(GL_TEXTURE2);
+    glActiveTexture(GL_TEXTURE1);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    //glActiveTexture(GL_TEXTURE2);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, pixels);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glGenerateMipmap(GL_TEXTURE_2D);
-    glActiveTexture(GL_TEXTURE0);
     free(pixels);
 
 
 }
-
-
 
 void VL_Plot (int x, int y, int color)
 {
