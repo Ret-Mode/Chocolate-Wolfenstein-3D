@@ -78,6 +78,9 @@ static void resize_callback(GLFWwindow* window, int width, int height) {
     glViewport(0,0, width, height);
 }
  
+
+
+
 int initGlfw(void)
 {
     glfwSetErrorCallback(error_callback);
@@ -130,10 +133,10 @@ int initGlfw(void)
     }
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, 320, 200, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, tempData);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 320, 200, 0, GL_RED, GL_UNSIGNED_BYTE, tempData);
     free(tempData);
 
     GLuint vertex_buffer;
@@ -184,7 +187,7 @@ int initGlfw(void)
     glAttachShader(program, vertex_shader);
     glAttachShader(program, fragment_shader);
     glLinkProgram(program);
-    glUseProgram(program);
+
     {
         GLint isLinked = 0;
         glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
@@ -202,6 +205,7 @@ int initGlfw(void)
         }
     }
 
+    glUseProgram(program);
     const GLint vpos_location = glGetAttribLocation(program, "vPos");
     const GLint paletteTexture_location = glGetUniformLocation(program, "paletteTexture");
     if (paletteTexture_location) {
@@ -446,10 +450,16 @@ void LatchToScreenScaledCoord(int which, int xsrc, int ysrc, int width, int heig
     ;
 }
 
+static void cleanup(void) {
+    glfwDestroyWindow(window);
+    window = NULL;
+    glfwTerminate();
+}
+
 extern void _InitGraphics(void);
 void InitGraphics(void) {
     initGlfw();
-    atexit(glfwTerminate);
+    atexit(cleanup);
 }
 
 extern void _ReadMouseState(int *btns, int *mx, int *my);
@@ -571,29 +581,22 @@ extern void ProcessEvents(void);
 void WaitAndProcessEvents(void) {
     if (window) {
         glfwWaitEvents();
-        if(!glfwWindowShouldClose(window)) {
-            glfwPollEvents();
-            glDrawArrays(GL_TRIANGLES, 0, 3);
-            glfwSwapBuffers(window);
-        }
-        else {
-            glfwDestroyWindow(window);
-            window = NULL;
+        glfwPollEvents();
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glfwSwapBuffers(window);
+        if (glfwWindowShouldClose(window)) {
+            exit(0);
         }
     }
 }
 
-
 void ProcessEvents(void) {
     if (window) {
-        if(!glfwWindowShouldClose(window)) {
-            glfwPollEvents();
-            glDrawArrays(GL_TRIANGLES, 0, 3);
-            glfwSwapBuffers(window);
-        }
-        else {
-            glfwDestroyWindow(window);
-            window = NULL;
+        glfwPollEvents();
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glfwSwapBuffers(window);
+        if (glfwWindowShouldClose(window)) {
+            exit(0);
         }
     }
 }
@@ -643,10 +646,10 @@ void VL_MemToScreenScaledCoord (unsigned char *source, int width, int height, in
             }
        }
     }
-
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glActiveTexture(GL_TEXTURE2);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, width, height, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, pixels);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    //glActiveTexture(GL_TEXTURE2);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, pixels);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
