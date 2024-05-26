@@ -63,7 +63,15 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 }
 
 static void resize_callback(GLFWwindow* window, int width, int height) {
-    glViewport(0,0, width, height);
+    int hr = height * 320;
+    int wr = width * 240;
+    if (hr > wr) {
+        int diff = (hr - wr) / (320*2);
+        glViewport(0,diff, wr/240, wr/320);
+    } else {
+        int diff = (wr - hr) / (240*2);
+        glViewport(diff,0, hr/240, hr/320);
+    }
 }
  
 
