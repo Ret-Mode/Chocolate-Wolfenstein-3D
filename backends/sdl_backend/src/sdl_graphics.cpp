@@ -106,13 +106,6 @@ byte SpecialNames[] =   // ASCII for 0xe0 prefixed codes
     0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0       // 7
 };
 
-void *GetLatchPic(int which) {
-    return (void*) latchpics[which];
-}
-
-void SetLatchPic(int which, void *data) {
-    latchpics[which] = (SDL_Surface *)data;
-}
 
 int GetLatchPicWidth(int which) {
     return latchpics[which]->w;
@@ -161,49 +154,19 @@ void GraphicUnlockBytes(void *surface)
     }
 }
 
-void *CreateScreenBuffer(void *gamepal, unsigned int *bufferPitch, unsigned int screenWidth, unsigned int screenHeight) {
-    screenBuffer = SDL_CreateRGBSurface(SDL_SWSURFACE, screenWidth,
-        screenHeight, 8, 0, 0, 0, 0);
-    if(!screenBuffer)
-    {
-        printf("Unable to create screen buffer surface: %s\n", SDL_GetError());
-        exit(1);
-    }
-    SDL_SetColors(screenBuffer, (SDL_Color*)gamepal, 0, 256);
-
-    *bufferPitch = screenBuffer->pitch;
-
-    return (void *)screenBuffer;
-}
-
 void *GetScreenBuffer(void) {
     return (void *)screenBuffer;
 }
 
-unsigned char GetScreenBufferPixel(int offset) {
-    return ((uint8_t*)screenBuffer->pixels)[offset];
-}
-
-void GetCurrentPaletteColor(int color, int *red, int *green, int *blue) {
+static void GetCurrentPaletteColor(int color, int *red, int *green, int *blue) {
     SDL_Color *col = &curpal[color];
     *red = col->r;
     *green = col->g;
     *blue = col->b;
 }
 
-void SetCurrentPaletteColor(int color, int red, int green, int blue, unsigned int screenBits) {
-    SDL_Color col = { red, green, blue };
-    curpal[color] = col;
-
-    if(screenBits == 8)
-        SDL_SetPalette(screen, SDL_PHYSPAL, &col, color, 1);
-    else
-    {
-        SDL_SetPalette(curSurface, SDL_LOGPAL, &col, color, 1);
-        SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, screen, NULL);
-        //SDL_Flip(screen);
-        CRT_DAC();
-    }
+static unsigned GetScreenBits(void) {
+    return screenBits;
 }
 
 void SetWholePalette(void *palette, int forceupdate) {
@@ -223,17 +186,7 @@ void SetWholePalette(void *palette, int forceupdate) {
     }
 }
 
-void ConvertPalette(unsigned char *srcpal, void *dest, int numColors) {
-    SDL_Color *destpal = (SDL_Color *)dest;
-    for(int i=0; i<numColors; i++)
-    {
-        destpal[i].r = *srcpal++ * 255 / 63;
-        destpal[i].g = *srcpal++ * 255 / 63;
-        destpal[i].b = *srcpal++ * 255 / 63;
-    }
-}
-
-void FillPalette(int red, int green, int blue) {
+static void FillPalette(int red, int green, int blue) {
     int i;
     SDL_Color pal[256];
 
@@ -246,26 +199,8 @@ void FillPalette(int red, int green, int blue) {
     SetWholePalette((void*)pal, true);
 }
 
-void GetWholePalette(void *palette) {
+static void GetWholePalette(void *palette) {
     memcpy(palette, curpal, sizeof(SDL_Color) * 256);
-}
-
-void SetScreenPalette(void) {
-    SDL_SetColors((SDL_Surface*)GetScreen(), (SDL_Color*)GetGamePal(), 0, 256);
-    memcpy(curpal, GetGamePal(), sizeof(SDL_Color) * 256);
-}
-
-void SetWindowTitle(const char *title) {
-    SDL_WM_SetCaption(title, NULL);
-}
-
-void SetScreenBits(void) {
-    const SDL_VideoInfo *vidInfo = SDL_GetVideoInfo();
-    screenBits = vidInfo->vfmt->BitsPerPixel;
-}
-
-unsigned GetScreenBits(void) {
-    return screenBits;
 }
 
 void SetScreen(void *screenPtr) {
@@ -339,7 +274,7 @@ void CenterWindow(void) {
 void ConvertPaletteToRGB(unsigned char *pixelPointer, int width, int height) {
     for (int i=0; i < width*height; i++) {
         unsigned char paletteIndex;
-        paletteIndex = GetScreenBufferPixel(i);
+        paletteIndex = ((uint8_t*)screenBuffer->pixels)[i];
         *pixelPointer++ = curpal[paletteIndex].r;
         *pixelPointer++ = curpal[paletteIndex].g;
         *pixelPointer++ = curpal[paletteIndex].b;
@@ -352,7 +287,7 @@ void ScreenToScreen (void *source, void *dest) {
 }
 
 void LatchToScreenScaledCoord(int which, int xsrc, int ysrc, int width, int height, int scxdest, int scydest) {
-    void *source = GetLatchPic(which);
+    void *source = latchpics[which];
     SDL_Rect srcrect = { xsrc, ysrc, width, height };
     SDL_Rect destrect = { scxdest, scydest, 0, 0 }; // width and height are ignored
     SDL_BlitSurface((SDL_Surface *)source, &srcrect, (SDL_Surface*)GetCurSurface(), &destrect);
@@ -585,8 +520,6 @@ void SetVGAMode(unsigned *scrWidth, unsigned *scrHeight,
     //Fab's CRT Hack
     *scrWidth=320;
     *scrHeight=200;
-    
-    //SDL_Surface *screenBuffer = (SDL_Surface *)CreateScreenBuffer(gamepal, &bufferPitch, screenWidth, screenHeight);
 
     screenBuffer = SDL_CreateRGBSurface(SDL_SWSURFACE, *scrWidth,
         *scrHeight, 8, 0, 0, 0, 0);
@@ -626,7 +559,7 @@ void LoadLatchMemory (void) {
     }
     SDL_SetColors(surf, gamepal, 0, 256);
 
-    SetLatchPic(0, surf);
+    latchpics[0] = surf;
     CA_CacheGrChunk (STARTTILE8);
     src = grsegs[STARTTILE8];
 
@@ -1174,7 +1107,7 @@ void VL_MemToScreenScaledCoord (byte *source, int origwidth, int origheight, int
 void VL_LatchToScreenScaledCoord(int which, int xsrc, int ysrc,
     int width, int height, int scxdest, int scydest)
 {
-    void *source = GetLatchPic(which);
+    void *source = latchpics[which];
     assert(scxdest >= 0 && scxdest + width * scaleFactor <= screenWidth
             && scydest >= 0 && scydest + height * scaleFactor <= screenHeight
             && "VL_LatchToScreenScaledCoord: Destination rectangle out of bounds!");

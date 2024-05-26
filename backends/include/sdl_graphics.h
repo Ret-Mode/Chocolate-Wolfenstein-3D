@@ -1,10 +1,8 @@
 #ifndef __SDL_GRAPHICS__
 #define __SDL_GRAPHICS__
 
-void *GetLatchPic(int which);
 int GetLatchPicWidth(int which);
 int GetLatchPicHeight(int which);
-void SetLatchPic(int which, void *data);
 void DelayWolfTicks(int ticks);
 void DelayMilliseconds(int milliseconds);
 void DelayVBL(int param);
@@ -12,14 +10,7 @@ unsigned int GetMilliseconds(void);
 unsigned int GetWolfTicks(void);
 unsigned char *GraphicLockBytes(void *surface);
 void GraphicUnlockBytes(void *surface);
-void *CreateScreenBuffer(void *gamepal, unsigned int *bufferPitch, unsigned int screenWidth, unsigned int screenHeight);
 void *GetScreenBuffer(void);
-unsigned char GetScreenBufferPixel(int offset);
-void GetCurrentPaletteColor(int color, int *red, int *green, int *blue);
-void SetCurrentPaletteColor(int color, int red, int green, int blue, unsigned int screenBits);
-void SetWindowTitle(const char *title);
-void SetScreenBits(void);
-unsigned GetScreenBits(void);
 void SetScreen(void *screenPtr);
 void *GetScreen(void);
 short GetScreenFlags(void);
@@ -34,10 +25,6 @@ void *GetGamePal(void);
 void CenterWindow(void);
 void ConvertPaletteToRGB(unsigned char *pixelPointer, int width, int height);
 void SetWholePalette(void *palette, int forceupdate);
-void GetWholePalette(void *palette);
-void SetScreenPalette(void);
-void ConvertPalette(unsigned char *srcpal, void *dest, int numColors);
-void FillPalette(int red, int green, int blue);
 void ScreenToScreen (void *source, void *dest);
 unsigned char *GetSurfacePixels(void *surface);
 unsigned short GetSurfacePitch(void *surface);

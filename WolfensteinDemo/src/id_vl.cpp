@@ -89,62 +89,6 @@ void    VL_SetVGAPlaneMode (void)
 =============================================================================
 */
 
-/*
-=================
-=
-= VL_ConvertPalette
-=
-=================
-*/
-
-void VL_ConvertPalette(byte *srcpal, void *dest, int numColors)
-{
-    ConvertPalette(srcpal, dest, numColors);
-}
-
-/*
-=================
-=
-= VL_FillPalette
-=
-=================
-*/
-
-void VL_FillPalette (int red, int green, int blue)
-{
-    FillPalette(red, green, blue);
-}
-
-//===========================================================================
-
-/*
-=================
-=
-= VL_SetColor
-=
-=================
-*/
-
-void VL_SetColor    (int color, int red, int green, int blue)
-{
-    SetCurrentPaletteColor(color, red, green, blue, GetScreenBits());
-}
-
-//===========================================================================
-
-/*
-=================
-=
-= VL_GetColor
-=
-=================
-*/
-
-void VL_GetColor    (int color, int *red, int *green, int *blue)
-{
-    GetCurrentPaletteColor(color, red, green, blue);
-}
-
 //===========================================================================
 
 /*
@@ -158,22 +102,6 @@ void VL_GetColor    (int color, int *red, int *green, int *blue)
 void VL_SetPalette (void *palette, bool forceupdate)
 {
     SetWholePalette(palette, (int)forceupdate);
-}
-
-
-//===========================================================================
-
-/*
-=================
-=
-= VL_GetPalette
-=
-=================
-*/
-
-void VL_GetPalette (void *palette)
-{
-    GetWholePalette(palette);
 }
 
 

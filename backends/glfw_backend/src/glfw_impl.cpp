@@ -195,15 +195,6 @@ int initGlfw(void)
 }
 
 /* IMPL ******************************************************************/
-extern void *_GetLatchPic(int which);
-void *GetLatchPic(int which) {
-    return NULL;
-}
-
-extern void _SetLatchPic(int which, void *data);
-void SetLatchPic(int which, void *data) {
-    ;
-}
 
 extern int _GetLatchPicWidth(int which);
 int GetLatchPicWidth(int which) {
@@ -253,69 +244,14 @@ void GraphicUnlockBytes(void *surface)
     ;
 }
 
-extern void *_CreateScreenBuffer(void *gamepal, unsigned int *bufferPitch, unsigned int screenWidth, unsigned int screenHeight);
-void *CreateScreenBuffer(void *gamepal, unsigned int *bufferPitch, unsigned int screenWidth, unsigned int screenHeight) {
-    return NULL;
-}
-
 extern void *_GetScreenBuffer(void);
 void *GetScreenBuffer(void) {
     return NULL;
 }
 
-extern unsigned char _GetScreenBufferPixel(int offset);
-unsigned char GetScreenBufferPixel(int offset) {
-    return 0;
-}
-
-extern void _GetCurrentPaletteColor(int color, int *red, int *green, int *blue);
-void GetCurrentPaletteColor(int color, int *red, int *green, int *blue) {
-    ;
-}
-
-extern void _SetCurrentPaletteColor(int color, int red, int green, int blue, unsigned int screenBits);
-void SetCurrentPaletteColor(int color, int red, int green, int blue, unsigned int screenBits) {
-    ;
-}
-
 extern void _SetWholePalette(void *palette, int forceupdate);
 void SetWholePalette(void *palette, int forceupdate) {
     ;
-}
-
-extern void _ConvertPalette(unsigned char *srcpal, void *dest, int numColors);
-void ConvertPalette(unsigned char *srcpal, void *dest, int numColors) {
-    ;
-}
-
-extern void _FillPalette(int red, int green, int blue);
-void FillPalette(int red, int green, int blue) {
-    ;
-}
-
-extern void _GetWholePalette(void *palette);
-void GetWholePalette(void *palette) {
-    ;
-}
-
-extern void _SetScreenPalette(void);
-void SetScreenPalette(void) {
-    ;
-}
-
-extern void _SetWindowTitle(const char *title);
-void SetWindowTitle(const char *title) {
-    ;
-}
-
-extern void _SetScreenBits(void);
-void SetScreenBits(void) {
-    ; 
-}
-
-extern unsigned _GetScreenBits(void);
-unsigned GetScreenBits(void) {
-    return 0;
 }
 
 extern void _SetScreen(void *screenPtr);

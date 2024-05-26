@@ -43,12 +43,8 @@ void VL_SetVGAPlaneMode (void);
 void VL_SetTextMode (void);
 void VL_Shutdown (void);
 
-void VL_ConvertPalette(byte *srcpal, void *destpal, int numColors);
-void VL_FillPalette (int red, int green, int blue);
-void VL_SetColor    (int color, int red, int green, int blue);
 void VL_GetColor    (int color, int *red, int *green, int *blue);
 void VL_SetPalette  (void *palette, bool forceupdate);
-void VL_GetPalette  (void *palette);
 void VL_FadeOut     (int start, int end, int red, int green, int blue, int steps);
 void VL_FadeIn      (int start, int end, void *palette, int steps);
 
