@@ -254,34 +254,9 @@ void SetWholePalette(void *palette, int forceupdate) {
     ;
 }
 
-extern void _SetScreen(void *screenPtr);
-void SetScreen(void *screenPtr) {
-    ;
-}
-
 extern void *_GetScreen(void);
 void *GetScreen(void) {
     return NULL;
-}
-
-extern short _GetScreenFlags(void);
-short GetScreenFlags(void) {
-    return NULL;
-}
-
-extern unsigned short _GetScreenPitch(void);
-unsigned short GetScreenPitch(void) {
-    return 0;
-}
-
-extern void *_GetScreenFormat(void);
-void *GetScreenFormat(void) {
-    return NULL;
-}
-
-extern unsigned char _GetScreenBytesPerPixel(void);
-unsigned char GetScreenBytesPerPixel(void) {
-    return 0;
 }
 
 extern void *_GetCurSurface(void);
@@ -289,29 +264,9 @@ void *GetCurSurface(void) {
     return NULL;
 }
 
-extern void _SetCurSurface(void *current);
-void SetCurSurface(void *current) {
-    ;
-}
-
-extern unsigned char *_GetCurSurfacePixels(void);
-unsigned char *GetCurSurfacePixels(void) {
-    return NULL;
-}
-
 extern void _ClearCurrentSurface(unsigned int color);
 void ClearCurrentSurface(unsigned int color) {
    ;
-}
-
-extern unsigned char *_GetSurfacePixels(void *surface);
-unsigned char *GetSurfacePixels(void *surface) {
-    return NULL;
-}
-
-extern unsigned short _GetSurfacePitch(void *surface);
-unsigned short GetSurfacePitch(void *surface) {
-    return 0;
 }
 
 extern void *_GetGamePal(void);
@@ -331,11 +286,6 @@ void ConvertPaletteToRGB(unsigned char *pixelPointer, int width, int height) {
 
 extern void _ScreenToScreen (void *source, void *dest);
 void ScreenToScreen (void *source, void *dest) {
-    ;
-}
-
-extern void _LatchToScreenScaledCoord(int which, int xsrc, int ysrc, int width, int height, int scxdest, int scydest);
-void LatchToScreenScaledCoord(int which, int xsrc, int ysrc, int width, int height, int scxdest, int scydest) {
     ;
 }
 
@@ -416,11 +366,6 @@ int GetMouseButtons(void) {
     return 0;
 }
 
-extern int _GetNuberOfJoysticks(void);
-int GetNuberOfJoysticks(void) {
-    return 0;
-}
-
 extern void _SetVGAMode(unsigned *scrWidth, unsigned *scrHeight, 
                 unsigned *scrPitch, unsigned *bufPitch, 
                 unsigned *currPitch, unsigned *sclFactor);
@@ -465,6 +410,105 @@ extern int _IsJoystickPresent(void);
 int IsJoystickPresent(void) {
     return 0;
 }
+
+// static void processEvent(SDL_Event *event)
+// {
+//     switch (event->type)
+//     {
+//         // exit if the window is closed
+//         case SDL_QUIT:
+//             Quit(NULL);
+
+//         // check for keypresses
+//         case SDL_KEYDOWN:
+//         {
+//             if(event->key.keysym.sym==SDLK_SCROLLOCK || event->key.keysym.sym==SDLK_F12)
+//             {
+//                 GrabInput = !GrabInput;
+//                 SDL_WM_GrabInput(GrabInput ? SDL_GRAB_ON : SDL_GRAB_OFF);
+//                 return;
+//             }
+
+//             LastScan = event->key.keysym.sym;
+//             SDLMod mod = SDL_GetModState();
+//             if(Keyboard[sc_Alt])
+//             {
+//                 if(LastScan==SDLK_F4)
+//                     Quit(NULL);
+//             }
+
+//             if(LastScan == SDLK_KP_ENTER) LastScan = SDLK_RETURN;
+//             else if(LastScan == SDLK_RSHIFT) LastScan = SDLK_LSHIFT;
+//             else if(LastScan == SDLK_RALT) LastScan = SDLK_LALT;
+//             else if(LastScan == SDLK_RCTRL) LastScan = SDLK_LCTRL;
+//             else
+//             {
+//                 if((mod & KMOD_NUM) == 0)
+//                 {
+//                     switch(LastScan)
+//                     {
+//                         case SDLK_KP2: LastScan = SDLK_DOWN; break;
+//                         case SDLK_KP4: LastScan = SDLK_LEFT; break;
+//                         case SDLK_KP6: LastScan = SDLK_RIGHT; break;
+//                         case SDLK_KP8: LastScan = SDLK_UP; break;
+//                     }
+//                 }
+//             }
+
+//             int sym = LastScan;
+//             if(sym >= 'a' && sym <= 'z')
+//                 sym -= 32;  // convert to uppercase
+
+//             if(mod & (KMOD_SHIFT | KMOD_CAPS))
+//             {
+//                 if(sym < lengthof(ShiftNames) && ShiftNames[sym])
+//                     LastASCII = ShiftNames[sym];
+//             }
+//             else
+//             {
+//                 if(sym < lengthof(ASCIINames) && ASCIINames[sym])
+//                     LastASCII = ASCIINames[sym];
+//             }
+
+// 			if (LastScan<SDLK_i){
+// 			}
+
+// 			if(LastScan<SDLK_LAST){
+//                 Keyboard[LastScan] = 1;
+// 			}
+//             if(LastScan == SDLK_PAUSE)
+//                 Paused = true;
+//             break;
+//         }
+
+//         case SDL_KEYUP:
+//         {
+//             int key = event->key.keysym.sym;
+//             if(key == SDLK_KP_ENTER) key = SDLK_RETURN;
+//             else if(key == SDLK_RSHIFT) key = SDLK_LSHIFT;
+//             else if(key == SDLK_RALT) key = SDLK_LALT;
+//             else if(key == SDLK_RCTRL) key = SDLK_LCTRL;
+//             else
+//             {
+//                 if((SDL_GetModState() & KMOD_NUM) == 0)
+//                 {
+//                     switch(key)
+//                     {
+//                         case SDLK_KP2: key = SDLK_DOWN; break;
+//                         case SDLK_KP4: key = SDLK_LEFT; break;
+//                         case SDLK_KP6: key = SDLK_RIGHT; break;
+//                         case SDLK_KP8: key = SDLK_UP; break;
+//                     }
+//                 }
+//             }
+
+// 			if(key<SDLK_LAST){
+//                 Keyboard[key] = 0;
+// 			}
+//             break;
+//         }
+//     }
+// }
 
 extern void ProcessEvents(void);
 void WaitAndProcessEvents(void) {

@@ -203,39 +203,15 @@ static void GetWholePalette(void *palette) {
     memcpy(palette, curpal, sizeof(SDL_Color) * 256);
 }
 
-void SetScreen(void *screenPtr) {
-    screen = (SDL_Surface *)screenPtr;
-}
-
 void *GetScreen(void) {
     return (void *) screen;
-}
-
-short GetScreenFlags(void) {
-    return screen->flags;
-}
-
-unsigned short GetScreenPitch(void) {
-    return screen->pitch;
-}
-
-void *GetScreenFormat(void) {
-    return (void *)screen->format;
-}
-
-unsigned char GetScreenBytesPerPixel(void) {
-    return screen->format->BytesPerPixel;
 }
 
 void *GetCurSurface(void) {
     return (void*) curSurface;
 }
 
-void SetCurSurface(void *current) {
-    curSurface = (SDL_Surface *) current;
-}
-
-unsigned char *GetCurSurfacePixels(void) {
+static unsigned char *GetCurSurfacePixels(void) {
     return (unsigned char*) curSurface->pixels;
 }
 
@@ -243,11 +219,11 @@ void ClearCurrentSurface(unsigned int color) {
     SDL_FillRect(curSurface, NULL, color);
 }
 
-unsigned char *GetSurfacePixels(void *surface) {
+static unsigned char *GetSurfacePixels(void *surface) {
     return (unsigned char*)((SDL_Surface*)surface)->pixels;
 }
 
-unsigned short GetSurfacePitch(void *surface) {
+static unsigned short GetSurfacePitch(void *surface) {
     return ((SDL_Surface*)surface)->pitch;
 }
 
@@ -286,7 +262,7 @@ void ScreenToScreen (void *source, void *dest) {
     CRT_DAC();
 }
 
-void LatchToScreenScaledCoord(int which, int xsrc, int ysrc, int width, int height, int scxdest, int scydest) {
+static void LatchToScreenScaledCoord(int which, int xsrc, int ysrc, int width, int height, int scxdest, int scydest) {
     void *source = latchpics[which];
     SDL_Rect srcrect = { xsrc, ysrc, width, height };
     SDL_Rect destrect = { scxdest, scydest, 0, 0 }; // width and height are ignored
@@ -478,10 +454,6 @@ int GetMouseButtons(void) {
     if(rightPressed) buttons |= 1 << 1;
 
     return buttons;
-}
-
-int GetNuberOfJoysticks(void) {
-    return SDL_NumJoysticks();
 }
 
 void SetVGAMode(unsigned *scrWidth, unsigned *scrHeight, 
@@ -941,7 +913,7 @@ void JoystickStartup(void) {
 }
 
 void CheckIsJoystickCorrect(void) {
-    int numJoysticks = GetNuberOfJoysticks();
+    int numJoysticks = SDL_NumJoysticks();
     if(param_joystickindex && (param_joystickindex < -1 || param_joystickindex >= numJoysticks))
     {
         if(!numJoysticks)

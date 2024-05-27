@@ -11,24 +11,15 @@ unsigned int GetWolfTicks(void);
 unsigned char *GraphicLockBytes(void *surface);
 void GraphicUnlockBytes(void *surface);
 void *GetScreenBuffer(void);
-void SetScreen(void *screenPtr);
 void *GetScreen(void);
-short GetScreenFlags(void);
-unsigned short GetScreenPitch(void);
-void *GetScreenFormat(void);
-unsigned char GetScreenBytesPerPixel(void);
 void *GetCurSurface(void);
-void SetCurSurface(void *current);
-unsigned char *GetCurSurfacePixels(void);
+
 void ClearCurrentSurface(unsigned int color);
 void *GetGamePal(void);
 void CenterWindow(void);
 void ConvertPaletteToRGB(unsigned char *pixelPointer, int width, int height);
 void SetWholePalette(void *palette, int forceupdate);
 void ScreenToScreen (void *source, void *dest);
-unsigned char *GetSurfacePixels(void *surface);
-unsigned short GetSurfacePitch(void *surface);
-void LatchToScreenScaledCoord(int which, int xsrc, int ysrc, int width, int height, int scxdest, int scydest);
 void InitGraphics(void);
 void ReadMouseState(int *btns, int *mx, int *my);
 void CenterMouse(int width, int height);
@@ -43,7 +34,6 @@ void PaletteFadeOut (int start, int end, int red, int green, int blue, int steps
 void PaletteFadeIn(int start, int end, void *platettePtr, int steps);
 void SaveBitmap(char *filename);
 int GetMouseButtons(void);
-int GetNuberOfJoysticks(void);
 void SetVGAMode(unsigned *scrWidth, unsigned *scrHeight, 
                 unsigned *scrPitch, unsigned *bufPitch, 
                 unsigned *currPitch, unsigned *sclFactor);
