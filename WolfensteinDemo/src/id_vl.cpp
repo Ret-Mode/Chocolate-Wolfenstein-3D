@@ -145,15 +145,15 @@ void VL_FadeIn (int start, int end, void *palettePtr, int steps)
 =============================================================================
 */
 
-byte *VL_LockSurface(void* surface)
-{
-    return GraphicLockBytes(surface);
-}
+// byte *VL_LockSurface(void* surface)
+// {
+//     return GraphicLockBytes(surface);
+// }
 
-void VL_UnlockSurface(void *surface)
-{
-    GraphicUnlockBytes(surface);
-}
+// void VL_UnlockSurface(void *surface)
+// {
+//     GraphicUnlockBytes(surface);
+// }
 
 /*
 =================
@@ -479,7 +479,8 @@ void VL_UnlockSurface(void *surface)
 =================
 */
 
-void VL_ScreenToScreen (void *source, void *dest)
-{
-    ScreenToScreen (source, dest);
-}
+/* moved to backed */
+// void VL_ScreenToScreen (void *source, void *dest)
+// {
+//     ScreenToScreen (source, dest);
+// }

@@ -16,7 +16,7 @@ void VWB_DrawPropString(const char* string)
     byte        *source, *dest;
     byte        ch;
 
-    byte *vbuf = LOCK();
+    byte *vbuf = VL_LockSurface(GetCurSurface());
 
     font = (fontstruct *) grsegs[STARTFONT+fontnumber];
     height = font->height;
@@ -44,7 +44,7 @@ void VWB_DrawPropString(const char* string)
         }
     }
 
-    UNLOCK();
+    VL_UnlockSurface(GetCurSurface());
 }
 
 /*
@@ -112,12 +112,13 @@ void VW_MeasurePropString (const char *string, word *width, word *height)
 =============================================================================
 */
 
-void VH_UpdateScreen()
-{
-    VL_ScreenToScreen(GetScreenBuffer(), GetScreen());
-    //SDL_Flip((SDL_Surface *)GetScreen());
-    //CRT_DAC();
-}
+/* moved to backed */
+// void VH_UpdateScreen()
+// {
+//     VL_ScreenToScreen(GetScreenBuffer(), GetScreen());
+//     //SDL_Flip((SDL_Surface *)GetScreen());
+//     //CRT_DAC();
+// }
 
 
 void VWB_DrawTile8 (int x, int y, int tile)
@@ -203,17 +204,18 @@ void VWB_Vlin (int y1, int y2, int x, int color)
 =====================
 */
 
-void LatchDrawPic (unsigned x, unsigned y, unsigned picnum)
-{
-    int which = 2+picnum-LATCHPICS_LUMP_START;
-    VL_LatchToScreenScaledCoord(which,0,0,GetLatchPicWidth(which),GetLatchPicHeight(which), scaleFactor*x*8,scaleFactor*y);
-}
+/* moved to backend */
+// void LatchDrawPic (unsigned x, unsigned y, unsigned picnum)
+// {
+//     int which = 2+picnum-LATCHPICS_LUMP_START;
+//     VL_LatchToScreenScaledCoord(which,0,0,GetLatchPicWidth(which),GetLatchPicHeight(which), scaleFactor*x*8,scaleFactor*y);
+// }
 
-void LatchDrawPicScaledCoord (unsigned scx, unsigned scy, unsigned picnum)
-{
-    int which = 2+picnum-LATCHPICS_LUMP_START;
-    VL_LatchToScreenScaledCoord(which,0,0,GetLatchPicWidth(which),GetLatchPicHeight(which),scx*8,scy);
-}
+// void LatchDrawPicScaledCoord (unsigned scx, unsigned scy, unsigned picnum)
+// {
+//     int which = 2+picnum-LATCHPICS_LUMP_START;
+//     VL_LatchToScreenScaledCoord(which,0,0,GetLatchPicWidth(which),GetLatchPicHeight(which),scx*8,scy);
+// }
 
 
 //==========================================================================

@@ -51,9 +51,6 @@ void VL_FadeIn      (int start, int end, void *palette, int steps);
 byte *VL_LockSurface(void *surface);
 void VL_UnlockSurface(void *surface);
 
-#define LOCK() VL_LockSurface(GetCurSurface())
-#define UNLOCK() VL_UnlockSurface(GetCurSurface())
-
 byte VL_GetPixel        (int x, int y);
 void VL_Plot            (int x, int y, int color);
 void VL_Hlin            (unsigned x, unsigned y, unsigned width, int color);

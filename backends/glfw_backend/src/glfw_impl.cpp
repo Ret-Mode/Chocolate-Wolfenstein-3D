@@ -196,16 +196,6 @@ int initGlfw(void)
 
 /* IMPL ******************************************************************/
 
-extern int _GetLatchPicWidth(int which);
-int GetLatchPicWidth(int which) {
-    return 0;
-}
-
-extern int _GetLatchPicHeight(int which);
-int GetLatchPicHeight(int which) {
-    return 0;
-}
-
 extern void _DelayWolfTicks(int ticks);
 void DelayWolfTicks(int ticks) {
     ;
@@ -230,18 +220,6 @@ unsigned int GetWolfTicks(void) {
 extern unsigned int _GetMilliseconds(void);
 unsigned int GetMilliseconds(void) {
     return 0;
-}
-
-extern unsigned char *_GraphicLockBytes(void *surface);
-unsigned char *GraphicLockBytes(void *surface)
-{
-    return NULL;
-}
-
-extern void _GraphicUnlockBytes(void *surface);
-void GraphicUnlockBytes(void *surface)
-{
-    ;
 }
 
 extern void *_GetScreenBuffer(void);
@@ -281,11 +259,6 @@ void CenterWindow(void) {
 
 extern void _ConvertPaletteToRGB(unsigned char *pixelPointer, int width, int height);
 void ConvertPaletteToRGB(unsigned char *pixelPointer, int width, int height) {
-    ;
-}
-
-extern void _ScreenToScreen (void *source, void *dest);
-void ScreenToScreen (void *source, void *dest) {
     ;
 }
 
@@ -625,6 +598,26 @@ void VL_MemToScreenScaledCoord (unsigned char *source, int origwidth, int orighe
 
 void VL_LatchToScreenScaledCoord(int which, int xsrc, int ysrc,
     int width, int height, int scxdest, int scydest)
+{
+    ;
+}
+
+void LatchDrawPic (unsigned x, unsigned y, unsigned picnum)
+{
+    ;
+}
+
+void LatchDrawPicScaledCoord (unsigned scx, unsigned scy, unsigned picnum)
+{
+    ;
+}
+
+unsigned char *VL_LockSurface(void* surface)
+{
+    return NULL;
+}
+
+void VL_UnlockSurface(void *surface)
 {
     ;
 }

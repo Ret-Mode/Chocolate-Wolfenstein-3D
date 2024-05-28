@@ -107,10 +107,10 @@ byte SpecialNames[] =   // ASCII for 0xe0 prefixed codes
 };
 
 
-int GetLatchPicWidth(int which) {
+static int GetLatchPicWidth(int which) {
     return latchpics[which]->w;
 }
-int GetLatchPicHeight(int which) {
+static int GetLatchPicHeight(int which) {
     return latchpics[which]->h;
 }
 
@@ -134,7 +134,7 @@ unsigned int GetMilliseconds(void) {
     return SDL_GetTicks();
 }
 
-unsigned char *GraphicLockBytes(void *surface)
+static unsigned char *GraphicLockBytes(void *surface)
 {
     SDL_Surface *src = (SDL_Surface*)surface;
     if(SDL_MUSTLOCK(src))
@@ -145,7 +145,7 @@ unsigned char *GraphicLockBytes(void *surface)
     return (unsigned char *) src->pixels;
 }
 
-void GraphicUnlockBytes(void *surface)
+static void GraphicUnlockBytes(void *surface)
 {
     SDL_Surface *src = (SDL_Surface*)surface;
     if(SDL_MUSTLOCK(src))
@@ -257,7 +257,7 @@ void ConvertPaletteToRGB(unsigned char *pixelPointer, int width, int height) {
     }
 }
 
-void ScreenToScreen (void *source, void *dest) {
+static void ScreenToScreen (void *source, void *dest) {
     SDL_BlitSurface((SDL_Surface *)source, NULL, (SDL_Surface *)dest, NULL);
     CRT_DAC();
 }
@@ -1143,4 +1143,36 @@ void VL_LatchToScreenScaledCoord(int which, int xsrc, int ysrc,
         GraphicUnlockBytes(GetCurSurface());
         GraphicUnlockBytes(source);
     }
+}
+
+void LatchDrawPic (unsigned x, unsigned y, unsigned picnum)
+{
+    int which = 2+picnum-LATCHPICS_LUMP_START;
+    VL_LatchToScreenScaledCoord(which,0,0,GetLatchPicWidth(which),GetLatchPicHeight(which), scaleFactor*x*8,scaleFactor*y);
+}
+
+void LatchDrawPicScaledCoord (unsigned scx, unsigned scy, unsigned picnum)
+{
+    int which = 2+picnum-LATCHPICS_LUMP_START;
+    VL_LatchToScreenScaledCoord(which,0,0,GetLatchPicWidth(which),GetLatchPicHeight(which),scx*8,scy);
+}
+
+byte *VL_LockSurface(void* surface)
+{
+    return GraphicLockBytes(surface);
+}
+
+void VL_UnlockSurface(void *surface)
+{
+    GraphicUnlockBytes(surface);
+}
+
+static void VL_ScreenToScreen (void *source, void *dest)
+{
+    ScreenToScreen (source, dest);
+}
+
+void VH_UpdateScreen()
+{
+    VL_ScreenToScreen(GetScreenBuffer(), GetScreen());
 }

@@ -1,25 +1,19 @@
 #ifndef __SDL_GRAPHICS__
 #define __SDL_GRAPHICS__
 
-int GetLatchPicWidth(int which);
-int GetLatchPicHeight(int which);
 void DelayWolfTicks(int ticks);
 void DelayMilliseconds(int milliseconds);
 void DelayVBL(int param);
 unsigned int GetMilliseconds(void);
 unsigned int GetWolfTicks(void);
-unsigned char *GraphicLockBytes(void *surface);
-void GraphicUnlockBytes(void *surface);
 void *GetScreenBuffer(void);
 void *GetScreen(void);
 void *GetCurSurface(void);
-
 void ClearCurrentSurface(unsigned int color);
 void *GetGamePal(void);
 void CenterWindow(void);
 void ConvertPaletteToRGB(unsigned char *pixelPointer, int width, int height);
 void SetWholePalette(void *palette, int forceupdate);
-void ScreenToScreen (void *source, void *dest);
 void InitGraphics(void);
 void ReadMouseState(int *btns, int *mx, int *my);
 void CenterMouse(int width, int height);
