@@ -89,7 +89,7 @@ void    LatchDrawPicScaledCoord (unsigned scx, unsigned scy, unsigned picnum);
 void    LoadLatchMem (void);
 
 void    VH_Startup();
-boolean FizzleFade (void *src, int x1, int y1,
+boolean FizzleFade (int x1, int y1,
     unsigned width, unsigned height, unsigned frames, boolean abortable);
 
 #define NUMLATCHPICS    100

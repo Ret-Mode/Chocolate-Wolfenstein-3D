@@ -32,7 +32,7 @@ void SetVGAMode(unsigned *scrWidth, unsigned *scrHeight,
                 unsigned *scrPitch, unsigned *bufPitch, 
                 unsigned *currPitch, unsigned *sclFactor);
 void LoadLatchMemory (void);
-int SubFizzleFade (void *src, int x1, int y1,
+int SubFizzleFade (int x1, int y1,
                        unsigned width, unsigned height, 
                        unsigned frames, int abortable,
                        int rndbits_y, int rndmask);

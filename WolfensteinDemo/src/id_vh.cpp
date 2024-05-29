@@ -294,8 +294,8 @@ void VH_Startup()
     rndmask = rndmasks[rndbits - 17];
 }
 
-boolean FizzleFade (void *src, int x1, int y1,
+boolean FizzleFade (int x1, int y1,
     unsigned width, unsigned height, unsigned frames, boolean abortable)
 {
-    return SubFizzleFade(src, x1, y1, width, height, frames, abortable, rndbits_y, rndmask);
+    return SubFizzleFade(x1, y1, width, height, frames, abortable, rndbits_y, rndmask);
 }

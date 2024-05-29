@@ -26,8 +26,8 @@
 =============================================================================
 */
 
-static byte *vbuf = NULL;
-unsigned vbufPitch = 0;
+//static byte *vbuf = NULL;
+//unsigned vbufPitch = 0;
 
 int32_t    lasttimecount;
 int32_t    frameon;
@@ -278,7 +278,7 @@ int CalcHeight()
 byte *postsource;
 int postx;
 
-void ScalePost()
+void ScalePost(byte *vbuf, unsigned vbufPitch)
 {
 
     int ywcount, yoffs, yw, yd, yendoffs;
@@ -332,9 +332,9 @@ void ScalePost()
 
 void GlobalScalePost(byte *vidbuf, unsigned pitch)
 {
-    vbuf = vidbuf;
-    vbufPitch = pitch;
-    ScalePost();
+    //vbuf = vidbuf;
+    //vbufPitch = pitch;
+    ScalePost(vidbuf, pitch);
 }
 
 /*
@@ -348,7 +348,7 @@ void GlobalScalePost(byte *vidbuf, unsigned pitch)
 ====================
 */
 
-void HitVertWall (void)
+void HitVertWall (byte *vbuf, unsigned vbufPitch)
 {
     int wallpic;
     int texture;
@@ -364,12 +364,12 @@ void HitVertWall (void)
     {
         if((pixx&3) && texture == lasttexture)
         {
-            ScalePost();
+            ScalePost(vbuf, vbufPitch);
             postx = pixx;
             wallheight[pixx] = wallheight[pixx-1];
             return;
         }
-        ScalePost();
+        ScalePost(vbuf, vbufPitch);
         wallheight[pixx] = CalcHeight();
         postsource+=texture-lasttexture;
         postx=pixx;
@@ -377,7 +377,7 @@ void HitVertWall (void)
         return;
     }
 
-    if(lastside!=-1) ScalePost();
+    if(lastside!=-1) ScalePost(vbuf, vbufPitch);
 
     lastside=1;
     lastintercept=xtile;
@@ -412,7 +412,7 @@ void HitVertWall (void)
 ====================
 */
 
-void HitHorizWall (void)
+void HitHorizWall (byte *vbuf, unsigned vbufPitch)
 {
     int wallpic;
     int texture;
@@ -427,12 +427,12 @@ void HitHorizWall (void)
     {
         if((pixx&3) && texture == lasttexture)
         {
-            ScalePost();
+            ScalePost(vbuf, vbufPitch);
             postx=pixx;
             wallheight[pixx] = wallheight[pixx-1];
             return;
         }
-        ScalePost();
+        ScalePost(vbuf, vbufPitch);
         wallheight[pixx] = CalcHeight();
         postsource+=texture-lasttexture;
         postx=pixx;
@@ -440,7 +440,7 @@ void HitHorizWall (void)
         return;
     }
 
-    if(lastside!=-1) ScalePost();
+    if(lastside!=-1) ScalePost(vbuf, vbufPitch);
 
     lastside=0;
     lastintercept=ytile;
@@ -473,7 +473,7 @@ void HitHorizWall (void)
 ====================
 */
 
-void HitHorizDoor (void)
+void HitHorizDoor (byte *vbuf, unsigned vbufPitch)
 {
     int doorpage;
     int doornum;
@@ -486,12 +486,12 @@ void HitHorizDoor (void)
     {
         if((pixx&3) && texture == lasttexture)
         {
-            ScalePost();
+            ScalePost(vbuf, vbufPitch);
             postx=pixx;
             wallheight[pixx] = wallheight[pixx-1];
             return;
         }
-        ScalePost();
+        ScalePost(vbuf, vbufPitch);
         wallheight[pixx] = CalcHeight();
         postsource+=texture-lasttexture;
         postx=pixx;
@@ -499,7 +499,7 @@ void HitHorizDoor (void)
         return;
     }
 
-    if(lastside!=-1) ScalePost();
+    if(lastside!=-1) ScalePost(vbuf, vbufPitch);
 
     lastside=2;
     lasttilehit=tilehit;
@@ -536,7 +536,7 @@ void HitHorizDoor (void)
 ====================
 */
 
-void HitVertDoor (void)
+void HitVertDoor (byte *vbuf, unsigned vbufPitch)
 {
     int doorpage;
     int doornum;
@@ -549,12 +549,12 @@ void HitVertDoor (void)
     {
         if((pixx&3) && texture == lasttexture)
         {
-            ScalePost();
+            ScalePost(vbuf, vbufPitch);
             postx=pixx;
             wallheight[pixx] = wallheight[pixx-1];
             return;
         }
-        ScalePost();
+        ScalePost(vbuf, vbufPitch);
         wallheight[pixx] = CalcHeight();
         postsource+=texture-lasttexture;
         postx=pixx;
@@ -562,7 +562,7 @@ void HitVertDoor (void)
         return;
     }
 
-    if(lastside!=-1) ScalePost();
+    if(lastside!=-1) ScalePost(vbuf, vbufPitch);
 
     lastside=2;
     lasttilehit=tilehit;
@@ -617,7 +617,7 @@ byte vgaCeiling[]=
 =====================
 */
 
-void VGAClearScreen (void)
+void VGAClearScreen (byte *vbuf, unsigned vbufPitch)
 {
     byte ceiling=vgaCeiling[gamestate.episode*10+mapon];
 
@@ -668,7 +668,7 @@ int CalcRotate (objtype *ob)
     return angle/(ANGLES/8);
 }
 
-void ScaleShape (int xcenter, int shapenum, unsigned height, uint32_t flags)
+void ScaleShape (byte *vbuf, unsigned vbufPitch, int xcenter, int shapenum, unsigned height, uint32_t flags)
 {
     t_compshape *shape;
     unsigned scale,pixheight;
@@ -766,7 +766,7 @@ void ScaleShape (int xcenter, int shapenum, unsigned height, uint32_t flags)
     }
 }
 
-void SimpleScaleShape (int xcenter, int shapenum, unsigned height)
+void SimpleScaleShape (byte *vbuf, unsigned vbufPitch, int xcenter, int shapenum, unsigned height)
 {
     t_compshape   *shape;
     unsigned scale,pixheight;
@@ -864,7 +864,7 @@ typedef struct
 visobj_t vislist[MAXVISABLE];
 visobj_t *visptr,*visstep,*farthest;
 
-void DrawScaleds (void)
+void DrawScaleds (byte *vbuf, unsigned vbufPitch)
 {
     int      i,least,numvisable,height;
     byte     *tilespot,*visspot;
@@ -978,7 +978,7 @@ void DrawScaleds (void)
         //
         // draw farthest
         //
-        ScaleShape(farthest->viewx, farthest->shapenum, farthest->viewheight, farthest->flags);
+        ScaleShape(vbuf, vbufPitch, farthest->viewx, farthest->shapenum, farthest->viewheight, farthest->flags);
 
         farthest->viewheight = 32000;
     }
@@ -999,7 +999,7 @@ void DrawScaleds (void)
 int weaponscale[NUMWEAPONS] = {SPR_KNIFEREADY, SPR_PISTOLREADY,
     SPR_MACHINEGUNREADY, SPR_CHAINREADY};
 
-void DrawPlayerWeapon (void)
+void DrawPlayerWeapon (byte *vbuf, unsigned vbufPitch)
 {
     int shapenum;
 
@@ -1008,7 +1008,7 @@ void DrawPlayerWeapon (void)
     {
 
         if (player->state == &s_deathcam && (GetTimeCount()&32) )
-            SimpleScaleShape(viewwidth/2,SPR_DEATHCAM,viewheight+1);
+            SimpleScaleShape(vbuf, vbufPitch, viewwidth/2,SPR_DEATHCAM,viewheight+1);
 
         return;
     }
@@ -1017,11 +1017,11 @@ void DrawPlayerWeapon (void)
     if (gamestate.weapon != -1)
     {
         shapenum = weaponscale[gamestate.weapon]+gamestate.weaponframe;
-        SimpleScaleShape(viewwidth/2,shapenum,viewheight+1);
+        SimpleScaleShape(vbuf, vbufPitch, viewwidth/2,shapenum,viewheight+1);
     }
 
     if (demorecord || demoplayback)
-        SimpleScaleShape(viewwidth/2,SPR_DEMO,viewheight+1);
+        SimpleScaleShape(vbuf, vbufPitch, viewwidth/2,SPR_DEMO,viewheight+1);
 }
 
 
@@ -1062,7 +1062,7 @@ void CalcTics (void)
 
 //==========================================================================
 
-void AsmRefresh()
+void AsmRefresh(byte *vbuf, unsigned vbufPitch)
 {
     int32_t xstep,ystep;
     longword xpartial,ypartial;
@@ -1133,7 +1133,7 @@ void AsmRefresh()
                     yintercept = yintbuf;
                     ytile = (short) (yintercept >> TILESHIFT);
                     tilehit = pwalltile;
-                    HitVertWall();
+                    HitVertWall(vbuf, vbufPitch);
                     continue;
                 }
             }
@@ -1150,7 +1150,7 @@ void AsmRefresh()
                         yintercept = (focalty << TILESHIFT) - TILEGLOBAL + ((64 - pwallpos) << 10);
                     xtile = (short) (xintercept >> TILESHIFT);
                     tilehit = pwalltile;
-                    HitHorizWall();
+                    HitHorizWall(vbuf, vbufPitch);
                     continue;
                 }
             }
@@ -1170,7 +1170,7 @@ vertentry:
                 else if(yintercept>=(mapheight<<TILESHIFT)) yintercept=mapheight<<TILESHIFT, ytile=mapheight-1;
                 yspot=0xffff;
                 tilehit=0;
-                HitHorizBorder();
+                HitHorizBorder(vbuf, vbufPitch);
                 break;
             }
             if(xspot>=maparea) break;
@@ -1187,7 +1187,7 @@ vertentry:
                     yintercept=yintbuf;
                     xintercept=(xtile<<TILESHIFT)|0x8000;
                     ytile = (short) (yintercept >> TILESHIFT);
-                    HitVertDoor();
+                    HitVertDoor(vbuf, vbufPitch);
                 }
                 else
                 {
@@ -1219,7 +1219,7 @@ vertentry:
                                 yintercept=yintbuf;
                                 ytile = (short) (yintercept >> TILESHIFT);
                                 tilehit=pwalltile;
-                                HitVertWall();
+                                HitVertWall(vbuf, vbufPitch);
                             }
                             else
                             {
@@ -1231,7 +1231,7 @@ vertentry:
                                 yintercept=yintbuf;
                                 ytile = (short) (yintercept >> TILESHIFT);
                                 tilehit=pwalltile;
-                                HitVertWall();
+                                HitVertWall(vbuf, vbufPitch);
                             }
                         }
                         else
@@ -1254,7 +1254,7 @@ vertentry:
                                     xintercept=xintercept-((xstep*(64-pwallpos))>>6);
                                     xtile = (short) (xintercept >> TILESHIFT);
                                     tilehit=pwalltile;
-                                    HitHorizWall();
+                                    HitHorizWall(vbuf, vbufPitch);
                                 }
                                 else
                                 {
@@ -1262,7 +1262,7 @@ vertentry:
                                     xintercept=xtile<<TILESHIFT;
                                     ytile = (short) (yintercept >> TILESHIFT);
                                     tilehit=pwalltile;
-                                    HitVertWall();
+                                    HitVertWall(vbuf, vbufPitch);
                                 }
                             }
                             else
@@ -1273,7 +1273,7 @@ vertentry:
                                     xintercept=xtile<<TILESHIFT;
                                     ytile = (short) (yintercept >> TILESHIFT);
                                     tilehit=pwalltile;
-                                    HitVertWall();
+                                    HitVertWall(vbuf, vbufPitch);
                                 }
                                 else
                                 {
@@ -1288,7 +1288,7 @@ vertentry:
                                     xintercept=xintercept-((xstep*pwallpos)>>6);
                                     xtile = (short) (xintercept >> TILESHIFT);
                                     tilehit=pwalltile;
-                                    HitHorizWall();
+                                    HitHorizWall(vbuf, vbufPitch);
                                 }
                             }
                         }
@@ -1297,7 +1297,7 @@ vertentry:
                     {
                         xintercept=xtile<<TILESHIFT;
                         ytile = (short) (yintercept >> TILESHIFT);
-                        HitVertWall();
+                        HitVertWall(vbuf, vbufPitch);
                     }
                 }
                 break;
@@ -1325,7 +1325,7 @@ horizentry:
                 else if(xintercept>=(mapwidth<<TILESHIFT)) xintercept=mapwidth<<TILESHIFT, xtile=mapwidth-1;
                 xspot=0xffff;
                 tilehit=0;
-                HitVertBorder();
+                HitVertBorder(vbuf, vbufPitch);
                 break;
             }
             if(yspot>=maparea) break;
@@ -1342,7 +1342,7 @@ horizentry:
                     xintercept=xintbuf;
                     yintercept=(ytile<<TILESHIFT)+0x8000;
                     xtile = (short) (xintercept >> TILESHIFT);
-                    HitHorizDoor();
+                    HitHorizDoor(vbuf, vbufPitch);
                 }
                 else
                 {
@@ -1374,7 +1374,7 @@ horizentry:
                                 xintercept=xintbuf;
                                 xtile = (short) (xintercept >> TILESHIFT);
                                 tilehit=pwalltile;
-                                HitHorizWall();
+                                HitHorizWall(vbuf, vbufPitch);
                             }
                             else
                             {
@@ -1386,7 +1386,7 @@ horizentry:
                                 xintercept=xintbuf;
                                 xtile = (short) (xintercept >> TILESHIFT);
                                 tilehit=pwalltile;
-                                HitHorizWall();
+                                HitHorizWall(vbuf, vbufPitch);
                             }
                         }
                         else
@@ -1409,7 +1409,7 @@ horizentry:
                                     yintercept=yintercept-((ystep*(64-pwallpos))>>6);
                                     ytile = (short) (yintercept >> TILESHIFT);
                                     tilehit=pwalltile;
-                                    HitVertWall();
+                                    HitVertWall(vbuf, vbufPitch);
                                 }
                                 else
                                 {
@@ -1417,7 +1417,7 @@ horizentry:
                                     yintercept=ytile<<TILESHIFT;
                                     xtile = (short) (xintercept >> TILESHIFT);
                                     tilehit=pwalltile;
-                                    HitHorizWall();
+                                    HitHorizWall(vbuf, vbufPitch);
                                 }
                             }
                             else
@@ -1428,7 +1428,7 @@ horizentry:
                                     yintercept=ytile<<TILESHIFT;
                                     xtile = (short) (xintercept >> TILESHIFT);
                                     tilehit=pwalltile;
-                                    HitHorizWall();
+                                    HitHorizWall(vbuf, vbufPitch);
                                 }
                                 else
                                 {
@@ -1443,7 +1443,7 @@ horizentry:
                                     yintercept=yintercept-((ystep*pwallpos)>>6);
                                     ytile = (short) (yintercept >> TILESHIFT);
                                     tilehit=pwalltile;
-                                    HitVertWall();
+                                    HitVertWall(vbuf, vbufPitch);
                                 }
                             }
                         }
@@ -1452,7 +1452,7 @@ horizentry:
                     {
                         yintercept=ytile<<TILESHIFT;
                         xtile = (short) (xintercept >> TILESHIFT);
-                        HitHorizWall();
+                        HitHorizWall(vbuf, vbufPitch);
                     }
                 }
                 break;
@@ -1475,7 +1475,7 @@ passhoriz:
 ====================
 */
 
-void WallRefresh (void)
+void WallRefresh (byte *vbuf, unsigned vbufPitch)
 {
     xpartialdown = viewx&(TILEGLOBAL-1);
     xpartialup = TILEGLOBAL-xpartialdown;
@@ -1484,8 +1484,8 @@ void WallRefresh (void)
 
     min_wallheight = viewheight;
     lastside = -1;                  // the first pixel is on a new wall
-    AsmRefresh ();
-    ScalePost ();                   // no more optimization on last post
+    AsmRefresh (vbuf, vbufPitch);
+    ScalePost (vbuf, vbufPitch);                   // no more optimization on last post
 }
 
 void CalcViewVariables()
@@ -1524,18 +1524,18 @@ void    ThreeDRefresh (void)
     memset(spotvis,0,maparea);
     spotvis[player->tilex][player->tiley] = 1;       // Detect all sprites over player fix
 
-    vbuf = VL_LockSurface(GetScreenBuffer());
+    byte *vbuf = VL_LockSurface(GetScreenBuffer());
     vbuf+=screenofs;
-    vbufPitch = bufferPitch;
+    unsigned vbufPitch = bufferPitch;
 
     CalcViewVariables();
 
 //
 // follow the walls from there to the right, drawing as we go
 //
-    VGAClearScreen ();
+    VGAClearScreen (vbuf, vbufPitch);
 
-    WallRefresh ();
+    WallRefresh (vbuf, vbufPitch);
 
     
 
@@ -1543,10 +1543,10 @@ void    ThreeDRefresh (void)
 // draw all the scaled images
 //
     
-    DrawScaleds();                  // draw scaled stuff
+    DrawScaleds(vbuf, vbufPitch);                  // draw scaled stuff
 
 
-    DrawPlayerWeapon ();    // draw player's hands
+    DrawPlayerWeapon (vbuf, vbufPitch);    // draw player's hands
 
     if(Keyboard[sc_Tab] && viewsize == 21 && gamestate.weapon != -1)
         ShowActStatus();
@@ -1560,7 +1560,7 @@ void    ThreeDRefresh (void)
 
     if (fizzlein)
     {
-        FizzleFade(GetScreenBuffer(), 0, 0, screenWidth, screenHeight, 20, false);
+        FizzleFade(0, 0, screenWidth, screenHeight, 20, false);
         fizzlein = false;
 
         lasttimecount = GetTimeCount();          // don't make a big tic count

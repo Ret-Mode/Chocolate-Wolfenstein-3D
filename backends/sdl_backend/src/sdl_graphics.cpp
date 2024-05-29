@@ -567,12 +567,12 @@ void LoadLatchMemory (void) {
     }
 }
 
-int SubFizzleFade (void *src, int x1, int y1,
+int SubFizzleFade (int x1, int y1,
                        unsigned width, unsigned height, 
                        unsigned frames, int abortable,
                        int rndbits_y, int rndmask)
 {
-    SDL_Surface *source = (SDL_Surface*) src;
+    SDL_Surface *source = (SDL_Surface *)GetScreenBuffer();
     unsigned x, y, frame, pixperframe;
     int32_t  rndval, lastrndval;
     int      first = 1;
