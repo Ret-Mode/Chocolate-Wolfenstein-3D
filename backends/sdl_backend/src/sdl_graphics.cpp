@@ -158,6 +158,10 @@ void *GetScreenBuffer(void) {
     return (void *)screenBuffer;
 }
 
+static void *GetScreen(void) {
+    return (void *) screen;
+}
+
 static void GetCurrentPaletteColor(int color, int *red, int *green, int *blue) {
     SDL_Color *col = &curpal[color];
     *red = col->r;
@@ -203,11 +207,7 @@ static void GetWholePalette(void *palette) {
     memcpy(palette, curpal, sizeof(SDL_Color) * 256);
 }
 
-void *GetScreen(void) {
-    return (void *) screen;
-}
-
-void *GetCurSurface(void) {
+static void *GetCurSurface(void) {
     return (void*) curSurface;
 }
 
@@ -1175,4 +1175,57 @@ static void VL_ScreenToScreen (void *source, void *dest)
 void VH_UpdateScreen()
 {
     VL_ScreenToScreen(GetScreenBuffer(), GetScreen());
+}
+
+void VWB_DrawPropString(const char* string)
+{
+    fontstruct  *font;
+    int         width, step, height;
+    byte        *source, *dest;
+    byte        ch;
+
+    byte *vbuf = VL_LockSurface(GetCurSurface());
+
+    font = (fontstruct *) grsegs[STARTFONT+fontnumber];
+    height = font->height;
+    dest = vbuf + scaleFactor * (py * curPitch + px);
+
+    while ((ch = (byte)*string++)!=0)
+    {
+        width = step = font->width[ch];
+        source = ((byte *)font)+font->location[ch];
+        while (width--)
+        {
+            for(int i=0;i<height;i++)
+            {
+                if(source[i*step])
+                {
+                    for(unsigned sy=0; sy<scaleFactor; sy++)
+                        for(unsigned sx=0; sx<scaleFactor; sx++)
+                            dest[(scaleFactor*i+sy)*curPitch+sx]=fontcolor;
+                }
+            }
+
+            source++;
+            px++;
+            dest+=scaleFactor;
+        }
+    }
+
+    VL_UnlockSurface(GetCurSurface());
+}
+
+void BlitPictureToScreen(unsigned char *pic) {
+    byte *vbuf = VL_LockSurface(GetCurSurface());
+    for(int y = 0, scy = 0; y < 200; y++, scy += scaleFactor)
+    {
+        for(int x = 0, scx = 0; x < 320; x++, scx += scaleFactor)
+        {
+            byte col = pic[(y * 80 + (x >> 2)) + (x & 3) * 80 * 200];
+            for(unsigned i = 0; i < scaleFactor; i++)
+                for(unsigned j = 0; j < scaleFactor; j++)
+                    vbuf[(scy + i) * curPitch + scx + j] = col;
+        }
+    } 
+    VL_UnlockSurface(GetCurSurface());
 }

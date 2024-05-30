@@ -70,7 +70,6 @@ void VL_MungePic                (byte *source, unsigned width, unsigned height);
 void VL_DrawPicBare             (int x, int y, byte *pic, int width, int height);
 void VL_MemToLatch              (byte *source, int width, int height,
                                     void *destSurface, int x, int y);
-void VL_ScreenToScreen          (void *source, void *dest);
 void VL_MemToScreenScaledCoord  (byte *source, int width, int height, int scx, int scy);
 void VL_MemToScreenScaledCoord  (byte *source, int origwidth, int origheight, int srcx, int srcy,
                                     int destx, int desty, int width, int height);

@@ -26,6 +26,7 @@ static int height;
 GLuint crtTexture;
 
 unsigned char coloredFrameBuffer[320*200*3];
+void ConvertPaletteToRGB(unsigned char *pixelPointer, int width, int height);
 
 void CRT_Init(int _width){
     width  = _width;

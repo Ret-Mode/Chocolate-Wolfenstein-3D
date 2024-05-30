@@ -222,24 +222,9 @@ unsigned int GetMilliseconds(void) {
     return 0;
 }
 
-extern void *_GetScreenBuffer(void);
-void *GetScreenBuffer(void) {
-    return NULL;
-}
-
 extern void _SetWholePalette(void *palette, int forceupdate);
 void SetWholePalette(void *palette, int forceupdate) {
     ;
-}
-
-extern void *_GetScreen(void);
-void *GetScreen(void) {
-    return NULL;
-}
-
-extern void *_GetCurSurface(void);
-void *GetCurSurface(void) {
-    return NULL;
 }
 
 extern void _ClearCurrentSurface(unsigned int color);
@@ -254,11 +239,6 @@ void *GetGamePal(void) {
 
 extern void _CenterWindow(void);
 void CenterWindow(void) {
-    ;
-}
-
-extern void _ConvertPaletteToRGB(unsigned char *pixelPointer, int width, int height);
-void ConvertPaletteToRGB(unsigned char *pixelPointer, int width, int height) {
     ;
 }
 
@@ -634,5 +614,14 @@ void VH_UpdateScreen()
 
 void    ThreeDRefresh (void)
 {
+    ;
+}
+
+void VWB_DrawPropString(const char* string)
+{
+    ;
+}
+
+void BlitPictureToScreen(unsigned char *pic) {
     ;
 }

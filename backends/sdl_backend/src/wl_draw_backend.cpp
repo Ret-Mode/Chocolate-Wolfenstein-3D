@@ -39,50 +39,39 @@ static int fps=0;
 static int min_wallheight;
 
 //
-// math tables
-//
-
-// int32_t finetangent[FINEANGLES/4];
-// fixed sintable[ANGLES+ANGLES/4];
-// fixed *costable = sintable+(ANGLES/4);
-
-//
 // refresh variables
 //
 
-
 void    ThreeDRefresh (void);
-
-
-
+void *GetScreenBuffer(void);
 //
 // wall optimization variables
 //
-int     lastside;               // true for vertical
-int32_t    lastintercept;
-int     lasttilehit;
-int     lasttexture;
+static int     lastside;               // true for vertical
+static int32_t    lastintercept;
+static int     lasttilehit;
+static int     lasttexture;
 
 //
 // ray tracing variables
 //
 
-longword xpartialup,xpartialdown,ypartialup,ypartialdown;
+static longword xpartialup;
+static longword xpartialdown;
+static longword ypartialup;
+static longword ypartialdown;
 
+static word    tilehit;
+static int     pixx;
 
-
-word    tilehit;
-int     pixx;
-
-short   xtile,ytile;
-short   xtilestep,ytilestep;
-int32_t    xintercept,yintercept;
-word    xstep,ystep;
-word    xspot,yspot;
-int     texdelta;
-
-
-
+static short   xtile,ytile;
+static short   xtilestep;
+static short   ytilestep;
+static int32_t    xintercept;
+static int32_t    yintercept;
+static word    xspot;
+static word    yspot;
+static int     texdelta;
 
 /*
 ============================================================================

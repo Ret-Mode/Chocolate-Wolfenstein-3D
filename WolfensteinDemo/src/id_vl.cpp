@@ -73,10 +73,9 @@ void    VL_SetVGAPlaneMode (void)
     SetVGAMode(&screenWidth, &screenHeight, 
                 &screenPitch, &bufferPitch, 
                 &curPitch, &scaleFactor);
-    pixelangle = (short *) malloc(screenWidth * sizeof(short));
-    CHECKMALLOCRESULT(pixelangle);
-    wallheight = (int *) malloc(screenWidth * sizeof(int));
-    CHECKMALLOCRESULT(wallheight);
+    SetPixelAngleArray(screenWidth);
+    SetWallHeight(screenWidth);
+
 }
 
 /*

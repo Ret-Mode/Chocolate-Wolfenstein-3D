@@ -9,43 +9,44 @@ int     fontnumber;
 
 //==========================================================================
 
-void VWB_DrawPropString(const char* string)
-{
-    fontstruct  *font;
-    int         width, step, height;
-    byte        *source, *dest;
-    byte        ch;
+// Moved to backend
+// void VWB_DrawPropString(const char* string)
+// {
+//     fontstruct  *font;
+//     int         width, step, height;
+//     byte        *source, *dest;
+//     byte        ch;
 
-    byte *vbuf = VL_LockSurface(GetCurSurface());
+//     byte *vbuf = VL_LockSurface(GetCurSurface());
 
-    font = (fontstruct *) grsegs[STARTFONT+fontnumber];
-    height = font->height;
-    dest = vbuf + scaleFactor * (py * curPitch + px);
+//     font = (fontstruct *) grsegs[STARTFONT+fontnumber];
+//     height = font->height;
+//     dest = vbuf + scaleFactor * (py * curPitch + px);
 
-    while ((ch = (byte)*string++)!=0)
-    {
-        width = step = font->width[ch];
-        source = ((byte *)font)+font->location[ch];
-        while (width--)
-        {
-            for(int i=0;i<height;i++)
-            {
-                if(source[i*step])
-                {
-                    for(unsigned sy=0; sy<scaleFactor; sy++)
-                        for(unsigned sx=0; sx<scaleFactor; sx++)
-                            dest[(scaleFactor*i+sy)*curPitch+sx]=fontcolor;
-                }
-            }
+//     while ((ch = (byte)*string++)!=0)
+//     {
+//         width = step = font->width[ch];
+//         source = ((byte *)font)+font->location[ch];
+//         while (width--)
+//         {
+//             for(int i=0;i<height;i++)
+//             {
+//                 if(source[i*step])
+//                 {
+//                     for(unsigned sy=0; sy<scaleFactor; sy++)
+//                         for(unsigned sx=0; sx<scaleFactor; sx++)
+//                             dest[(scaleFactor*i+sy)*curPitch+sx]=fontcolor;
+//                 }
+//             }
 
-            source++;
-            px++;
-            dest+=scaleFactor;
-        }
-    }
+//             source++;
+//             px++;
+//             dest+=scaleFactor;
+//         }
+//     }
 
-    VL_UnlockSurface(GetCurSurface());
-}
+//     VL_UnlockSurface(GetCurSurface());
+// }
 
 /*
 =================

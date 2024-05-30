@@ -980,19 +980,7 @@ void CA_CacheScreen (int chunk)
     byte *pic = (byte *) malloc(64000);
     CHECKMALLOCRESULT(pic);
     CAL_HuffExpand((byte *) source, pic, expanded, grhuffman);
-
-    byte *vbuf = VL_LockSurface(GetCurSurface());
-    for(int y = 0, scy = 0; y < 200; y++, scy += scaleFactor)
-    {
-        for(int x = 0, scx = 0; x < 320; x++, scx += scaleFactor)
-        {
-            byte col = pic[(y * 80 + (x >> 2)) + (x & 3) * 80 * 200];
-            for(unsigned i = 0; i < scaleFactor; i++)
-                for(unsigned j = 0; j < scaleFactor; j++)
-                    vbuf[(scy + i) * curPitch + scx + j] = col;
-        }
-    } 
-    VL_UnlockSurface(GetCurSurface());
+    BlitPictureToScreen(pic);
     free(pic);
     free(bigbufferseg);
 }
