@@ -173,6 +173,10 @@ static unsigned GetScreenBits(void) {
     return screenBits;
 }
 
+static void *GetCurSurface(void) {
+    return (void*) curSurface;
+}
+
 void SetWholePalette(void *palette, int forceupdate) {
     memcpy(curpal, (SDL_Color *)palette, sizeof(SDL_Color) * 256);
 
@@ -184,7 +188,6 @@ void SetWholePalette(void *palette, int forceupdate) {
         if(forceupdate)
         {
             SDL_BlitSurface((SDL_Surface *)GetScreenBuffer(), NULL, (SDL_Surface *)GetScreen(), NULL);
-            //SDL_Flip((SDL_Surface *)GetScreen());
             CRT_DAC();
         }
     }
@@ -205,10 +208,6 @@ static void FillPalette(int red, int green, int blue) {
 
 static void GetWholePalette(void *palette) {
     memcpy(palette, curpal, sizeof(SDL_Color) * 256);
-}
-
-static void *GetCurSurface(void) {
-    return (void*) curSurface;
 }
 
 static unsigned char *GetCurSurfacePixels(void) {

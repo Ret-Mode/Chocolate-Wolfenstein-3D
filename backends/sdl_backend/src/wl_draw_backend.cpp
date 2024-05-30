@@ -42,8 +42,8 @@ static int min_wallheight;
 // refresh variables
 //
 
-void    ThreeDRefresh (void);
-void *GetScreenBuffer(void);
+
+extern void *GetScreenBuffer(void);
 //
 // wall optimization variables
 //

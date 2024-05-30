@@ -58,6 +58,112 @@ static void error_callback(int error, const char* description)
  
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+
+    // switch (action)
+    // {
+    //     // exit if the window is closed
+    //     case SDL_QUIT:
+    //         Quit(NULL);
+
+    //     // check for keypresses
+    //     case GLFW_PRESS:
+    //     {
+    //         if(key == GLFW_KEY_SCROLL_LOCK || key == GLFW_KEY_F12)
+    //         {
+    //             GrabInput = !GrabInput;
+    //             SDL_WM_GrabInput(GrabInput ? SDL_GRAB_ON : SDL_GRAB_OFF);
+    //             return;
+    //         }
+
+    //         LastScan = key;
+    //         SDLMod mod = SDL_GetModState();
+    //         if(Keyboard[sc_Alt])
+    //         {
+    //             if(LastScan==SDLK_F4)
+    //                 Quit(NULL);
+    //         }
+
+    //         if(LastScan == SDLK_KP_ENTER) LastScan = SDLK_RETURN;
+    //         else if(LastScan == SDLK_RSHIFT) LastScan = SDLK_LSHIFT;
+    //         else if(LastScan == SDLK_RALT) LastScan = SDLK_LALT;
+    //         else if(LastScan == SDLK_RCTRL) LastScan = SDLK_LCTRL;
+    //         else
+    //         {
+    //             if((mod & KMOD_NUM) == 0)
+    //             {
+    //                 switch(LastScan)
+    //                 {
+    //                     case SDLK_KP2: LastScan = SDLK_DOWN; break;
+    //                     case SDLK_KP4: LastScan = SDLK_LEFT; break;
+    //                     case SDLK_KP6: LastScan = SDLK_RIGHT; break;
+    //                     case SDLK_KP8: LastScan = SDLK_UP; break;
+    //                 }
+    //             }
+    //         }
+
+    //         int sym = LastScan;
+    //         if(sym >= 'a' && sym <= 'z')
+    //             sym -= 32;  // convert to uppercase
+
+    //         if(mod & (KMOD_SHIFT | KMOD_CAPS))
+    //         {
+    //             if(sym < lengthof(ShiftNames) && ShiftNames[sym])
+    //                 LastASCII = ShiftNames[sym];
+    //         }
+    //         else
+    //         {
+    //             if(sym < lengthof(ASCIINames) && ASCIINames[sym])
+    //                 LastASCII = ASCIINames[sym];
+    //         }
+
+	// 		if (LastScan<SDLK_i){
+	// 		}
+
+	// 		if(LastScan<SDLK_LAST){
+    //             Keyboard[LastScan] = 1;
+	// 		}
+    //         if(LastScan == SDLK_PAUSE)
+    //             Paused = true;
+    //         break;
+    //     }
+
+    //     case GLFW_RELEASE:
+    //     {
+            
+    //         if(key == SDLK_KP_ENTER) key = SDLK_RETURN;
+    //         else if(key == SDLK_RSHIFT) key = SDLK_LSHIFT;
+    //         else if(key == SDLK_RALT) key = SDLK_LALT;
+    //         else if(key == SDLK_RCTRL) key = SDLK_LCTRL;
+    //         else
+    //         {
+    //             if((SDL_GetModState() & KMOD_NUM) == 0)
+    //             {
+    //                 switch(key)
+    //                 {
+    //                     case SDLK_KP2: key = SDLK_DOWN; break;
+    //                     case SDLK_KP4: key = SDLK_LEFT; break;
+    //                     case SDLK_KP6: key = SDLK_RIGHT; break;
+    //                     case SDLK_KP8: key = SDLK_UP; break;
+    //                 }
+    //             }
+    //         }
+
+	// 		if(key<SDLK_LAST){
+    //             Keyboard[key] = 0;
+	// 		}
+    //         break;
+    //     }
+    // }
+
+
+
+
+
+
+
+
+
+
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
@@ -72,10 +178,8 @@ static void resize_callback(GLFWwindow* window, int width, int height) {
         int diff = (wr - hr) / (240*2);
         glViewport(diff,0, hr/240, hr/320);
     }
+    glClear(GL_COLOR_BUFFER_BIT);
 }
- 
-
-
 
 int initGlfw(void)
 {
@@ -87,6 +191,7 @@ int initGlfw(void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_SAMPLES, 0);
  
     window = glfwCreateWindow(640, 480, "Chocolate Wolfenstein 3d", NULL, NULL);
     if (!window)
@@ -196,48 +301,40 @@ int initGlfw(void)
 
 /* IMPL ******************************************************************/
 
-extern void _DelayWolfTicks(int ticks);
 void DelayWolfTicks(int ticks) {
     ;
 }
 
-extern void _DelayMilliseconds(int milliseconds);
 void DelayMilliseconds(int milliseconds) {
     ;
 }
 
-extern void _DelayVBL(int param);
 void DelayVBL(int param) {
 
     ;
 }
 
-extern unsigned int _GetWolfTicks(void); 
 unsigned int GetWolfTicks(void) {
     return 0;
 }
 
-extern unsigned int _GetMilliseconds(void);
 unsigned int GetMilliseconds(void) {
     return 0;
 }
 
-extern void _SetWholePalette(void *palette, int forceupdate);
+/* This function should swap buffers */
 void SetWholePalette(void *palette, int forceupdate) {
     ;
 }
 
-extern void _ClearCurrentSurface(unsigned int color);
 void ClearCurrentSurface(unsigned int color) {
    ;
 }
 
-extern void *_GetGamePal(void);
 void *GetGamePal(void) {
     return NULL;
 }
 
-extern void _CenterWindow(void);
 void CenterWindow(void) {
     ;
 }
@@ -254,47 +351,38 @@ void InitGraphics(void) {
     atexit(cleanup);
 }
 
-extern void _ReadMouseState(int *btns, int *mx, int *my);
 void ReadMouseState(int *btns, int *mx, int *my) {
     ;
 }
 
-extern void _CenterMouse(int width, int height);
 void CenterMouse(int width, int height) {
     ;
 }
 
-extern void _InitRedShifts (void);
 void InitRedShifts (void) {
     ;
 }
 
-extern void _InitWhiteShifts (void);
 void InitWhiteShifts (void) {
     ;
 }
 
-extern int _GetWhitePaletteShifts(void);
 int GetWhitePaletteShifts(void) {
     return 0;
 }
 
-extern int _GetRedPaletteShifts(void);
 int GetRedPaletteShifts(void) {
     return 0;
 }
 
-extern int _GetWhitePaletteSwapMs(void);
 int GetWhitePaletteSwapMs(void) {
     return 0;
 }
 
-extern void* _GetRedPaletteShifted(int which);
 void* GetRedPaletteShifted(int which) {
     return NULL;
 }
 
-extern void* _GetWhitePaletteShifted(int which);
 void* GetWhitePaletteShifted(int which) {
     return NULL;
 }
@@ -333,6 +421,7 @@ void LoadLatchMemory (void) {
     ;
 }
 
+/* This function should swap buffers */
 extern int _SubFizzleFade (void *src, int x1, int y1,
                        unsigned width, unsigned height, 
                        unsigned frames, int abortable,
@@ -607,6 +696,7 @@ static void VL_ScreenToScreen (void *source, void *dest)
     ;
 }
 
+/* this function should swap buffers*/
 void VH_UpdateScreen()
 {
     ;
