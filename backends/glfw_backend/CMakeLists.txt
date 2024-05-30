@@ -15,8 +15,6 @@ endif()
 find_package(OpenGL REQUIRED)
 
 set(bFiles
-  #${CMAKE_CURRENT_SOURCE_DIR}/src/crt.cpp
-  #${CMAKE_CURRENT_SOURCE_DIR}/src/sdl_graphics.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/sdl_keys.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/miniaudio_impl.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/glfw_impl.cpp
