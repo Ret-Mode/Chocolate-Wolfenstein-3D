@@ -357,7 +357,7 @@ extern int _SubFizzleFade (void *src, int x1, int y1,
                        unsigned width, unsigned height, 
                        unsigned frames, int abortable,
                        int rndbits_y, int rndmask);
-int SubFizzleFade (void *src, int x1, int y1,
+int SubFizzleFade (int x1, int y1,
                        unsigned width, unsigned height, 
                        unsigned frames, int abortable,
                        int rndbits_y, int rndmask){
@@ -618,6 +618,16 @@ unsigned char *VL_LockSurface(void* surface)
 }
 
 void VL_UnlockSurface(void *surface)
+{
+    ;
+}
+
+static void VL_ScreenToScreen (void *source, void *dest)
+{
+    ;
+}
+
+void VH_UpdateScreen()
 {
     ;
 }
