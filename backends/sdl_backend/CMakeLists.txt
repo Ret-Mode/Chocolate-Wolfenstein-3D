@@ -9,6 +9,7 @@ set(bFiles
   ${CMAKE_CURRENT_SOURCE_DIR}/src/sdl_music.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/sdl_graphics.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/sdl_keys.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/wl_draw_backend.cpp
   PARENT_SCOPE)
 
 set(bIncludes

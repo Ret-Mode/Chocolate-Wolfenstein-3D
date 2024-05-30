@@ -631,3 +631,8 @@ void VH_UpdateScreen()
 {
     ;
 }
+
+void    ThreeDRefresh (void)
+{
+    ;
+}

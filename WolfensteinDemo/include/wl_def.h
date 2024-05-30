@@ -987,6 +987,7 @@ extern  fixed   viewx,viewy;                    // the focal point
 extern  fixed   viewsin,viewcos;
 
 void    ThreeDRefresh (void);
+unsigned char *GetVgaCeiling(void);
 void    CalcTics (void);
 
 typedef struct
