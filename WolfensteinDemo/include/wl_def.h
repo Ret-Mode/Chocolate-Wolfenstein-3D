@@ -985,10 +985,15 @@ extern  boolean fizzlein, fpscounter;
 
 extern  fixed   viewx,viewy;                    // the focal point
 extern  fixed   viewsin,viewcos;
+extern short    focaltx,focalty;
+extern short    midangle;
 
-void    ThreeDRefresh (void);
+void   ThreeDRefresh (void);
 unsigned char *GetVgaCeiling(void);
-void    CalcTics (void);
+void   CalcTics (void);
+void   CalcViewVariables(void);
+void   SetPixelAngleArray(int screenWidth);
+void   SetWallHeight(int screenWidth);
 
 typedef struct
 {

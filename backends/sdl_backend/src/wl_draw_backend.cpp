@@ -29,31 +29,27 @@
 static byte *vbuf = NULL;
 static unsigned vbufPitch = 0;
 
-int32_t    lasttimecount;
-int32_t    frameon;
-boolean fpscounter;
+
 
 static int fps_frames=0;
 static int fps_time=0;
 static int fps=0;
 
-int *wallheight;
+
 static int min_wallheight;
 
 //
 // math tables
 //
-short *pixelangle;
-int32_t finetangent[FINEANGLES/4];
-fixed sintable[ANGLES+ANGLES/4];
-fixed *costable = sintable+(ANGLES/4);
+
+// int32_t finetangent[FINEANGLES/4];
+// fixed sintable[ANGLES+ANGLES/4];
+// fixed *costable = sintable+(ANGLES/4);
 
 //
 // refresh variables
 //
-fixed   viewx,viewy;                    // the focal point
-short   viewangle;
-fixed   viewsin,viewcos;
+
 
 void    ThreeDRefresh (void);
 
@@ -70,10 +66,10 @@ int     lasttexture;
 //
 // ray tracing variables
 //
-short    focaltx,focalty,viewtx,viewty;
+
 longword xpartialup,xpartialdown,ypartialup,ypartialdown;
 
-short   midangle,angle;
+
 
 word    tilehit;
 int     pixx;
@@ -85,7 +81,7 @@ word    xstep,ystep;
 word    xspot,yspot;
 int     texdelta;
 
-word horizwall[MAXWALLTILES],vertwall[MAXWALLTILES];
+
 
 
 /*
@@ -1438,23 +1434,7 @@ static void WallRefresh (void)
     ScalePost ();                   // no more optimization on last post
 }
 
-static void CalcViewVariables()
-{
-    viewangle = player->angle;
-    //printf("\nvieangle=%d\n",viewangle);
-    midangle = viewangle*(FINEANGLES/ANGLES);
-    viewsin = sintable[viewangle];
-    viewcos = costable[viewangle];
-    //printf("%d\n",viewcos);
-    viewx = player->x - FixedMul(focallength,viewcos);
-    viewy = player->y + FixedMul(focallength,viewsin);
 
-    focaltx = (short)(viewx>>TILESHIFT);
-    focalty = (short)(viewy>>TILESHIFT);
-
-    viewtx = (short)(player->x >> TILESHIFT);
-    viewty = (short)(player->y >> TILESHIFT);
-}
 
 //==========================================================================
 
@@ -1546,3 +1526,4 @@ void    ThreeDRefresh (void)
     }
 #endif
 }
+

@@ -5,6 +5,72 @@
 #include "sdl_graphics.h"
 #pragma hdrstop
 
+int32_t finetangent[FINEANGLES/4];
+fixed sintable[ANGLES+ANGLES/4];
+fixed *costable = sintable+(ANGLES/4);
+
+int32_t    lasttimecount;
+int32_t    frameon;
+boolean    fpscounter;
+
+short   midangle,angle;
+fixed   viewx,viewy;                    // the focal point
+short   viewangle;
+fixed   viewsin,viewcos;
+short   focaltx,focalty,viewtx,viewty;
+word horizwall[MAXWALLTILES],vertwall[MAXWALLTILES];
+
+short *pixelangle;
+int *wallheight;
+
+void SetPixelAngleArray(int screenWidth) {
+    void *newPixelAngle = (short *) malloc(screenWidth * sizeof(short));
+    if (pixelangle) {
+        void *oldPixelAngle = pixelangle;
+        pixelangle = (short *)newPixelAngle;
+        free(oldPixelAngle);
+    } else {
+        pixelangle = (short *)newPixelAngle;
+    }
+    if (pixelangle) {
+        memset(pixelangle, 0x0, screenWidth * sizeof(short));
+    }
+    CHECKMALLOCRESULT(pixelangle);
+}
+
+void SetWallHeight(int screenWidth) {
+    void *newWallHeight = (int *) malloc(screenWidth * sizeof(int));
+    if (wallheight) {
+        void *oldWallHeight = wallheight;
+        wallheight = (int *)newWallHeight;
+        free(oldWallHeight);
+    } else {
+        wallheight = (int *)newWallHeight;
+    }
+    if (wallheight) {
+        memset(wallheight, 0x0, screenWidth * sizeof(int));
+    }
+    CHECKMALLOCRESULT(wallheight);
+}
+
+void CalcViewVariables(void)
+{
+    viewangle = player->angle;
+    //printf("\nvieangle=%d\n",viewangle);
+    midangle = viewangle*(FINEANGLES/ANGLES);
+    viewsin = sintable[viewangle];
+    viewcos = costable[viewangle];
+    //printf("%d\n",viewcos);
+    viewx = player->x - FixedMul(focallength,viewcos);
+    viewy = player->y + FixedMul(focallength,viewsin);
+
+    focaltx = (short)(viewx>>TILESHIFT);
+    focalty = (short)(viewy>>TILESHIFT);
+
+    viewtx = (short)(player->x >> TILESHIFT);
+    viewty = (short)(player->y >> TILESHIFT);
+}
+
 static byte vgaCeiling[]=
 {
 
