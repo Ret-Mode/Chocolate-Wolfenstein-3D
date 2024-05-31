@@ -26,7 +26,7 @@ void PaletteFadeIn(int start, int end, void *platettePtr, int steps);
 void SaveBitmap(char *filename);
 int GetMouseButtons(void);
 void SetVGAMode(unsigned *scrWidth, unsigned *scrHeight, 
-                unsigned *scrPitch, unsigned *bufPitch, 
+                unsigned *bufPitch, 
                 unsigned *currPitch, unsigned *sclFactor);
 void LoadLatchMemory (void);
 int SubFizzleFade (int x1, int y1,

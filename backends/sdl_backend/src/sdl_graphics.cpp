@@ -461,7 +461,7 @@ unsigned GetScreenBufferPitch(void) {
 }
 
 void SetVGAMode(unsigned *scrWidth, unsigned *scrHeight, 
-                unsigned *scrPitch, unsigned *bufPitch, 
+                unsigned *bufPitch, 
                 unsigned *currPitch, unsigned *sclFactor)  {
 
     SDL_WM_SetCaption("Wolfenstein 3D", NULL);
@@ -507,8 +507,6 @@ void SetVGAMode(unsigned *scrWidth, unsigned *scrHeight,
     SDL_SetColors(screenBuffer, (SDL_Color*)gamepal, 0, 256);
 
     *bufPitch = screenBuffer->pitch;
-
-    *scrPitch = screen->pitch;
 
     curSurface = screenBuffer;
     *currPitch = *bufPitch;
