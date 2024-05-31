@@ -25,7 +25,7 @@ unsigned screenWidth = 640;
 unsigned screenHeight = 480;
 
 //SDL_Surface *screen = NULL;
-unsigned screenPitch;
+//unsigned screenPitch;
 
 //SDL_Surface *screenBuffer = NULL;
 unsigned bufferPitch;
@@ -71,7 +71,7 @@ void    VL_Shutdown (void)
 void    VL_SetVGAPlaneMode (void)
 {
     SetVGAMode(&screenWidth, &screenHeight, 
-                &screenPitch, &bufferPitch, 
+                &bufferPitch, 
                 &curPitch, &scaleFactor);
     SetPixelAngleArray(screenWidth);
     SetWallHeight(screenWidth);
