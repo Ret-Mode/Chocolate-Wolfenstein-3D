@@ -4,9 +4,18 @@
 #include <stdint.h>
 
 #define PACK_EMPTY 0
-#define PACK_STARTED 1
-#define PACK_FULL 2
-#define PACK_DATA 4
+#define PACK_UL_STARTED (1)
+#define PACK_UL_FULL (2)
+#define PACK_UL_DATA (3)
+#define PACK_UR_STARTED (1 << 2)
+#define PACK_UR_FULL (2 << 2)
+#define PACK_UR_DATA (3 << 2)
+#define PACK_DL_STARTED (1 << 4)
+#define PACK_DL_FULL (2 << 4)
+#define PACK_DL_DATA (3 << 4)
+#define PACK_DR_STARTED (1 << 6)
+#define PACK_DR_FULL (2 << 6)
+#define PACK_DR_DATA (3 << 6)
 
 struct pixelData_t {
     uint16_t x;
@@ -17,25 +26,16 @@ struct pixelData_t {
 };
 
 struct level_t {
-    union {
-        level_t *ul;
-        pixelData_t *uld;
-    };
-    union {
-        level_t *ur;
-        pixelData_t *urd;
-    };
-    union {
-        level_t *dl;
-        pixelData_t *dld;
-    };
-    union {
-        level_t *ur;
-        pixelData_t *urd;
-    };
+    level_t *ul;
+    level_t *ur;
+    level_t *dl;
+    level_t *dr;
     uint16_t dimension;
-    uint8_t flags[4];
-    uint8_t padding[2];
+    uint8_t flagsRed;
+    uint8_t flagsGreen;
+    uint8_t flagsBlue;
+    uint8_t flagsAlpha;
+    uint16_t padding;
 };
 
 static struct textureHead_t {
@@ -49,15 +49,22 @@ static struct textureHead_t {
     uint32_t dataStackCurrent;
 } textureHead;
 
+static pixelData_t *DuPackAddPixelData(uint8_t colorMask, uint8_t *data) {
+    if (textureHead.dataStackCurrent < textureHead.dataStackSize) {
+        pixelData_t *level = textureHead.dataStack + textureHead.dataStackCurrent;
+        textureHead.dataStackCurrent++;
+        // initailize
+        return level;
+    }
+    return NULL;
+}
+
 static level_t *DuPackAddLevel(uint16_t dimension) {
     if (textureHead.textureStackCurrent < textureHead.textureStackSize) {
         level_t *level = textureHead.textureStack + textureHead.textureStackCurrent;
         textureHead.textureStackCurrent++;
         level->dimension = dimension;
-        level->flags[0] = PACK_EMPTY;
-        level->flags[1] = PACK_EMPTY;
-        level->flags[2] = PACK_EMPTY;
-        level->flags[3] = PACK_EMPTY;
+        level->flagsRed = level->flagsGreen = level->flagsBlue = level->flagsAlpha = 0;
         return level;
     }
     return NULL;
@@ -89,19 +96,22 @@ void DuPackInit(unsigned int textureSize,
 
 }
 
-static level_t *DuPackAddTextureRec(uint16_t dimension, uint8_t *data, level_t *level) {
+static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint8_t *data, uint16_t left, uint16_t bottom, level_t *level) {
     if (dimension <= level->dimension / 2) {
-        // descend
+
     } else if (dimension <= level->dimension) {
-        if (level->flags[0] == PACK_EMPTY && level->flags[1] == PACK_EMPTY && level->flags[2] == PACK_EMPTY && level->flags[3] == PACK_EMPTY) {
-            return level;
+        if (level->flagsRed == PACK_EMPTY) {
+            // allocate red
+            level->flagsRed = PACK_DL_DATA | PACK_DR_DATA | PACK_UL_DATA | PACK_UR_DATA;
+            // return allocation
         }
     }
+    return NULL;
 }
 
 void DuPackAddTexture(int width, int height, unsigned char *data) {
     uint16_t dimension = (uint16_t) (width > height ? width : height);
 
-    level_t * level = DuPackAddTextureRec(dimension, data, textureHead.textureStack);
+    pixelData_t * level = DuPackAddTextureRec(dimension, data, 0, 0, textureHead.textureStack);
 
 }
