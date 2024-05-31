@@ -42,7 +42,13 @@ static int min_wallheight;
 // refresh variables
 //
 
-extern unsigned GetScreenBufferPitch(void);
+
+static unsigned bufferPitch;
+
+void SetScreenBufferPitch(unsigned bpitch) {
+    bufferPitch = bpitch;    
+}
+
 extern void *GetScreenBuffer(void);
 //
 // wall optimization variables
