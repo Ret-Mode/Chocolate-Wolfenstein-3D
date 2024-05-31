@@ -42,7 +42,7 @@ static int min_wallheight;
 // refresh variables
 //
 
-
+extern unsigned GetScreenBufferPitch(void);
 extern void *GetScreenBuffer(void);
 //
 // wall optimization variables
@@ -1445,7 +1445,7 @@ void    ThreeDRefresh (void)
 
     vbuf = VL_LockSurface(GetScreenBuffer());
     vbuf+=screenofs;
-    vbufPitch = bufferPitch;
+    vbufPitch = GetScreenBufferPitch();
 
     CalcViewVariables();
 
