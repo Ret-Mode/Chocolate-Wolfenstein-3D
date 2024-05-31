@@ -9,7 +9,12 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdint.h>
- 
+
+ #ifdef APIENTRY
+ #undef APIENTRY
+ #endif
+
+#include "wl_def.h"
 #define WOLF_RGB(r, g, b) {(r)*255/63, (g)*255/63, (b)*255/63, 1}
 
 static GLFWwindow* window;
@@ -28,8 +33,34 @@ static struct wolfColor_t gamepal[]={
     #endif
 };
  
+ static byte ASCIINames[] =      // Unshifted ASCII for scan codes       // TODO: keypad
+{
+//   0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
+    0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,8  ,9  ,0  ,0  ,0  ,13 ,0  ,0  ,    // 0
+    0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,27 ,0  ,0  ,0  ,    // 1
+    ' ',0  ,0  ,0  ,0  ,0  ,0  ,39 ,0  ,0  ,'*','+',',','-','.','/',    // 2
+    '0','1','2','3','4','5','6','7','8','9',0  ,';',0  ,'=',0  ,0  ,    // 3
+    '`','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o',    // 4
+    'p','q','r','s','t','u','v','w','x','y','z','[',92 ,']',0  ,0  ,    // 5
+    0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,    // 6
+    0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0       // 7
+};
+static byte ShiftNames[] =     // Shifted ASCII for scan codes
+{
+//   0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
+    0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,8  ,9  ,0  ,0  ,0  ,13 ,0  ,0  ,    // 0
+    0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,27 ,0  ,0  ,0  ,    // 1
+    ' ',0  ,0  ,0  ,0  ,0  ,0  ,34 ,0  ,0  ,'*','+','<','_','>','?',    // 2
+    ')','!','@','#','$','%','^','&','*','(',0  ,':',0  ,'+',0  ,0  ,    // 3
+    '~','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O',    // 4
+    'P','Q','R','S','T','U','V','W','X','Y','Z','{','|','}',0  ,0  ,    // 5
+    0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,    // 6
+    0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0       // 7
+};
+
 static GLuint paletteTexture;
 static GLuint imageTexture; 
+static int GrabInput = false;
 
 static const char *vertSource = 
 "#version 330\n"
@@ -59,113 +90,107 @@ static void error_callback(int error, const char* description)
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 
-    // switch (action)
-    // {
-    //     // exit if the window is closed
-    //     case SDL_QUIT:
-    //         Quit(NULL);
+    switch (action)
+    {
 
-    //     // check for keypresses
-    //     case GLFW_PRESS:
-    //     {
-    //         if(key == GLFW_KEY_SCROLL_LOCK || key == GLFW_KEY_F12)
-    //         {
-    //             GrabInput = !GrabInput;
-    //             SDL_WM_GrabInput(GrabInput ? SDL_GRAB_ON : SDL_GRAB_OFF);
-    //             return;
-    //         }
+        // check for keypresses
+        case GLFW_PRESS:
+        {
+            if (key == GLFW_KEY_ESCAPE) {
+                glfwSetWindowShouldClose(window, GLFW_TRUE);
+            }
 
-    //         LastScan = key;
-    //         SDLMod mod = SDL_GetModState();
-    //         if(Keyboard[sc_Alt])
-    //         {
-    //             if(LastScan==SDLK_F4)
-    //                 Quit(NULL);
-    //         }
+            if(key == GLFW_KEY_SCROLL_LOCK || key == GLFW_KEY_F12)
+            {
+                GrabInput = !GrabInput;
+                if (GrabInput) {
+                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                } else {
+                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                }
+                return;
+            }
 
-    //         if(LastScan == SDLK_KP_ENTER) LastScan = SDLK_RETURN;
-    //         else if(LastScan == SDLK_RSHIFT) LastScan = SDLK_LSHIFT;
-    //         else if(LastScan == SDLK_RALT) LastScan = SDLK_LALT;
-    //         else if(LastScan == SDLK_RCTRL) LastScan = SDLK_LCTRL;
-    //         else
-    //         {
-    //             if((mod & KMOD_NUM) == 0)
-    //             {
-    //                 switch(LastScan)
-    //                 {
-    //                     case SDLK_KP2: LastScan = SDLK_DOWN; break;
-    //                     case SDLK_KP4: LastScan = SDLK_LEFT; break;
-    //                     case SDLK_KP6: LastScan = SDLK_RIGHT; break;
-    //                     case SDLK_KP8: LastScan = SDLK_UP; break;
-    //                 }
-    //             }
-    //         }
+            LastScan = key;
+            if(Keyboard[sc_Alt])
+            {
+                if(LastScan = GLFW_KEY_F4)
+                    Quit(NULL);
+            }
 
-    //         int sym = LastScan;
-    //         if(sym >= 'a' && sym <= 'z')
-    //             sym -= 32;  // convert to uppercase
+            if(LastScan == GLFW_KEY_KP_ENTER) LastScan = GLFW_KEY_ENTER;
+            else if(LastScan == GLFW_KEY_RIGHT_SHIFT) LastScan = GLFW_KEY_LEFT_SHIFT;
+            else if(LastScan == GLFW_KEY_RIGHT_ALT) LastScan = GLFW_KEY_LEFT_ALT;
+            else if(LastScan == GLFW_KEY_RIGHT_CONTROL) LastScan = GLFW_KEY_LEFT_CONTROL;
+            else
+            {
+                if((mods & GLFW_MOD_NUM_LOCK) == 0)
+                {
+                    switch(LastScan)
+                    {
+                        case GLFW_KEY_KP_2: LastScan = GLFW_KEY_DOWN; break;
+                        case GLFW_KEY_KP_4: LastScan = GLFW_KEY_LEFT; break;
+                        case GLFW_KEY_KP_6: LastScan = GLFW_KEY_RIGHT; break;
+                        case GLFW_KEY_KP_8: LastScan = GLFW_KEY_UP; break;
+                    }
+                }
+            }
 
-    //         if(mod & (KMOD_SHIFT | KMOD_CAPS))
-    //         {
-    //             if(sym < lengthof(ShiftNames) && ShiftNames[sym])
-    //                 LastASCII = ShiftNames[sym];
-    //         }
-    //         else
-    //         {
-    //             if(sym < lengthof(ASCIINames) && ASCIINames[sym])
-    //                 LastASCII = ASCIINames[sym];
-    //         }
+            int sym = LastScan;
+            if(sym >= 'a' && sym <= 'z')
+                sym -= 32;  // convert to uppercase
 
-	// 		if (LastScan<SDLK_i){
-	// 		}
+            if(mods & (GLFW_MOD_SHIFT | GLFW_MOD_CAPS_LOCK))
+            {
+                if(sym < lengthof(ShiftNames) && ShiftNames[sym])
+                    LastASCII = ShiftNames[sym];
+            }
+            else
+            {
+                if(sym < lengthof(ASCIINames) && ASCIINames[sym])
+                    LastASCII = ASCIINames[sym];
+            }
 
-	// 		if(LastScan<SDLK_LAST){
-    //             Keyboard[LastScan] = 1;
-	// 		}
-    //         if(LastScan == SDLK_PAUSE)
-    //             Paused = true;
-    //         break;
-    //     }
+			if (LastScan<GLFW_KEY_I){
+			}
 
-    //     case GLFW_RELEASE:
-    //     {
+			if(LastScan<GLFW_KEY_LAST){
+                Keyboard[LastScan] = 1;
+			}
+            if(LastScan == GLFW_KEY_PAUSE)
+                Paused = true;
+            break;
+        }
+
+        case GLFW_RELEASE:
+        {
             
-    //         if(key == SDLK_KP_ENTER) key = SDLK_RETURN;
-    //         else if(key == SDLK_RSHIFT) key = SDLK_LSHIFT;
-    //         else if(key == SDLK_RALT) key = SDLK_LALT;
-    //         else if(key == SDLK_RCTRL) key = SDLK_LCTRL;
-    //         else
-    //         {
-    //             if((SDL_GetModState() & KMOD_NUM) == 0)
-    //             {
-    //                 switch(key)
-    //                 {
-    //                     case SDLK_KP2: key = SDLK_DOWN; break;
-    //                     case SDLK_KP4: key = SDLK_LEFT; break;
-    //                     case SDLK_KP6: key = SDLK_RIGHT; break;
-    //                     case SDLK_KP8: key = SDLK_UP; break;
-    //                 }
-    //             }
-    //         }
+            if(key == GLFW_KEY_KP_ENTER) key = GLFW_KEY_ENTER;
+            else if(LastScan == GLFW_KEY_RIGHT_SHIFT) LastScan = GLFW_KEY_LEFT_SHIFT;
+            else if(LastScan == GLFW_KEY_RIGHT_ALT) LastScan = GLFW_KEY_LEFT_ALT;
+            else if(LastScan == GLFW_KEY_RIGHT_CONTROL) LastScan = GLFW_KEY_LEFT_CONTROL;
+            else
+            {
+                if((mods & GLFW_MOD_NUM_LOCK) == 0)
+                {
+                    switch(key)
+                    {
+                        case GLFW_KEY_KP_2: LastScan = GLFW_KEY_DOWN; break;
+                        case GLFW_KEY_KP_4: LastScan = GLFW_KEY_LEFT; break;
+                        case GLFW_KEY_KP_6: LastScan = GLFW_KEY_RIGHT; break;
+                        case GLFW_KEY_KP_8: LastScan = GLFW_KEY_UP; break;
+                    }
+                }
+            }
 
-	// 		if(key<SDLK_LAST){
-    //             Keyboard[key] = 0;
-	// 		}
-    //         break;
-    //     }
-    // }
-
-
+			if(key<GLFW_KEY_LAST){
+                Keyboard[key] = 0;
+			}
+            break;
+        }
+    }
 
 
-
-
-
-
-
-
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
 static void resize_callback(GLFWwindow* window, int width, int height) {
@@ -299,6 +324,13 @@ int initGlfw(void)
     return 0;
 }
 
+
+static void GlfwDrawStuff(void) {
+    glClear(GL_COLOR_BUFFER_BIT);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glfwSwapBuffers(window);
+}
+
 /* IMPL ******************************************************************/
 
 void DelayWolfTicks(int ticks) {
@@ -407,12 +439,8 @@ int GetMouseButtons(void) {
     return 0;
 }
 
-extern void _SetVGAMode(unsigned *scrWidth, unsigned *scrHeight, 
-                unsigned *scrPitch, unsigned *bufPitch, 
-                unsigned *currPitch, unsigned *sclFactor);
 void SetVGAMode(unsigned *scrWidth, unsigned *scrHeight, 
-                unsigned *scrPitch, unsigned *bufPitch, 
-                unsigned *currPitch, unsigned *sclFactor) {
+                unsigned *sclFactor) {
                     ;
 }
 
@@ -422,143 +450,36 @@ void LoadLatchMemory (void) {
 }
 
 /* This function should swap buffers */
-extern int _SubFizzleFade (void *src, int x1, int y1,
-                       unsigned width, unsigned height, 
-                       unsigned frames, int abortable,
-                       int rndbits_y, int rndmask);
 int SubFizzleFade (int x1, int y1,
                        unsigned width, unsigned height, 
                        unsigned frames, int abortable,
                        int rndbits_y, int rndmask){
+    GlfwDrawStuff();
     return 0;
 }
 
-extern void _GetJoystickDelta(int *dx, int *dy);
 void GetJoystickDelta(int *dx, int *dy) {
     ;
 }
 
-extern void _GetJoystickFineDelta(int *dx, int *dy);
 void GetJoystickFineDelta(int *dx, int *dy) {
     ;
 }
 
-extern int _GetJoystickButtons(void);
 int GetJoystickButtons(void) {
     return 0;
 }
 
-extern int _IsJoystickPresent(void);
 int IsJoystickPresent(void) {
     return 0;
 }
-
-// static void processEvent(SDL_Event *event)
-// {
-//     switch (event->type)
-//     {
-//         // exit if the window is closed
-//         case SDL_QUIT:
-//             Quit(NULL);
-
-//         // check for keypresses
-//         case SDL_KEYDOWN:
-//         {
-//             if(event->key.keysym.sym==SDLK_SCROLLOCK || event->key.keysym.sym==SDLK_F12)
-//             {
-//                 GrabInput = !GrabInput;
-//                 SDL_WM_GrabInput(GrabInput ? SDL_GRAB_ON : SDL_GRAB_OFF);
-//                 return;
-//             }
-
-//             LastScan = event->key.keysym.sym;
-//             SDLMod mod = SDL_GetModState();
-//             if(Keyboard[sc_Alt])
-//             {
-//                 if(LastScan==SDLK_F4)
-//                     Quit(NULL);
-//             }
-
-//             if(LastScan == SDLK_KP_ENTER) LastScan = SDLK_RETURN;
-//             else if(LastScan == SDLK_RSHIFT) LastScan = SDLK_LSHIFT;
-//             else if(LastScan == SDLK_RALT) LastScan = SDLK_LALT;
-//             else if(LastScan == SDLK_RCTRL) LastScan = SDLK_LCTRL;
-//             else
-//             {
-//                 if((mod & KMOD_NUM) == 0)
-//                 {
-//                     switch(LastScan)
-//                     {
-//                         case SDLK_KP2: LastScan = SDLK_DOWN; break;
-//                         case SDLK_KP4: LastScan = SDLK_LEFT; break;
-//                         case SDLK_KP6: LastScan = SDLK_RIGHT; break;
-//                         case SDLK_KP8: LastScan = SDLK_UP; break;
-//                     }
-//                 }
-//             }
-
-//             int sym = LastScan;
-//             if(sym >= 'a' && sym <= 'z')
-//                 sym -= 32;  // convert to uppercase
-
-//             if(mod & (KMOD_SHIFT | KMOD_CAPS))
-//             {
-//                 if(sym < lengthof(ShiftNames) && ShiftNames[sym])
-//                     LastASCII = ShiftNames[sym];
-//             }
-//             else
-//             {
-//                 if(sym < lengthof(ASCIINames) && ASCIINames[sym])
-//                     LastASCII = ASCIINames[sym];
-//             }
-
-// 			if (LastScan<SDLK_i){
-// 			}
-
-// 			if(LastScan<SDLK_LAST){
-//                 Keyboard[LastScan] = 1;
-// 			}
-//             if(LastScan == SDLK_PAUSE)
-//                 Paused = true;
-//             break;
-//         }
-
-//         case SDL_KEYUP:
-//         {
-//             int key = event->key.keysym.sym;
-//             if(key == SDLK_KP_ENTER) key = SDLK_RETURN;
-//             else if(key == SDLK_RSHIFT) key = SDLK_LSHIFT;
-//             else if(key == SDLK_RALT) key = SDLK_LALT;
-//             else if(key == SDLK_RCTRL) key = SDLK_LCTRL;
-//             else
-//             {
-//                 if((SDL_GetModState() & KMOD_NUM) == 0)
-//                 {
-//                     switch(key)
-//                     {
-//                         case SDLK_KP2: key = SDLK_DOWN; break;
-//                         case SDLK_KP4: key = SDLK_LEFT; break;
-//                         case SDLK_KP6: key = SDLK_RIGHT; break;
-//                         case SDLK_KP8: key = SDLK_UP; break;
-//                     }
-//                 }
-//             }
-
-// 			if(key<SDLK_LAST){
-//                 Keyboard[key] = 0;
-// 			}
-//             break;
-//         }
-//     }
-// }
 
 extern void ProcessEvents(void);
 void WaitAndProcessEvents(void) {
     if (window) {
         glfwWaitEvents();
         glfwPollEvents();
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glfwSwapBuffers(window);
+        GlfwDrawStuff();
         if (glfwWindowShouldClose(window)) {
             exit(0);
         }
@@ -568,8 +489,7 @@ void WaitAndProcessEvents(void) {
 void ProcessEvents(void) {
     if (window) {
         glfwPollEvents();
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glfwSwapBuffers(window);
+        GlfwDrawStuff();
         if (glfwWindowShouldClose(window)) {
             exit(0);
         }
@@ -699,7 +619,7 @@ static void VL_ScreenToScreen (void *source, void *dest)
 /* this function should swap buffers*/
 void VH_UpdateScreen()
 {
-    ;
+    GlfwDrawStuff();
 }
 
 void    ThreeDRefresh (void)
