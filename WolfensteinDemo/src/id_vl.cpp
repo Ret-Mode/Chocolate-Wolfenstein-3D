@@ -24,15 +24,6 @@ boolean usedoublebuffering = true;
 unsigned screenWidth = 640;
 unsigned screenHeight = 480;
 
-//SDL_Surface *screen = NULL;
-//unsigned screenPitch;
-
-//SDL_Surface *screenBuffer = NULL;
-unsigned bufferPitch;
-
-//SDL_Surface *curSurface = NULL;
-unsigned curPitch;
-
 unsigned scaleFactor;
 
 boolean  screenfaded;
@@ -70,9 +61,7 @@ void    VL_Shutdown (void)
 
 void    VL_SetVGAPlaneMode (void)
 {
-    SetVGAMode(&screenWidth, &screenHeight, 
-                &bufferPitch, 
-                &curPitch, &scaleFactor);
+    SetVGAMode(&screenWidth, &screenHeight, &scaleFactor);
     SetPixelAngleArray(screenWidth);
     SetWallHeight(screenWidth);
 

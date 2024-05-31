@@ -34,6 +34,7 @@ static SDL_Surface *latchpics[NUMLATCHPICS];
 static SDL_Surface *screenBuffer;
 
 static unsigned screenBits;
+static unsigned curPitch;
 
 static SDL_Surface *screen = NULL;
 static SDL_Surface *curSurface;
@@ -456,13 +457,8 @@ int GetMouseButtons(void) {
     return buttons;
 }
 
-unsigned GetScreenBufferPitch(void) {
-    return bufferPitch;
-}
-
-void SetVGAMode(unsigned *scrWidth, unsigned *scrHeight, 
-                unsigned *bufPitch, 
-                unsigned *currPitch, unsigned *sclFactor)  {
+extern void SetScreenBufferPitch(unsigned bpitch);
+void SetVGAMode(unsigned *scrWidth, unsigned *scrHeight, unsigned *sclFactor)  {
 
     SDL_WM_SetCaption("Wolfenstein 3D", NULL);
     const SDL_VideoInfo *vidInfo = SDL_GetVideoInfo();
@@ -506,10 +502,10 @@ void SetVGAMode(unsigned *scrWidth, unsigned *scrHeight,
     }
     SDL_SetColors(screenBuffer, (SDL_Color*)gamepal, 0, 256);
 
-    *bufPitch = screenBuffer->pitch;
+    SetScreenBufferPitch(screenBuffer->pitch); 
 
     curSurface = screenBuffer;
-    *currPitch = *bufPitch;
+    curPitch = screenBuffer->pitch;
 
     *sclFactor = *scrWidth/320;
     if(*scrHeight/200 < *sclFactor) *sclFactor = *scrHeight/200;

@@ -22,7 +22,7 @@ void Quit (const char *error,...);
 extern SDL_Surface *screen, *screenBuffer, *curSurface;
 
 extern  boolean  fullscreen, usedoublebuffering;
-extern  unsigned screenWidth, screenHeight, screenBits, screenPitch, bufferPitch, curPitch;
+extern  unsigned screenWidth, screenHeight, screenBits, screenPitch;
 extern  unsigned scaleFactor;
 
 extern  boolean  screenfaded;
