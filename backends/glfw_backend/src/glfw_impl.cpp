@@ -25,6 +25,15 @@ struct wolfColor_t {
     uint8_t alpha;
 };
 
+struct WindowCoords_t {
+    int viewportX;
+    int viewportY;
+    int width;
+    int height;
+    int viewportWidth;
+    int viewportHeight;
+} WindowCoords;
+
 static struct wolfColor_t gamepal[]={
     #if defined (SPEAR) || defined (SPEARDEMO)
     #include "sodpal.inc"
@@ -196,12 +205,24 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 static void resize_callback(GLFWwindow* window, int width, int height) {
     int hr = height * 320;
     int wr = width * 240;
+
+    WindowCoords.width = width;
+    WindowCoords.height = height;
+
     if (hr > wr) {
         int diff = (hr - wr) / (320*2);
         glViewport(0,diff, wr/240, wr/320);
+        WindowCoords.viewportX = 0;
+        WindowCoords.viewportY = 0;
+        WindowCoords.viewportWidth = wr/240;
+        WindowCoords.viewportHeight = wr/320;
     } else {
         int diff = (wr - hr) / (240*2);
         glViewport(diff,0, hr/240, hr/320);
+        WindowCoords.viewportX = diff;
+        WindowCoords.viewportY = 0;
+        WindowCoords.viewportWidth = hr/240;
+        WindowCoords.viewportHeight = hr/320;
     }
     glClear(GL_COLOR_BUFFER_BIT);
 }
@@ -225,6 +246,13 @@ int initGlfw(void)
         exit(EXIT_FAILURE);
     }
  
+    WindowCoords.viewportX = 0;
+    WindowCoords.viewportY = 0;
+    WindowCoords.viewportWidth = 640;
+    WindowCoords.viewportHeight = 480;
+    WindowCoords.width = 640;
+    WindowCoords.height = 480;
+
     glfwSetKeyCallback(window, key_callback);
     glfwSetWindowSizeCallback(window, resize_callback);
     glfwMakeContextCurrent(window);
@@ -441,7 +469,9 @@ int GetMouseButtons(void) {
 
 void SetVGAMode(unsigned *scrWidth, unsigned *scrHeight, 
                 unsigned *sclFactor) {
-                    ;
+    *scrWidth = WindowCoords.viewportWidth;
+    *scrHeight = WindowCoords.viewportHeight;
+    *sclFactor = 1;
 }
 
 extern void _LoadLatchMemory (void);
