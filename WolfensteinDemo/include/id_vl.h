@@ -23,7 +23,7 @@ void Quit (const char *error,...);
 //extern SDL_Color gamepal[256];
 
 extern  boolean  fullscreen, usedoublebuffering;
-extern  unsigned screenWidth, screenHeight, curPitch;
+extern  unsigned screenWidth, screenPitch, bufferPitch, screenHeight, curPitch;
 extern  unsigned scaleFactor;
 
 extern  boolean  screenfaded;

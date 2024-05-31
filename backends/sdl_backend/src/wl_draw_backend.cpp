@@ -1445,7 +1445,7 @@ void    ThreeDRefresh (void)
 
     vbuf = VL_LockSurface(GetScreenBuffer());
     vbuf+=screenofs;
-    vbufPitch = GetScreenBufferPitch();
+    vbufPitch = bufferPitch;
 
     CalcViewVariables();
 
