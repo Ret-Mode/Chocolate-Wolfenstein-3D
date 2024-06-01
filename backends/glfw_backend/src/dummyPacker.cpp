@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 
 #define COLORMASK_RED   0
 #define COLORMASK_GREEN 1
@@ -45,6 +46,7 @@ static struct textureHead_t {
     uint8_t *textureData;
     level_t *textureStack;
     pixelData_t *dataStack;
+    pixelData_t *colorTexture;
     uint32_t textureDataSize;
     uint32_t textureStackSize;
     uint32_t dataStackSize;
@@ -53,7 +55,15 @@ static struct textureHead_t {
 } textureHead;
 
 static void DuPackUploadPixels(pixelData_t *pixelData, uint16_t stride, uint16_t textureWidth, uint16_t textureHeight, uint8_t *data) {
-    //upload data
+    pixelData->width = textureWidth;
+    pixelData->height = textureHeight;
+    for (uint32_t y = pixelData->y; y < pixelData->y + textureHeight; ++y) {
+        uint32_t yoffset = (stride - y - 1) * stride;
+        for (uint32_t x = pixelData->x; x < pixelData->x + textureWidth; ++x) {
+            uint32_t offset = 4 * (x + yoffset) + pixelData->colorMask;
+            textureHead.textureData[offset] = *data++;
+        }
+    }
 }
 
 static pixelData_t *DuPackAddPixelData(uint8_t colorMask, uint16_t x, uint16_t y, uint16_t cellSize) {
@@ -63,6 +73,8 @@ static pixelData_t *DuPackAddPixelData(uint8_t colorMask, uint16_t x, uint16_t y
         pixelData->colorMask = colorMask;
         pixelData->x = x;
         pixelData->y = y;
+        pixelData->width = 0;
+        pixelData->height = 0;
         pixelData->cellSize = cellSize;
         textureHead.dataStackCurrent++;
         // initailize
@@ -83,33 +95,9 @@ static level_t *DuPackAddLevel(uint16_t dimension) {
     return NULL;
 }
 
-void DuPackInit(unsigned int textureSize, 
-                unsigned int levelStackSize, 
-                unsigned int dataStackSize) {
-    textureHead.textureDataSize = textureSize;
-    textureHead.textureStackSize = levelStackSize;
-    textureHead.dataStackSize = dataStackSize;
 
-    textureHead.textureData = (uint8_t*)malloc(textureSize * textureSize * 4); // square rgb texture
-    if (!textureHead.textureData) {
-        exit(-1);
-    }
-    textureHead.textureStack = (level_t*)malloc(levelStackSize * sizeof (level_t)); 
-    if (!textureHead.textureStack) {
-        exit(-1);
-    }
-    textureHead.dataStack = (pixelData_t*)malloc(dataStackSize * sizeof(pixelData_t)); 
-    if (!textureHead.dataStack) {
-        exit(-1);
-    }
-    textureHead.textureStackCurrent = 0;
-    textureHead.dataStackCurrent = 0;
 
-    DuPackAddLevel(textureSize);
-
-}
-
-static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint8_t *data, uint16_t left, uint16_t bottom, level_t *level) {
+static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint16_t left, uint16_t bottom, level_t *level) {
     if (dimension <= level->dimension / 2) {
         pixelData_t *pixelResult = NULL;
         // check up left
@@ -118,7 +106,7 @@ static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint8_t *data, uint1
             if (level->ul == NULL) {
                 level->ul = DuPackAddLevel(level->dimension / 2);
             }
-            pixelResult = DuPackAddTextureRec(level->dimension / 2, data, left, bottom + level->dimension / 2, level->ul);
+            pixelResult = DuPackAddTextureRec(dimension, left, bottom + level->dimension / 2, level->ul);
             if (pixelResult) {
                 uint8_t tmpRedFlags = level->ul->flagsRed;
                 if (tmpRedFlags & (tmpRedFlags >> 2) & (tmpRedFlags >> 4) & (tmpRedFlags >> 6) & 0x2) {
@@ -144,7 +132,7 @@ static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint8_t *data, uint1
             if (level->ur == NULL) {
                 level->ur = DuPackAddLevel(level->dimension / 2);
             }
-            pixelResult = DuPackAddTextureRec(level->dimension / 2, data, left + level->dimension / 2, bottom + level->dimension / 2, level->ur);
+            pixelResult = DuPackAddTextureRec(dimension, left + level->dimension / 2, bottom + level->dimension / 2, level->ur);
             if (pixelResult) {
                 uint8_t tmpRedFlags = level->ur->flagsRed;
                 if (tmpRedFlags & (tmpRedFlags >> 2) & (tmpRedFlags >> 4) & (tmpRedFlags >> 6) & 0x2) {
@@ -170,7 +158,7 @@ static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint8_t *data, uint1
             if (level->dl == NULL) {
                 level->dl = DuPackAddLevel(level->dimension / 2);
             }
-            pixelResult = DuPackAddTextureRec(level->dimension / 2, data, left, bottom, level->dl);
+            pixelResult = DuPackAddTextureRec(dimension, left, bottom, level->dl);
             if (pixelResult) {
                 uint8_t tmpRedFlags = level->dl->flagsRed;
                 if (tmpRedFlags & (tmpRedFlags >> 2) & (tmpRedFlags >> 4) & (tmpRedFlags >> 6) & 0x2) {
@@ -196,7 +184,7 @@ static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint8_t *data, uint1
             if (level->dr == NULL) {
                 level->dr = DuPackAddLevel(level->dimension / 2);
             }
-            pixelResult = DuPackAddTextureRec(level->dimension / 2, data, left + level->dimension / 2, bottom, level->dr);
+            pixelResult = DuPackAddTextureRec(dimension, left + level->dimension / 2, bottom, level->dr);
             if (pixelResult) {
                 uint8_t tmpRedFlags = level->dr->flagsRed;
                 if (tmpRedFlags & (tmpRedFlags >> 2) & (tmpRedFlags >> 4) & (tmpRedFlags >> 6) & 0x2) {
@@ -244,11 +232,87 @@ static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint8_t *data, uint1
     return NULL;
 }
 
+static pixelData_t *DuPackCreateAllColorsTexture(void) {
+    uint8_t palette[256];
+    for (uint32_t i = 0; i < 256; ++i) {
+        palette[i] = i;
+    }
+    pixelData_t * pixelData = DuPackAddTextureRec(16, 0, 0, textureHead.textureStack);
+    if (pixelData) {
+        DuPackUploadPixels(pixelData, textureHead.textureStack->dimension,16, 16, palette);
+    }
+    return pixelData;
+}
+
+/* PUBLIC FUNCTIONS */
 void DuPackAddTexture(int width, int height, unsigned char *data) {
     uint16_t dimension = (uint16_t) (width > height ? width : height);
 
-    pixelData_t * level = DuPackAddTextureRec(dimension, data, 0, 0, textureHead.textureStack);
+    pixelData_t * pixelData = DuPackAddTextureRec(dimension, 0, 0, textureHead.textureStack);
+    if (pixelData) {
+        DuPackUploadPixels(pixelData, textureHead.textureStack->dimension,width, height, data);
+    } else {
+        exit(-1);
+    }
 
+    FILE *fp = fopen("data.raw", "wb");
+    fwrite(textureHead.textureData, textureHead.textureDataSize * textureHead.textureDataSize * 4, 1, fp);
+    fclose(fp);
+}
 
+unsigned char *DuPackGetPalettizedTexture(void) {
+    return textureHead.textureData;
+}
 
+void DuPackGetTextureCoords(int index, float *left, float *right, float *bottom, float *top, int *rgbaOffset) {
+    pixelData_t * pixelData = textureHead.dataStack + index;
+    float textureDimension = (float)textureHead.textureDataSize;
+    *left = ((float)pixelData->x) / textureDimension;
+    *right = ((float)pixelData->x + (float)pixelData->width) / textureDimension;
+    *bottom = ((float)pixelData->y) / textureDimension;
+    *top = ((float)pixelData->y + (float)pixelData->height) / textureDimension;
+    *rgbaOffset = pixelData->colorMask;
+}
+
+void DuPackGetColorCoords(int color, float *left, float *right, float *bottom, float *top, int *rgbaOffset) {
+    pixelData_t * pixelData = textureHead.colorTexture;
+    uint16_t xOffset = color & 0xF;
+    uint16_t yOffset = 0xF - ((color >> 4) & 0xF);
+    float textureDimension = (float)textureHead.textureDataSize;
+    *right = *left = ((float)(pixelData->x + xOffset)) / textureDimension;
+    *top = *bottom = ((float)(pixelData->y + yOffset)) / textureDimension;
+    *rgbaOffset = pixelData->colorMask;
+}
+
+void DuPackInit(unsigned int textureSize, 
+                unsigned int levelStackSize, 
+                unsigned int dataStackSize) {
+    textureHead.textureDataSize = textureSize;
+    textureHead.textureStackSize = levelStackSize;
+    textureHead.dataStackSize = dataStackSize;
+
+    textureHead.textureData = (uint8_t*)malloc(textureSize * textureSize * 4); // square rgb texture
+    if (!textureHead.textureData) {
+        exit(-1);
+    }
+    memset(textureHead.textureData, 0, textureSize * textureSize * 4);
+    textureHead.textureStack = (level_t*)malloc(levelStackSize * sizeof (level_t)); 
+    if (!textureHead.textureStack) {
+        exit(-1);
+    }
+    textureHead.dataStack = (pixelData_t*)malloc(dataStackSize * sizeof(pixelData_t)); 
+    if (!textureHead.dataStack) {
+        exit(-1);
+    }
+    textureHead.textureStackCurrent = 0;
+    textureHead.dataStackCurrent = 0;
+
+    DuPackAddLevel(textureSize);
+    textureHead.colorTexture = DuPackCreateAllColorsTexture();
+}
+
+void DuPackFinish(void) {
+    free(textureHead.textureData);
+    free(textureHead.textureStack);
+    free(textureHead.dataStack);
 }
