@@ -18,6 +18,7 @@ set(bFiles
   ${CMAKE_CURRENT_SOURCE_DIR}/src/sdl_keys.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/miniaudio_impl.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/glfw_impl.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/dummyPacker.cpp
   ${GLAD_FILE}
   PARENT_SCOPE)
 
