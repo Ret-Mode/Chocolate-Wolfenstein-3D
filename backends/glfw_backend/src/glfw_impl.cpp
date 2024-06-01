@@ -17,6 +17,11 @@
 #include "wl_def.h"
 #define WOLF_RGB(r, g, b) {(r)*255/63, (g)*255/63, (b)*255/63, 1}
 
+extern void DuPackInit(unsigned int textureSize, 
+                unsigned int levelStackSize, 
+                unsigned int dataStackSize);
+extern void DuPackAddTexture(int width, int height, unsigned char *data);
+
 static GLFWwindow* window;
 struct wolfColor_t {
     uint8_t red;
@@ -260,6 +265,13 @@ int initGlfw(void)
 
     glfwSwapInterval(1);
  
+    GLint maxTextureSize;
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+    if (maxTextureSize < 2048) {
+        Quit("Max texture size is unsufficient");
+    }
+    DuPackInit(2048, 128*10, 200);
+
     GLuint vboRects;
     glGenVertexArrays(1, &vboRects);
     glBindVertexArray(vboRects);
@@ -560,6 +572,7 @@ void VL_MemToScreenScaledCoord (unsigned char *source, int width, int height, in
             }
        }
     }
+    DuPackAddTexture(width, height, pixels);
     glActiveTexture(GL_TEXTURE1);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, pixels);
