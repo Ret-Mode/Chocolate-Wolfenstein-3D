@@ -264,7 +264,7 @@ void DuPackGetTextureCoords(int index, float *left, float *right, float *bottom,
 void DuPackGetColorCoords(int color, float *left, float *right, float *bottom, float *top, int *rgbaOffset) {
     pixelData_t * pixelData = textureHead.colorTexture;
     uint16_t xOffset = color & 0xF;
-    uint16_t yOffset = 0xF - ((color >> 4) & 0xF);
+    uint16_t yOffset = (color >> 4) & 0xF;
     float textureDimension = (float)textureHead.textureDimension;
     *right = *left = ((float)(pixelData->x + xOffset)) / textureDimension;
     *top = *bottom = ((float)(pixelData->y + yOffset)) / textureDimension;

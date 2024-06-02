@@ -24,6 +24,7 @@ extern int DuPackAddTexture(int width, int height, unsigned char *data);
 extern unsigned char *DuPackGetPalettizedTexture(void);
 extern int DuPackGetTextureDimension(void); 
 extern void DuPackGetTextureCoords(int index, float *left, float *right, float *bottom, float *top, int *rgbaOffset);
+extern void DuPackGetColorCoords(int color, float *left, float *right, float *bottom, float *top, int *rgbaOffset);
 
 static GLFWwindow* window;
 struct wolfColor_t {
@@ -88,6 +89,8 @@ static GLuint imageTexture;
 static GLuint vertexBuffer;
 static GLuint paletteCoordBuffer;
 static GLuint paletteMaskBuffer;
+
+static GLuint vboRects;
 
 static int GrabInput = false;
 
@@ -297,29 +300,32 @@ int initGlfw(void)
     }
     DuPackInit(2048, 128*10, 200);
 
-    GLuint vboRects;
+    
     glGenVertexArrays(1, &vboRects);
     glBindVertexArray(vboRects);
 
     vertexBuffer;
     glGenBuffers(1, &vertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, 1, NULL, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(1);
 
     paletteCoordBuffer;
     glGenBuffers(1, &paletteCoordBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, paletteCoordBuffer);
+    glBufferData(GL_ARRAY_BUFFER, 1, NULL, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(2);
 
     paletteMaskBuffer;
     glGenBuffers(1, &paletteMaskBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, paletteMaskBuffer);
+    glBufferData(GL_ARRAY_BUFFER, 1, NULL, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(3);
 
-
+    glBindVertexArray(0);
 
     // GLuint vertex_buffer;
     // glGenBuffers(1, &vertex_buffer);
@@ -364,7 +370,7 @@ int initGlfw(void)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 320, 200, 0, GL_RED, GL_UNSIGNED_BYTE, tempData);
-    glGenerateMipmap(GL_TEXTURE_2D);
+    //glGenerateMipmap(GL_TEXTURE_2D);
     free(tempData);
  
     const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -445,14 +451,6 @@ int initGlfw(void)
     const float ratio = width / (float) height;
 
     glViewport(0, 0, width, height);
-    // glClear(GL_COLOR_BUFFER_BIT);
-    
-    // glBindVertexArray(vboRects);
-    // glDrawArrays(GL_TRIANGLES, 0, 6);
-
-
-    // glfwSwapBuffers(window);
-
 
     return 0;
 }
@@ -461,6 +459,7 @@ int initGlfw(void)
 static void GlfwDrawStuff(void) {
 
     if (bufferInternals.index > 0) {
+        glBindVertexArray(vboRects);
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
         glBufferData(GL_ARRAY_BUFFER, 2 * bufferInternals.index * sizeof(float), bufferInternals.vertexes, GL_DYNAMIC_DRAW);
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
@@ -475,9 +474,11 @@ static void GlfwDrawStuff(void) {
         
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glDrawArrays(GL_TRIANGLES, 0, bufferInternals.index);
+        
 
-        bufferInternals.index = 0;
+        glDrawArrays(GL_TRIANGLES, 0, bufferInternals.index);
+        glBindVertexArray(0);
+        //bufferInternals.index = 0;
 
         glfwSwapBuffers(window);
     } else {
@@ -699,7 +700,7 @@ void VL_MemToScreenScaledCoord (unsigned char *source, int width, int height, in
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glGenerateMipmap(GL_TEXTURE_2D);
+    //glGenerateMipmap(GL_TEXTURE_2D);
     
     float left, right, top, bottom;
     int colorMask;
@@ -765,7 +766,49 @@ void VL_Vlin (int x, int y, int height, int color)
 
 void VL_BarScaledCoord (int scx, int scy, int scwidth, int scheight, int color)
 {
-    ;
+    float leftViewport = (scx - 160.f) / 160.0f; 
+    float bottomViewport = (100.0f - scy) / 100.0f;
+    float rightViewport = (scx + scwidth - 160.0f) / 160.0f;
+    float topViewport = (100.0f - scy - scheight) / 100.0f;
+    
+    float left, right, top, bottom;
+    int colorMask;
+    DuPackGetColorCoords(color, &left, &right, &bottom, &top, &colorMask);
+    int offset = bufferInternals.index;
+    bufferInternals.index += 6;
+
+    bufferInternals.vertexes[2*offset] = leftViewport;
+    bufferInternals.vertexes[2*offset+1] = bottomViewport;
+    bufferInternals.vertexes[2*offset+2] = rightViewport;
+    bufferInternals.vertexes[2*offset+3] = bottomViewport;
+    bufferInternals.vertexes[2*offset+4] = leftViewport;
+    bufferInternals.vertexes[2*offset+5] = topViewport;
+    bufferInternals.vertexes[2*offset+6] = rightViewport;
+    bufferInternals.vertexes[2*offset+7] = bottomViewport;
+    bufferInternals.vertexes[2*offset+8] = rightViewport;
+    bufferInternals.vertexes[2*offset+9] = topViewport;
+    bufferInternals.vertexes[2*offset+10] = leftViewport;
+    bufferInternals.vertexes[2*offset+11] = topViewport;
+
+    bufferInternals.texCoords[2*offset] = left;
+    bufferInternals.texCoords[2*offset+1] = bottom;
+    bufferInternals.texCoords[2*offset+2] = right;
+    bufferInternals.texCoords[2*offset+3] = bottom;
+    bufferInternals.texCoords[2*offset+4] = left;
+    bufferInternals.texCoords[2*offset+5] = top;
+    bufferInternals.texCoords[2*offset+6] = right;
+    bufferInternals.texCoords[2*offset+7] = bottom;
+    bufferInternals.texCoords[2*offset+8] = right;
+    bufferInternals.texCoords[2*offset+9] = top;
+    bufferInternals.texCoords[2*offset+10] = left;
+    bufferInternals.texCoords[2*offset+11] = top;
+
+    bufferInternals.colorMasks[offset] = colorMask;
+    bufferInternals.colorMasks[offset+1] = colorMask;
+    bufferInternals.colorMasks[offset+2] = colorMask;
+    bufferInternals.colorMasks[offset+3] = colorMask;
+    bufferInternals.colorMasks[offset+4] = colorMask;
+    bufferInternals.colorMasks[offset+5] = colorMask;
 }
 
 
