@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <assert.h>
 
  #ifdef APIENTRY
  #undef APIENTRY
@@ -44,9 +45,11 @@ struct WindowCoords_t {
 } WindowCoords;
 
 static struct bufferInternals_t {
-    float vertexes[2*320*4];
-    float texCoords[2*320*4];
-    float colorMasks[320*4];
+    float vertices[2*320*3];
+    float texCoords[2*320*3];
+    float colorMasks[320*3];
+    int gpuCapacity;
+    int capacity;
     int index;
 } bufferInternals;
 
@@ -307,35 +310,26 @@ int initGlfw(void)
     vertexBuffer;
     glGenBuffers(1, &vertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, 1, NULL, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 320 * 3 * sizeof(GLfloat) * 2, NULL, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(1);
 
     paletteCoordBuffer;
     glGenBuffers(1, &paletteCoordBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, paletteCoordBuffer);
-    glBufferData(GL_ARRAY_BUFFER, 1, NULL, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 320 * 3 * sizeof(GLfloat) * 2, NULL, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(2);
 
     paletteMaskBuffer;
     glGenBuffers(1, &paletteMaskBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, paletteMaskBuffer);
-    glBufferData(GL_ARRAY_BUFFER, 1, NULL, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 0, 0);
+    glBufferData(GL_ARRAY_BUFFER, 320 * 3 * sizeof(GLfloat), NULL, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(3);
 
-    glBindVertexArray(0);
-
-    // GLuint vertex_buffer;
-    // glGenBuffers(1, &vertex_buffer);
-    // glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    // float fData[] = {-1.f, -1.f, 1.f, -1.f, -1.f, 1.f,
-    //                 1.f, 1.f, 1.f, -1.f, -1.f, 1.f};
-    // glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), fData, GL_STATIC_DRAW);
-    // glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    // glEnableVertexAttribArray(0);
-
+    bufferInternals.gpuCapacity = 320 * 3;
+    bufferInternals.capacity = 320 * 3;
  
     /* create palette texture */
     paletteTexture;
@@ -370,7 +364,7 @@ int initGlfw(void)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 320, 200, 0, GL_RED, GL_UNSIGNED_BYTE, tempData);
-    //glGenerateMipmap(GL_TEXTURE_2D);
+
     free(tempData);
  
     const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -459,28 +453,24 @@ int initGlfw(void)
 static void GlfwDrawStuff(void) {
 
     if (bufferInternals.index > 0) {
-        glBindVertexArray(vboRects);
+        assert(bufferInternals.index < bufferInternals.gpuCapacity);
+
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-        glBufferData(GL_ARRAY_BUFFER, 2 * bufferInternals.index * sizeof(float), bufferInternals.vertexes, GL_DYNAMIC_DRAW);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+        glBufferData(GL_ARRAY_BUFFER, 2 * bufferInternals.index * sizeof(float), bufferInternals.vertices, GL_DYNAMIC_DRAW);
+        //glBufferSubData(GL_ARRAY_BUFFER, 0, 2 * bufferInternals.index * sizeof(float), bufferInternals.vertices);
 
         glBindBuffer(GL_ARRAY_BUFFER, paletteCoordBuffer);
         glBufferData(GL_ARRAY_BUFFER, 2 * bufferInternals.index * sizeof(float), bufferInternals.texCoords, GL_DYNAMIC_DRAW);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
+        //glBufferSubData(GL_ARRAY_BUFFER, 0, 2 * bufferInternals.index * sizeof(float), bufferInternals.texCoords);
 
         glBindBuffer(GL_ARRAY_BUFFER, paletteMaskBuffer);
         glBufferData(GL_ARRAY_BUFFER, bufferInternals.index * sizeof(float), bufferInternals.colorMasks, GL_DYNAMIC_DRAW);
-        glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 0, 0);
+        //glBufferSubData(GL_ARRAY_BUFFER, 0, bufferInternals.index * sizeof(float), bufferInternals.colorMasks);
         
         glClear(GL_COLOR_BUFFER_BIT);
-
-        
-
         glDrawArrays(GL_TRIANGLES, 0, bufferInternals.index);
-        glBindVertexArray(0);
-        //bufferInternals.index = 0;
-
         glfwSwapBuffers(window);
+
     } else {
         glClear(GL_COLOR_BUFFER_BIT);
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -599,8 +589,8 @@ int GetMouseButtons(void) {
 
 void SetVGAMode(unsigned *scrWidth, unsigned *scrHeight, 
                 unsigned *sclFactor) {
-    *scrWidth = WindowCoords.viewportWidth;
-    *scrHeight = WindowCoords.viewportHeight;
+    *scrWidth = 320; //WindowCoords.viewportWidth;
+    *scrHeight = 200; //WindowCoords.viewportHeight;
     *sclFactor = 1;
 }
 
@@ -695,30 +685,34 @@ void VL_MemToScreenScaledCoord (unsigned char *source, int width, int height, in
     glActiveTexture(GL_TEXTURE1);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, DuPackGetTextureDimension(), DuPackGetTextureDimension(), 0, GL_RGBA, GL_UNSIGNED_BYTE, DuPackGetPalettizedTexture());
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     //glGenerateMipmap(GL_TEXTURE_2D);
     
     float left, right, top, bottom;
     int colorMask;
     DuPackGetTextureCoords(index, &left, &right, &bottom, &top, &colorMask);
     int offset = bufferInternals.index;
+
     bufferInternals.index += 6;
-    bufferInternals.vertexes[2*offset] = -1.0f;
-    bufferInternals.vertexes[2*offset+1] = -1.0f;
-    bufferInternals.vertexes[2*offset+2] = 1.0f;
-    bufferInternals.vertexes[2*offset+3] = -1.0f;
-    bufferInternals.vertexes[2*offset+4] = -1.0f;
-    bufferInternals.vertexes[2*offset+5] = 1.0f;
-    bufferInternals.vertexes[2*offset+6] = 1.0f;
-    bufferInternals.vertexes[2*offset+7] = -1.0f;
-    bufferInternals.vertexes[2*offset+8] = 1.0f;
-    bufferInternals.vertexes[2*offset+9] = 1.0f;
-    bufferInternals.vertexes[2*offset+10] = -1.0f;
-    bufferInternals.vertexes[2*offset+11] = 1.0f;
+
+    assert (bufferInternals.index < bufferInternals.capacity);
+
+    bufferInternals.vertices[2*offset] = -1.0f;
+    bufferInternals.vertices[2*offset+1] = -1.0f;
+    bufferInternals.vertices[2*offset+2] = 1.0f;
+    bufferInternals.vertices[2*offset+3] = -1.0f;
+    bufferInternals.vertices[2*offset+4] = -1.0f;
+    bufferInternals.vertices[2*offset+5] = 1.0f;
+    bufferInternals.vertices[2*offset+6] = 1.0f;
+    bufferInternals.vertices[2*offset+7] = -1.0f;
+    bufferInternals.vertices[2*offset+8] = 1.0f;
+    bufferInternals.vertices[2*offset+9] = 1.0f;
+    bufferInternals.vertices[2*offset+10] = -1.0f;
+    bufferInternals.vertices[2*offset+11] = 1.0f;
 
     bufferInternals.texCoords[2*offset] = left;
     bufferInternals.texCoords[2*offset+1] = bottom;
@@ -777,18 +771,20 @@ void VL_BarScaledCoord (int scx, int scy, int scwidth, int scheight, int color)
     int offset = bufferInternals.index;
     bufferInternals.index += 6;
 
-    bufferInternals.vertexes[2*offset] = leftViewport;
-    bufferInternals.vertexes[2*offset+1] = bottomViewport;
-    bufferInternals.vertexes[2*offset+2] = rightViewport;
-    bufferInternals.vertexes[2*offset+3] = bottomViewport;
-    bufferInternals.vertexes[2*offset+4] = leftViewport;
-    bufferInternals.vertexes[2*offset+5] = topViewport;
-    bufferInternals.vertexes[2*offset+6] = rightViewport;
-    bufferInternals.vertexes[2*offset+7] = bottomViewport;
-    bufferInternals.vertexes[2*offset+8] = rightViewport;
-    bufferInternals.vertexes[2*offset+9] = topViewport;
-    bufferInternals.vertexes[2*offset+10] = leftViewport;
-    bufferInternals.vertexes[2*offset+11] = topViewport;
+    assert (bufferInternals.index < bufferInternals.capacity);
+
+    bufferInternals.vertices[2*offset] = leftViewport;
+    bufferInternals.vertices[2*offset+1] = bottomViewport;
+    bufferInternals.vertices[2*offset+2] = rightViewport;
+    bufferInternals.vertices[2*offset+3] = bottomViewport;
+    bufferInternals.vertices[2*offset+4] = leftViewport;
+    bufferInternals.vertices[2*offset+5] = topViewport;
+    bufferInternals.vertices[2*offset+6] = rightViewport;
+    bufferInternals.vertices[2*offset+7] = bottomViewport;
+    bufferInternals.vertices[2*offset+8] = rightViewport;
+    bufferInternals.vertices[2*offset+9] = topViewport;
+    bufferInternals.vertices[2*offset+10] = leftViewport;
+    bufferInternals.vertices[2*offset+11] = topViewport;
 
     bufferInternals.texCoords[2*offset] = left;
     bufferInternals.texCoords[2*offset+1] = bottom;
