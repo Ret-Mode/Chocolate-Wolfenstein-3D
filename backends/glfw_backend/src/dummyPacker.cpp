@@ -99,7 +99,40 @@ static level_t *DuPackAddLevel(uint16_t dimension) {
     return NULL;
 }
 
-
+static void DuPackUpdateFlags(level_t *level, level_t *child, uint8_t fullFlag, uint8_t startedFlag){
+    uint8_t tmpFlags = child->flagsRed;
+    uint8_t tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
+    uint8_t tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x3);
+    if (tmpAndFlags) {
+        level->flagsRed |= fullFlag;
+    } else if (tmpOrFlags) {
+        level->flagsRed |= startedFlag;
+    }
+    tmpFlags = child->flagsGreen;
+    tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
+    tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x3);
+    if (tmpAndFlags) {
+        level->flagsGreen |= fullFlag;
+    } else if (tmpOrFlags) {
+        level->flagsGreen |= startedFlag;
+    }
+    tmpFlags = child->flagsBlue;
+    tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
+    tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x3);
+    if (tmpAndFlags) {
+        level->flagsBlue |= fullFlag;
+    } else if (tmpOrFlags) {
+        level->flagsBlue |= startedFlag;
+    }
+    tmpFlags = child->flagsAlpha;
+    tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
+    tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x3);
+    if (tmpAndFlags) {
+        level->flagsAlpha |= fullFlag;
+    } else if (tmpOrFlags) {
+        level->flagsAlpha |= startedFlag;
+    }
+}
 
 static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint16_t left, uint16_t bottom, level_t *level) {
     if (dimension <= level->dimension / 2) {
@@ -112,38 +145,7 @@ static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint16_t left, uint1
             }
             pixelResult = DuPackAddTextureRec(dimension, left, bottom + level->dimension / 2, level->ul);
             if (pixelResult) {
-                uint8_t tmpFlags = level->ul->flagsRed;
-                uint8_t tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
-                uint8_t tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x3);
-                if (tmpAndFlags) {
-                    level->flagsRed |= PACK_UL_FULL;
-                } else if (tmpOrFlags) {
-                    level->flagsRed |= PACK_UL_STARTED;
-                }
-                tmpFlags = level->ul->flagsGreen;
-                tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
-                tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x3);
-                if (tmpAndFlags) {
-                    level->flagsGreen |= PACK_UL_FULL;
-                } else if (tmpOrFlags) {
-                    level->flagsGreen |= PACK_UL_STARTED;
-                }
-                tmpFlags = level->ul->flagsBlue;
-                tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
-                tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x3);
-                if (tmpAndFlags) {
-                    level->flagsBlue |= PACK_UL_FULL;
-                } else if (tmpOrFlags) {
-                    level->flagsBlue |= PACK_UL_STARTED;
-                }
-                tmpFlags = level->ul->flagsAlpha;
-                tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
-                tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x3);
-                if (tmpAndFlags) {
-                    level->flagsAlpha |= PACK_UL_FULL;
-                } else if (tmpOrFlags) {
-                    level->flagsAlpha |= PACK_UL_STARTED;
-                }
+                DuPackUpdateFlags(level, level->ul, PACK_UL_FULL, PACK_UL_STARTED);
                 return pixelResult;
             }
         }
@@ -154,38 +156,7 @@ static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint16_t left, uint1
             }
             pixelResult = DuPackAddTextureRec(dimension, left + level->dimension / 2, bottom + level->dimension / 2, level->ur);
             if (pixelResult) {
-                uint8_t tmpFlags = level->ur->flagsRed;
-                uint8_t tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
-                uint8_t tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x3);
-                if (tmpAndFlags) {
-                    level->flagsRed |= PACK_UR_FULL;
-                } else if (tmpOrFlags) {
-                    level->flagsRed |= PACK_UR_STARTED;
-                }
-                tmpFlags = level->ur->flagsGreen;
-                tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
-                tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x3);
-                if (tmpAndFlags) {
-                    level->flagsGreen |= PACK_UR_FULL;
-                } else if (tmpOrFlags) {
-                    level->flagsGreen |= PACK_UR_STARTED;
-                }
-                tmpFlags = level->ur->flagsBlue;
-                tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
-                tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x3);
-                if (tmpAndFlags) {
-                    level->flagsBlue |= PACK_UR_FULL;
-                } else if (tmpOrFlags) {
-                    level->flagsBlue |= PACK_UR_STARTED;
-                }
-                tmpFlags = level->ur->flagsAlpha;
-                tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
-                tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x3);
-                if (tmpAndFlags) {
-                    level->flagsAlpha |= PACK_UR_FULL;
-                } else if (tmpOrFlags) {
-                    level->flagsAlpha |= PACK_UR_STARTED;
-                }
+                DuPackUpdateFlags(level, level->ur, PACK_UR_FULL, PACK_UR_STARTED);
                 return pixelResult;
             }
         }
@@ -196,38 +167,7 @@ static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint16_t left, uint1
             }
             pixelResult = DuPackAddTextureRec(dimension, left, bottom, level->dl);
             if (pixelResult) {
-                uint8_t tmpFlags = level->dl->flagsRed;
-                uint8_t tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
-                uint8_t tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x3);
-                if (tmpAndFlags) {
-                    level->flagsRed |= PACK_DL_FULL;
-                } else if (tmpOrFlags) {
-                    level->flagsRed |= PACK_DL_STARTED;
-                }
-                tmpFlags = level->dl->flagsGreen;
-                tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
-                tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x3);
-                if (tmpAndFlags) {
-                    level->flagsGreen |= PACK_DL_FULL;
-                } else if (tmpOrFlags) {
-                    level->flagsGreen |= PACK_DL_STARTED;
-                }
-                tmpFlags = level->dl->flagsBlue;
-                tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
-                tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x3);
-                if (tmpAndFlags) {
-                    level->flagsBlue |= PACK_DL_FULL;
-                } else if (tmpOrFlags) {
-                    level->flagsBlue |= PACK_DL_STARTED;
-                }
-                tmpFlags = level->dl->flagsAlpha;
-                tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
-                tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x3);
-                if (tmpAndFlags) {
-                    level->flagsAlpha |= PACK_DL_FULL;
-                } else if (tmpOrFlags) {
-                    level->flagsAlpha |= PACK_DL_STARTED;
-                }
+                DuPackUpdateFlags(level, level->dl, PACK_DL_FULL, PACK_DL_STARTED);
                 return pixelResult;
             }
         }
@@ -238,38 +178,7 @@ static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint16_t left, uint1
             }
             pixelResult = DuPackAddTextureRec(dimension, left + level->dimension / 2, bottom, level->dr);
             if (pixelResult) {
-                uint8_t tmpFlags = level->dr->flagsRed;
-                uint8_t tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
-                uint8_t tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x2);
-                if (tmpAndFlags) {
-                    level->flagsRed |= PACK_DR_FULL;
-                } else if (tmpOrFlags) {
-                    level->flagsRed |= PACK_DR_STARTED;
-                }
-                tmpFlags = level->dr->flagsGreen;
-                tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
-                tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x2);
-                if (tmpAndFlags) {
-                    level->flagsGreen |= PACK_DR_FULL;
-                } else if (tmpOrFlags) {
-                    level->flagsGreen |= PACK_DR_STARTED;
-                }
-                tmpFlags = level->dr->flagsBlue;
-                tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
-                tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x2);
-                if (tmpAndFlags) {
-                    level->flagsBlue |= PACK_DR_FULL;
-                } else if (tmpOrFlags) {
-                    level->flagsBlue |= PACK_DR_STARTED;
-                }
-                tmpFlags = level->dr->flagsAlpha;
-                tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
-                tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x2);
-                if (tmpAndFlags) {
-                    level->flagsAlpha |= PACK_DR_FULL;
-                } else if (tmpOrFlags) {
-                    level->flagsAlpha |= PACK_DR_STARTED;
-                }
+                DuPackUpdateFlags(level, level->dr, PACK_DR_FULL, PACK_DR_STARTED);
                 return pixelResult;
             }
         }
