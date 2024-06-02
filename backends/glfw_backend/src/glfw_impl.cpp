@@ -93,22 +93,32 @@ static int GrabInput = false;
 
 static const char *vertSource = 
 "#version 330\n"
-"layout(location=0)in vec2 vPos;\n"
-"out vec2 pictPos;\n"
+"layout(location=1)in vec2 vVertPos;\n"
+"layout(location=2)in vec2 vTexPos;\n"
+"layout(location=3)in float vColorMask;\n"
+"out vec2 fPictPos;\n"
+"flat out float fColorMask;\n"
 "void main() {\n"
-"  gl_Position = vec4(vPos, 0.0, 1.0);\n"
-"  pictPos = vPos / 2.0 + vec2(0.5, 0.5);\n"
+"  gl_Position = vec4(vVertPos, 0.0, 1.0);\n"
+"  fPictPos = vTexPos;\n"
+"  fColorMask = vColorMask;\n"
 "}";
 
 static const char *fragSource = 
 "#version 330\n"
-"in vec2 pictPos;\n"
+"in vec2 fPictPos;\n"
+"flat in float fColorMask;\n"
 "uniform usampler1D paletteTexture;\n"
 "uniform sampler2D imageTexture;\n"
 "out vec4 color;\n"
 "void main() {\n"
-"  vec4 color1 = texture(imageTexture, pictPos);\n"
-"  color = texture(paletteTexture, color1.g)/255.0;\n"
+"  vec4 color1 = texture(imageTexture, fPictPos);\n"
+"  float color2;\n"
+"  if(fColorMask>2.5) {color2 = color1.a;}\n"
+"  else if(fColorMask>1.5) {color2 = color1.b;}\n"
+"  else if(fColorMask>0.5) {color2 = color1.g;}\n"
+"  else {color2 = color1.r;}\n"
+"  color = texture(paletteTexture, color2)/255.0;\n"
 "}";
  
 static void error_callback(int error, const char* description)
@@ -311,14 +321,14 @@ int initGlfw(void)
 
 
 
-    GLuint vertex_buffer;
-    glGenBuffers(1, &vertex_buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    float fData[] = {-1.f, -1.f, 1.f, -1.f, -1.f, 1.f,
-                    1.f, 1.f, 1.f, -1.f, -1.f, 1.f};
-    glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), fData, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(0);
+    // GLuint vertex_buffer;
+    // glGenBuffers(1, &vertex_buffer);
+    // glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+    // float fData[] = {-1.f, -1.f, 1.f, -1.f, -1.f, 1.f,
+    //                 1.f, 1.f, 1.f, -1.f, -1.f, 1.f};
+    // glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), fData, GL_STATIC_DRAW);
+    // glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    // glEnableVertexAttribArray(0);
 
  
     /* create palette texture */
@@ -360,16 +370,64 @@ int initGlfw(void)
     const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex_shader, 1, &vertSource, NULL);
     glCompileShader(vertex_shader);
-    
+    {
+        GLint isCompiled = 0;
+        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &isCompiled);
+        if(isCompiled == GL_FALSE)
+        {
+            GLint maxLength = 0;
+            glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &maxLength);
+
+            // The maxLength includes the NULL character
+            GLchar *errorLog = (GLchar *)malloc(maxLength+1);
+            glGetShaderInfoLog(vertex_shader, maxLength, &maxLength, errorLog);
+            printf("vs:%s", errorLog);
+            free(errorLog);
+        }
+    }
  
     const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragment_shader, 1, &fragSource, NULL);
     glCompileShader(fragment_shader);
 
+    {
+        GLint isCompiled = 0;
+        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &isCompiled);
+        if(isCompiled == GL_FALSE)
+        {
+            GLint maxLength = 0;
+            glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &maxLength);
+
+            // The maxLength includes the NULL character
+            GLchar *errorLog = (GLchar *)malloc(maxLength+1);
+            glGetShaderInfoLog(vertex_shader, maxLength, &maxLength, errorLog);
+            printf("fs:%s", errorLog);
+            free(errorLog);
+        }
+    }
+
     const GLuint program = glCreateProgram();
     glAttachShader(program, vertex_shader);
     glAttachShader(program, fragment_shader);
     glLinkProgram(program);
+
+        {
+        GLint isLinked = 0;
+        glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
+        if (isLinked == GL_FALSE)
+        {
+            GLint maxLength = 0;
+            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+
+            // The maxLength includes the NULL character
+            GLchar *infoLog = (GLchar *)malloc(maxLength+1);
+            
+            glGetProgramInfoLog(program, maxLength, &maxLength, infoLog);
+            printf("prog:%s", infoLog);
+            free(infoLog);
+        }
+    }
+
     glUseProgram(program);
 
     const GLint paletteTexture_location = glGetUniformLocation(program, "paletteTexture");
@@ -387,13 +445,13 @@ int initGlfw(void)
     const float ratio = width / (float) height;
 
     glViewport(0, 0, width, height);
-    glClear(GL_COLOR_BUFFER_BIT);
+    // glClear(GL_COLOR_BUFFER_BIT);
     
-    glBindVertexArray(vboRects);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    // glBindVertexArray(vboRects);
+    // glDrawArrays(GL_TRIANGLES, 0, 6);
 
 
-    glfwSwapBuffers(window);
+    // glfwSwapBuffers(window);
 
 
     return 0;
@@ -405,14 +463,22 @@ static void GlfwDrawStuff(void) {
     if (bufferInternals.index > 0) {
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
         glBufferData(GL_ARRAY_BUFFER, 2 * bufferInternals.index * sizeof(float), bufferInternals.vertexes, GL_DYNAMIC_DRAW);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
         glBindBuffer(GL_ARRAY_BUFFER, paletteCoordBuffer);
         glBufferData(GL_ARRAY_BUFFER, 2 * bufferInternals.index * sizeof(float), bufferInternals.texCoords, GL_DYNAMIC_DRAW);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
         glBindBuffer(GL_ARRAY_BUFFER, paletteMaskBuffer);
         glBufferData(GL_ARRAY_BUFFER, bufferInternals.index * sizeof(float), bufferInternals.colorMasks, GL_DYNAMIC_DRAW);
+        glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 0, 0);
+        
         glClear(GL_COLOR_BUFFER_BIT);
+
         glDrawArrays(GL_TRIANGLES, 0, bufferInternals.index);
+
+        bufferInternals.index = 0;
+
         glfwSwapBuffers(window);
     } else {
         glClear(GL_COLOR_BUFFER_BIT);

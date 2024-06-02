@@ -65,7 +65,7 @@ static void DuPackUploadPixels(pixelData_t *pixelData, uint16_t stride, uint16_t
     pixelData->width = textureWidth;
     pixelData->height = textureHeight;
     for (uint32_t y = pixelData->y; y < pixelData->y + textureHeight; ++y) {
-        uint32_t yoffset = (stride - y - 1) * stride;
+        uint32_t yoffset = y * stride;
         for (uint32_t x = pixelData->x; x < pixelData->x + textureWidth; ++x) {
             uint32_t offset = 4 * (x + yoffset) + pixelData->colorMask;
             textureHead.textureData[offset] = *data++;
