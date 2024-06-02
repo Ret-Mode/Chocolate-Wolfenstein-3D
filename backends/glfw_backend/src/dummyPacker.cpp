@@ -3,12 +3,14 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <assert.h>
 
 #define COLORMASK_RED   0
 #define COLORMASK_GREEN 1
 #define COLORMASK_BLUE  2
 #define COLORMASK_ALPHA 3
 
+#define EMPTY_NODE   (0xFFFF)
 #define PACK_EMPTY   (0)
 #define PACK_UL_STARTED (1)
 #define PACK_UL_FULL (2)
@@ -34,10 +36,10 @@ struct pixelData_t {
 };
 
 struct level_t {
-    level_t *ul;
-    level_t *ur;
-    level_t *dl;
-    level_t *dr;
+    uint16_t ul;
+    uint16_t ur;
+    uint16_t dl;
+    uint16_t dr;
     uint16_t dimension;
     uint8_t flagsRed;
     uint8_t flagsGreen;
@@ -92,10 +94,11 @@ static level_t *DuPackAddLevel(uint16_t dimension) {
         level_t *level = textureHead.textureStack + textureHead.textureStackCurrent;
         textureHead.textureStackCurrent++;
         level->dimension = dimension;
-        level->ul = level->ur = level->dl = level->dr = NULL;
+        level->ul = level->ur = level->dl = level->dr = EMPTY_NODE;
         level->flagsRed = level->flagsGreen = level->flagsBlue = level->flagsAlpha = 0;
         return level;
     }
+    assert(0);
     return NULL;
 }
 
@@ -140,45 +143,45 @@ static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint16_t left, uint1
         // check up left
         uint8_t flagAnd = level->flagsRed & level->flagsGreen & level->flagsBlue & level->flagsAlpha;
         if ( !(flagAnd & PACK_UL_FULL)) {
-            if (level->ul == NULL) {
-                level->ul = DuPackAddLevel(level->dimension / 2);
+            if (level->ul == EMPTY_NODE) {
+                level->ul = DuPackAddLevel(level->dimension / 2) - level;
             }
-            pixelResult = DuPackAddTextureRec(dimension, left, bottom + level->dimension / 2, level->ul);
+            pixelResult = DuPackAddTextureRec(dimension, left, bottom + level->dimension / 2, level + level->ul);
             if (pixelResult) {
-                DuPackUpdateFlags(level, level->ul, PACK_UL_FULL, PACK_UL_STARTED);
+                DuPackUpdateFlags(level, level + level->ul, PACK_UL_FULL, PACK_UL_STARTED);
                 return pixelResult;
             }
         }
 
         if ( !(flagAnd & PACK_UR_FULL)) {
-            if (level->ur == NULL) {
-                level->ur = DuPackAddLevel(level->dimension / 2);
+            if (level->ur == EMPTY_NODE) {
+                level->ur = DuPackAddLevel(level->dimension / 2) - level;
             }
-            pixelResult = DuPackAddTextureRec(dimension, left + level->dimension / 2, bottom + level->dimension / 2, level->ur);
+            pixelResult = DuPackAddTextureRec(dimension, left + level->dimension / 2, bottom + level->dimension / 2, level + level->ur);
             if (pixelResult) {
-                DuPackUpdateFlags(level, level->ur, PACK_UR_FULL, PACK_UR_STARTED);
+                DuPackUpdateFlags(level, level + level->ur, PACK_UR_FULL, PACK_UR_STARTED);
                 return pixelResult;
             }
         }
 
         if ( !(flagAnd & PACK_DL_FULL)) {
-            if (level->dl == NULL) {
-                level->dl = DuPackAddLevel(level->dimension / 2);
+            if (level->dl == EMPTY_NODE) {
+                level->dl = DuPackAddLevel(level->dimension / 2) - level;
             }
-            pixelResult = DuPackAddTextureRec(dimension, left, bottom, level->dl);
+            pixelResult = DuPackAddTextureRec(dimension, left, bottom, level + level->dl);
             if (pixelResult) {
-                DuPackUpdateFlags(level, level->dl, PACK_DL_FULL, PACK_DL_STARTED);
+                DuPackUpdateFlags(level, level + level->dl, PACK_DL_FULL, PACK_DL_STARTED);
                 return pixelResult;
             }
         }
 
         if ( !(flagAnd & PACK_DR_FULL)) {
-            if (level->dr == NULL) {
-                level->dr = DuPackAddLevel(level->dimension / 2);
+            if (level->dr == EMPTY_NODE) {
+                level->dr = DuPackAddLevel(level->dimension / 2) - level;
             }
-            pixelResult = DuPackAddTextureRec(dimension, left + level->dimension / 2, bottom, level->dr);
+            pixelResult = DuPackAddTextureRec(dimension, left + level->dimension / 2, bottom, level + level->dr);
             if (pixelResult) {
-                DuPackUpdateFlags(level, level->dr, PACK_DR_FULL, PACK_DR_STARTED);
+                DuPackUpdateFlags(level, level + level->dr, PACK_DR_FULL, PACK_DR_STARTED);
                 return pixelResult;
             }
         }
@@ -232,9 +235,9 @@ void DuPackAddTexture(int width, int height, unsigned char *data) {
         exit(-1);
     }
 
-    // FILE *fp = fopen("data.raw", "wb");
-    // fwrite(textureHead.textureData, textureHead.textureDataSize * textureHead.textureDataSize * 4, 1, fp);
-    // fclose(fp);
+    FILE *fp = fopen("data.raw", "wb");
+    fwrite(textureHead.textureData, textureHead.textureDataSize * textureHead.textureDataSize * 4, 1, fp);
+    fclose(fp);
 }
 
 unsigned char *DuPackGetPalettizedTexture(void) {
