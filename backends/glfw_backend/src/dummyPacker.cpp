@@ -53,11 +53,12 @@ static struct textureHead_t {
     level_t *textureStack;
     pixelData_t *dataStack;
     pixelData_t *colorTexture;
-    uint32_t textureDataSize;
-    uint32_t textureStackSize;
-    uint32_t dataStackSize;
-    uint32_t textureStackCurrent;
-    uint32_t dataStackCurrent;
+    uint32_t textureSizeInBytes;
+    uint16_t textureDimension;
+    uint16_t textureStackSize;
+    uint16_t dataStackSize;
+    uint16_t textureStackCurrent;
+    uint16_t dataStackCurrent;
 } textureHead;
 
 static void DuPackUploadPixels(pixelData_t *pixelData, uint16_t stride, uint16_t textureWidth, uint16_t textureHeight, uint8_t *data) {
@@ -236,7 +237,7 @@ void DuPackAddTexture(int width, int height, unsigned char *data) {
     }
 
     FILE *fp = fopen("data.raw", "wb");
-    fwrite(textureHead.textureData, textureHead.textureDataSize * textureHead.textureDataSize * 4, 1, fp);
+    fwrite(textureHead.textureData, textureHead.textureSizeInBytes, 1, fp);
     fclose(fp);
 }
 
@@ -246,7 +247,7 @@ unsigned char *DuPackGetPalettizedTexture(void) {
 
 void DuPackGetTextureCoords(int index, float *left, float *right, float *bottom, float *top, int *rgbaOffset) {
     pixelData_t * pixelData = textureHead.dataStack + index;
-    float textureDimension = (float)textureHead.textureDataSize;
+    float textureDimension = (float)textureHead.textureDimension;
     *left = ((float)pixelData->x) / textureDimension;
     *right = ((float)pixelData->x + (float)pixelData->width) / textureDimension;
     *bottom = ((float)pixelData->y) / textureDimension;
@@ -258,7 +259,7 @@ void DuPackGetColorCoords(int color, float *left, float *right, float *bottom, f
     pixelData_t * pixelData = textureHead.colorTexture;
     uint16_t xOffset = color & 0xF;
     uint16_t yOffset = 0xF - ((color >> 4) & 0xF);
-    float textureDimension = (float)textureHead.textureDataSize;
+    float textureDimension = (float)textureHead.textureDimension;
     *right = *left = ((float)(pixelData->x + xOffset)) / textureDimension;
     *top = *bottom = ((float)(pixelData->y + yOffset)) / textureDimension;
     *rgbaOffset = pixelData->colorMask;
@@ -267,16 +268,17 @@ void DuPackGetColorCoords(int color, float *left, float *right, float *bottom, f
 void DuPackInit(unsigned int textureSize, 
                 unsigned int levelStackSize, 
                 unsigned int dataStackSize) {
-    textureHead.textureDataSize = textureSize;
+    textureHead.textureDimension = textureSize;
+    textureHead.textureSizeInBytes = textureSize * textureSize * 4;
     textureHead.textureStackSize = levelStackSize;
     textureHead.dataStackSize = dataStackSize;
 
-    textureHead.textureData = (uint8_t*)malloc(textureSize * textureSize * 4); // square rgb texture
+    textureHead.textureData = (uint8_t*)malloc(textureHead.textureSizeInBytes); // square rgb texture
     if (!textureHead.textureData) {
         exit(-1);
     }
-    memset(textureHead.textureData, 0, textureSize * textureSize * 4);
-    textureHead.textureStack = (level_t*)malloc(levelStackSize * sizeof (level_t)); 
+    memset(textureHead.textureData, 0, textureHead.textureSizeInBytes);
+    textureHead.textureStack = (level_t*)malloc(levelStackSize * sizeof(level_t)); 
     if (!textureHead.textureStack) {
         exit(-1);
     }
