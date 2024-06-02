@@ -20,7 +20,10 @@
 extern void DuPackInit(unsigned int textureSize, 
                 unsigned int levelStackSize, 
                 unsigned int dataStackSize);
-extern void DuPackAddTexture(int width, int height, unsigned char *data);
+extern int DuPackAddTexture(int width, int height, unsigned char *data);
+extern unsigned char *DuPackGetPalettizedTexture(void);
+extern int DuPackGetTextureDimension(void); 
+extern void DuPackGetTextureCoords(int index, float *left, float *right, float *bottom, float *top, int *rgbaOffset);
 
 static GLFWwindow* window;
 struct wolfColor_t {
@@ -38,6 +41,13 @@ struct WindowCoords_t {
     int viewportWidth;
     int viewportHeight;
 } WindowCoords;
+
+static struct bufferInternals_t {
+    float vertexes[2*320*4];
+    float texCoords[2*320*4];
+    float colorMasks[320*4];
+    int index;
+} bufferInternals;
 
 static struct wolfColor_t gamepal[]={
     #if defined (SPEAR) || defined (SPEARDEMO)
@@ -73,7 +83,12 @@ static byte ShiftNames[] =     // Shifted ASCII for scan codes
 };
 
 static GLuint paletteTexture;
-static GLuint imageTexture; 
+static GLuint imageTexture;
+
+static GLuint vertexBuffer;
+static GLuint paletteCoordBuffer;
+static GLuint paletteMaskBuffer;
+
 static int GrabInput = false;
 
 static const char *vertSource = 
@@ -93,7 +108,7 @@ static const char *fragSource =
 "out vec4 color;\n"
 "void main() {\n"
 "  vec4 color1 = texture(imageTexture, pictPos);\n"
-"  color = texture(paletteTexture, color1.r)/255.0;\n"
+"  color = texture(paletteTexture, color1.g)/255.0;\n"
 "}";
  
 static void error_callback(int error, const char* description)
@@ -276,6 +291,26 @@ int initGlfw(void)
     glGenVertexArrays(1, &vboRects);
     glBindVertexArray(vboRects);
 
+    vertexBuffer;
+    glGenBuffers(1, &vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(1);
+
+    paletteCoordBuffer;
+    glGenBuffers(1, &paletteCoordBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, paletteCoordBuffer);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(2);
+
+    paletteMaskBuffer;
+    glGenBuffers(1, &paletteMaskBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, paletteMaskBuffer);
+    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(3);
+
+
+
     GLuint vertex_buffer;
     glGenBuffers(1, &vertex_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
@@ -366,9 +401,25 @@ int initGlfw(void)
 
 
 static void GlfwDrawStuff(void) {
-    glClear(GL_COLOR_BUFFER_BIT);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glfwSwapBuffers(window);
+
+    if (bufferInternals.index > 0) {
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+        glBufferData(GL_ARRAY_BUFFER, 2 * bufferInternals.index * sizeof(float), bufferInternals.vertexes, GL_DYNAMIC_DRAW);
+
+        glBindBuffer(GL_ARRAY_BUFFER, paletteCoordBuffer);
+        glBufferData(GL_ARRAY_BUFFER, 2 * bufferInternals.index * sizeof(float), bufferInternals.texCoords, GL_DYNAMIC_DRAW);
+
+        glBindBuffer(GL_ARRAY_BUFFER, paletteMaskBuffer);
+        glBufferData(GL_ARRAY_BUFFER, bufferInternals.index * sizeof(float), bufferInternals.colorMasks, GL_DYNAMIC_DRAW);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glDrawArrays(GL_TRIANGLES, 0, bufferInternals.index);
+        glfwSwapBuffers(window);
+    } else {
+        glClear(GL_COLOR_BUFFER_BIT);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glfwSwapBuffers(window);
+    }
+    
 }
 
 /* IMPL ******************************************************************/
@@ -572,18 +623,55 @@ void VL_MemToScreenScaledCoord (unsigned char *source, int width, int height, in
             }
        }
     }
-    DuPackAddTexture(width, height, pixels);
+    int index = DuPackAddTexture(width, height, pixels);
+    free(pixels);
     glActiveTexture(GL_TEXTURE1);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, DuPackGetTextureDimension(), DuPackGetTextureDimension(), 0, GL_RGBA, GL_UNSIGNED_BYTE, DuPackGetPalettizedTexture());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glGenerateMipmap(GL_TEXTURE_2D);
-    free(pixels);
+    
+    float left, right, top, bottom;
+    int colorMask;
+    DuPackGetTextureCoords(index, &left, &right, &bottom, &top, &colorMask);
+    int offset = bufferInternals.index;
+    bufferInternals.index += 6;
+    bufferInternals.vertexes[2*offset] = -1.0f;
+    bufferInternals.vertexes[2*offset+1] = -1.0f;
+    bufferInternals.vertexes[2*offset+2] = 1.0f;
+    bufferInternals.vertexes[2*offset+3] = -1.0f;
+    bufferInternals.vertexes[2*offset+4] = -1.0f;
+    bufferInternals.vertexes[2*offset+5] = 1.0f;
+    bufferInternals.vertexes[2*offset+6] = 1.0f;
+    bufferInternals.vertexes[2*offset+7] = -1.0f;
+    bufferInternals.vertexes[2*offset+8] = 1.0f;
+    bufferInternals.vertexes[2*offset+9] = 1.0f;
+    bufferInternals.vertexes[2*offset+10] = -1.0f;
+    bufferInternals.vertexes[2*offset+11] = 1.0f;
 
+    bufferInternals.texCoords[2*offset] = left;
+    bufferInternals.texCoords[2*offset+1] = bottom;
+    bufferInternals.texCoords[2*offset+2] = right;
+    bufferInternals.texCoords[2*offset+3] = bottom;
+    bufferInternals.texCoords[2*offset+4] = left;
+    bufferInternals.texCoords[2*offset+5] = top;
+    bufferInternals.texCoords[2*offset+6] = right;
+    bufferInternals.texCoords[2*offset+7] = bottom;
+    bufferInternals.texCoords[2*offset+8] = right;
+    bufferInternals.texCoords[2*offset+9] = top;
+    bufferInternals.texCoords[2*offset+10] = left;
+    bufferInternals.texCoords[2*offset+11] = top;
+
+    bufferInternals.colorMasks[offset] = colorMask;
+    bufferInternals.colorMasks[offset+1] = colorMask;
+    bufferInternals.colorMasks[offset+2] = colorMask;
+    bufferInternals.colorMasks[offset+3] = colorMask;
+    bufferInternals.colorMasks[offset+4] = colorMask;
+    bufferInternals.colorMasks[offset+5] = colorMask;
 
 }
 

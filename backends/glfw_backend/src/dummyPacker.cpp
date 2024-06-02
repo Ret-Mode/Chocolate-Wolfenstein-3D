@@ -226,7 +226,7 @@ static pixelData_t *DuPackCreateAllColorsTexture(void) {
 }
 
 /* PUBLIC FUNCTIONS */
-void DuPackAddTexture(int width, int height, unsigned char *data) {
+int DuPackAddTexture(int width, int height, unsigned char *data) {
     uint16_t dimension = (uint16_t) (width > height ? width : height);
 
     pixelData_t * pixelData = DuPackAddTextureRec(dimension, 0, 0, textureHead.textureStack);
@@ -239,10 +239,16 @@ void DuPackAddTexture(int width, int height, unsigned char *data) {
     FILE *fp = fopen("data.raw", "wb");
     fwrite(textureHead.textureData, textureHead.textureSizeInBytes, 1, fp);
     fclose(fp);
+
+    return pixelData->index;
 }
 
 unsigned char *DuPackGetPalettizedTexture(void) {
     return textureHead.textureData;
+}
+
+int DuPackGetTextureDimension(void) {
+    return textureHead.textureDimension;
 }
 
 void DuPackGetTextureCoords(int index, float *left, float *right, float *bottom, float *top, int *rgbaOffset) {
