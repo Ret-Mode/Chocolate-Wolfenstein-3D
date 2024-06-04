@@ -90,13 +90,16 @@ static pixelData_t *DuPackAddPixelData(uint8_t colorMask, uint16_t x, uint16_t y
     return NULL;
 }
 
-static level_t *DuPackAddLevel(uint16_t dimension) {
+static level_t *DuPackAddLevel(uint16_t dimension, uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha) {
     if (textureHead.textureStackCurrent < textureHead.textureStackSize) {
         level_t *level = textureHead.textureStack + textureHead.textureStackCurrent;
         textureHead.textureStackCurrent++;
         level->dimension = dimension;
         level->ul = level->ur = level->dl = level->dr = EMPTY_NODE;
-        level->flagsRed = level->flagsGreen = level->flagsBlue = level->flagsAlpha = 0;
+        level->flagsRed = (red << 6) | (red << 4) | (red << 2) | red;
+        level->flagsGreen = (green << 6) | (green << 4) | (green << 2) | green;
+        level->flagsBlue = (blue << 6) | (blue << 4) | (blue << 2) | (blue);
+        level->flagsAlpha = (alpha << 6) | (alpha << 4) | (alpha << 2) | alpha;
         return level;
     }
     assert(0);
@@ -145,7 +148,11 @@ static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint16_t left, uint1
         uint8_t flagAnd = level->flagsRed & level->flagsGreen & level->flagsBlue & level->flagsAlpha;
         if ( !(flagAnd & PACK_UL_FULL)) {
             if (level->ul == EMPTY_NODE) {
-                level->ul = DuPackAddLevel(level->dimension / 2) - level;
+                level->ul = DuPackAddLevel(level->dimension / 2,
+                                           (level->flagsRed & PACK_UL_FULL), 
+                                           (level->flagsGreen & PACK_UL_FULL), 
+                                           (level->flagsBlue & PACK_UL_FULL), 
+                                           (level->flagsAlpha & PACK_UL_FULL)) - level;
             }
             pixelResult = DuPackAddTextureRec(dimension, left, bottom + level->dimension / 2, level + level->ul);
             if (pixelResult) {
@@ -156,7 +163,11 @@ static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint16_t left, uint1
 
         if ( !(flagAnd & PACK_UR_FULL)) {
             if (level->ur == EMPTY_NODE) {
-                level->ur = DuPackAddLevel(level->dimension / 2) - level;
+                level->ur = DuPackAddLevel(level->dimension / 2, 
+                                           (level->flagsRed & PACK_UR_FULL) >> 2, 
+                                           (level->flagsGreen & PACK_UR_FULL) >> 2, 
+                                           (level->flagsBlue & PACK_UR_FULL) >> 2, 
+                                           (level->flagsAlpha & PACK_UR_FULL) >> 2) - level;
             }
             pixelResult = DuPackAddTextureRec(dimension, left + level->dimension / 2, bottom + level->dimension / 2, level + level->ur);
             if (pixelResult) {
@@ -167,7 +178,11 @@ static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint16_t left, uint1
 
         if ( !(flagAnd & PACK_DL_FULL)) {
             if (level->dl == EMPTY_NODE) {
-                level->dl = DuPackAddLevel(level->dimension / 2) - level;
+                level->dl = DuPackAddLevel(level->dimension / 2,
+                                           (level->flagsRed & PACK_DL_FULL) >> 4, 
+                                           (level->flagsGreen & PACK_DL_FULL) >> 4, 
+                                           (level->flagsBlue & PACK_DL_FULL) >> 4, 
+                                           (level->flagsAlpha & PACK_DL_FULL) >> 4) - level;
             }
             pixelResult = DuPackAddTextureRec(dimension, left, bottom, level + level->dl);
             if (pixelResult) {
@@ -178,7 +193,11 @@ static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint16_t left, uint1
 
         if ( !(flagAnd & PACK_DR_FULL)) {
             if (level->dr == EMPTY_NODE) {
-                level->dr = DuPackAddLevel(level->dimension / 2) - level;
+                level->dr = DuPackAddLevel(level->dimension / 2,
+                                           (level->flagsRed & PACK_DR_FULL) >> 6, 
+                                           (level->flagsGreen & PACK_DR_FULL) >> 6, 
+                                           (level->flagsBlue & PACK_DR_FULL) >> 6, 
+                                           (level->flagsAlpha & PACK_DR_FULL) >> 6) - level;
             }
             pixelResult = DuPackAddTextureRec(dimension, left + level->dimension / 2, bottom, level + level->dr);
             if (pixelResult) {
@@ -295,7 +314,7 @@ void DuPackInit(unsigned int textureSize,
     textureHead.textureStackCurrent = 0;
     textureHead.dataStackCurrent = 0;
 
-    DuPackAddLevel(textureSize);
+    DuPackAddLevel(textureSize, PACK_EMPTY, PACK_EMPTY, PACK_EMPTY, PACK_EMPTY);
     textureHead.colorTexture = DuPackCreateAllColorsTexture();
 }
 
