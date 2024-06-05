@@ -127,6 +127,47 @@ static const char *fragSource =
 "  color = texture(paletteTexture, color2)/255.0;\n"
 "}";
  
+static int SelectClosestPixelIndex(unsigned char red, unsigned char green, unsigned char blue) {
+    unsigned char diffR = red - gamepal[0].red;
+    unsigned char diffG = green - gamepal[0].green;
+    unsigned char diffB = blue - gamepal[0].blue;
+
+    if (diffR < 0) {
+        diffR = -diffR;
+    }
+    if (diffG < 0) {
+        diffG = -diffG;
+    }
+    if (diffB < 0) {
+        diffB = -diffB;
+    }
+    int cummulative = diffR + diffG + diffB;
+    
+    int index = 0;
+
+    for (int i = 1; i < 255; ++i) {
+        diffR = red - gamepal[i].red;
+        diffG = green - gamepal[i].green;
+        diffB = blue - gamepal[i].blue;
+        if (diffR < 0) {
+            diffR = -diffR;
+        }
+        if (diffG < 0) {
+            diffG = -diffG;
+        }
+        if (diffB < 0) {
+            diffB = -diffB;
+        }
+        int newCummulative = diffR + diffG + diffB;
+        if (newCummulative < cummulative) {
+            index = i;
+            cummulative = newCummulative;
+        }
+    }
+
+    return index;
+}
+
 static void error_callback(int error, const char* description)
 {
     fprintf(stderr, "Error: %s\n", description);
@@ -744,7 +785,11 @@ void VL_Plot (int x, int y, int color)
 
 unsigned char VL_GetPixel (int x, int y)
 {
-    return 0;
+    unsigned char pixels[4];
+    GlfwDrawStuff();
+    glFinish();
+    glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    return SelectClosestPixelIndex(pixels[0], pixels[1], pixels[2]);
 }
 
 void VL_Hlin (unsigned x, unsigned y, unsigned width, int color)
