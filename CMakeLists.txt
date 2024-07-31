@@ -8,6 +8,7 @@ option(BUILD_WOLF_DEMO "Build Wolfenstein demo" ON)
 option(BUILD_WOLF_FULL "Build Wolfenstein" OFF)
 option(BUILD_SPEAR_DEMO "Build Spear demo" OFF)
 option(BUILD_SPEAR_FULL "Build Spear" OFF)
+option(BUILD_TESTS "Build Tests" ON)
 
 add_subdirectory(backends)
 
@@ -27,4 +28,8 @@ endif()
 
 if (BUILD_SPEAR_FULL)
     add_subdirectory(SpearFull)
+endif()
+
+if (BUILD_TESTS)
+    add_subdirectory(tests)
 endif()
