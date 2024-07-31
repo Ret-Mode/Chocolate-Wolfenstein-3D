@@ -12,6 +12,13 @@
 
 #define EMPTY_NODE   (0xFFFF)
 #define PACK_EMPTY   (0)
+#define FLAG_STARTED (1)
+#define FLAG_FULL    (2)
+#define FLAG_DATA    (3)
+#define PACK_UL(x) (x & 0x3)
+#define PACK_UR(x) ((x & 0x3) << 2)
+#define PACK_DL(x) ((x & 0x3) << 4)
+#define PACK_DR(x) ((x & 0x3) << 6)
 #define PACK_UL_STARTED (1)
 #define PACK_UL_FULL (2)
 #define PACK_UL_DATA (3)
@@ -24,6 +31,18 @@
 #define PACK_DR_STARTED (1 << 6)
 #define PACK_DR_FULL (2 << 6)
 #define PACK_DR_DATA (3 << 6)
+#define UNPACK_UL_STARTED(x) ( x     & 0x1)
+#define UNPACK_UR_STARTED(x) ((x>>2) & 0x1)
+#define UNPACK_DL_STARTED(x) ((x>>4) & 0x1)
+#define UNPACK_DR_STARTED(x) ((x>>6) & 0x1)
+#define UNPACK_UL_FULL(x) ( x     & 0x2) 
+#define UNPACK_UR_FULL(x) ((x>>2) & 0x2)
+#define UNPACK_DL_FULL(x) ((x>>4) & 0x2) 
+#define UNPACK_DR_FULL(x) ((x>>6) & 0x2) 
+#define UNPACK_UL_DATA(x) ( x     & 0x3) 
+#define UNPACK_UR_DATA(x) ((x>>2) & 0x3)
+#define UNPACK_DL_DATA(x) ((x>>4) & 0x3) 
+#define UNPACK_DR_DATA(x) ((x>>6) & 0x3) 
 
 struct pixelData_t {
     uint16_t x;
@@ -96,14 +115,79 @@ static level_t *DuPackAddLevel(uint16_t dimension, uint8_t red, uint8_t green, u
         textureHead.textureStackCurrent++;
         level->dimension = dimension;
         level->ul = level->ur = level->dl = level->dr = EMPTY_NODE;
-        level->flagsRed = (red << 6) | (red << 4) | (red << 2) | red;
-        level->flagsGreen = (green << 6) | (green << 4) | (green << 2) | green;
-        level->flagsBlue = (blue << 6) | (blue << 4) | (blue << 2) | (blue);
-        level->flagsAlpha = (alpha << 6) | (alpha << 4) | (alpha << 2) | alpha;
+        level->flagsRed = PACK_UL(red) | PACK_UR(red) | PACK_DL(red) | PACK_DR(red);
+        level->flagsGreen = PACK_UL(green) | PACK_UR(green) | PACK_DL(green) | PACK_DR(green);
+        level->flagsBlue = PACK_UL(blue) | PACK_UR(blue) | PACK_DL(blue) | PACK_DR(blue);
+        level->flagsAlpha = PACK_UL(alpha) | PACK_UR(alpha) | PACK_DL(alpha) | PACK_DR(alpha);
         return level;
     }
     assert(0);
     return NULL;
+}
+
+inline static uint8_t* GetColorFlag(uint8_t colormask, level_t *level) {
+    uint8_t* result = &(level->flagsRed);
+    switch (colormask) {
+        case COLORMASK_GREEN:
+        result = &(level->flagsGreen);
+        break;
+        case COLORMASK_BLUE:
+        result = &(level->flagsBlue);
+        break;
+        case COLORMASK_ALPHA:
+        result = &(level->flagsAlpha);
+        break;
+    }
+    return result;
+}
+
+static pixelData_t *AddToLowerLeftEdge(uint8_t colormask, uint16_t left, uint16_t bottom, level_t* level, bool fitToEdge) {
+    pixelData_t *pixelData = DuPackAddPixelData(colormask, left, bottom, level->dimension);
+    if (pixelData == NULL) {
+        return NULL;
+    }
+    if (fitToEdge) {
+        if (level->ul == EMPTY_NODE) {
+            level->ul = DuPackAddLevel(level->dimension / 2, 
+                                    UNPACK_UL_FULL(level->flagsRed),
+                                    UNPACK_UL_FULL(level->flagsGreen), 
+                                    UNPACK_UL_FULL(level->flagsBlue), 
+                                    UNPACK_UL_FULL(level->flagsAlpha)) - level;
+
+        }
+
+        if (level->ur == EMPTY_NODE) {
+            level->ur = DuPackAddLevel(level->dimension / 2, 
+                                    UNPACK_UR_FULL(level->flagsRed),
+                                    UNPACK_UR_FULL(level->flagsGreen), 
+                                    UNPACK_UR_FULL(level->flagsBlue), 
+                                    UNPACK_UR_FULL(level->flagsAlpha)) - level;
+
+        }
+
+        if (level->dr == EMPTY_NODE) {
+            level->dr = DuPackAddLevel(level->dimension / 2, 
+                                    UNPACK_DR_FULL(level->flagsRed),
+                                    UNPACK_DR_FULL(level->flagsGreen), 
+                                    UNPACK_DR_FULL(level->flagsBlue), 
+                                    UNPACK_DR_FULL(level->flagsAlpha)) - level;
+        }
+
+        uint8_t* flag;
+        flag = GetColorFlag(colormask, level + level->ul);
+        *flag = *flag | PACK_DL_DATA | PACK_DR_DATA;
+        flag = GetColorFlag(colormask, level + level->ur);
+        *flag = *flag | PACK_DL_DATA;
+        flag = GetColorFlag(colormask, level + level->dr);
+        *flag = *flag | PACK_DL_DATA | PACK_UL_DATA;
+        flag = GetColorFlag(colormask, level);
+        *flag = PACK_DL_DATA | PACK_DR_STARTED | PACK_UL_STARTED | PACK_UR_STARTED;
+    } else {
+        uint8_t* flag;
+        flag = GetColorFlag(colormask, level);
+        *flag = PACK_DL_DATA | PACK_DR_DATA | PACK_UL_DATA | PACK_UR_DATA;
+    }
+    return pixelData;
 }
 
 static void DuPackUpdateFlags(level_t *level, level_t *child, uint8_t fullFlag, uint8_t startedFlag){
@@ -149,10 +233,10 @@ static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint16_t left, uint1
         if ( !(flagAnd & PACK_UL_FULL)) {
             if (level->ul == EMPTY_NODE) {
                 level->ul = DuPackAddLevel(level->dimension / 2,
-                                           (level->flagsRed & PACK_UL_FULL), 
-                                           (level->flagsGreen & PACK_UL_FULL), 
-                                           (level->flagsBlue & PACK_UL_FULL), 
-                                           (level->flagsAlpha & PACK_UL_FULL)) - level;
+                                           UNPACK_UL_FULL(level->flagsRed), 
+                                           UNPACK_UL_FULL(level->flagsGreen), 
+                                           UNPACK_UL_FULL(level->flagsBlue), 
+                                           UNPACK_UL_FULL(level->flagsAlpha)) - level;
             }
             pixelResult = DuPackAddTextureRec(dimension, left, bottom + level->dimension / 2, level + level->ul);
             if (pixelResult) {
@@ -164,10 +248,10 @@ static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint16_t left, uint1
         if ( !(flagAnd & PACK_UR_FULL)) {
             if (level->ur == EMPTY_NODE) {
                 level->ur = DuPackAddLevel(level->dimension / 2, 
-                                           (level->flagsRed & PACK_UR_FULL) >> 2, 
-                                           (level->flagsGreen & PACK_UR_FULL) >> 2, 
-                                           (level->flagsBlue & PACK_UR_FULL) >> 2, 
-                                           (level->flagsAlpha & PACK_UR_FULL) >> 2) - level;
+                                           UNPACK_UR_FULL(level->flagsRed), 
+                                           UNPACK_UR_FULL(level->flagsGreen), 
+                                           UNPACK_UR_FULL(level->flagsBlue), 
+                                           UNPACK_UR_FULL(level->flagsAlpha)) - level;
             }
             pixelResult = DuPackAddTextureRec(dimension, left + level->dimension / 2, bottom + level->dimension / 2, level + level->ur);
             if (pixelResult) {
@@ -179,10 +263,10 @@ static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint16_t left, uint1
         if ( !(flagAnd & PACK_DL_FULL)) {
             if (level->dl == EMPTY_NODE) {
                 level->dl = DuPackAddLevel(level->dimension / 2,
-                                           (level->flagsRed & PACK_DL_FULL) >> 4, 
-                                           (level->flagsGreen & PACK_DL_FULL) >> 4, 
-                                           (level->flagsBlue & PACK_DL_FULL) >> 4, 
-                                           (level->flagsAlpha & PACK_DL_FULL) >> 4) - level;
+                                           UNPACK_DL_FULL(level->flagsRed), 
+                                           UNPACK_DL_FULL(level->flagsGreen), 
+                                           UNPACK_DL_FULL(level->flagsBlue), 
+                                           UNPACK_DL_FULL(level->flagsAlpha)) - level;
             }
             pixelResult = DuPackAddTextureRec(dimension, left, bottom, level + level->dl);
             if (pixelResult) {
@@ -194,10 +278,10 @@ static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint16_t left, uint1
         if ( !(flagAnd & PACK_DR_FULL)) {
             if (level->dr == EMPTY_NODE) {
                 level->dr = DuPackAddLevel(level->dimension / 2,
-                                           (level->flagsRed & PACK_DR_FULL) >> 6, 
-                                           (level->flagsGreen & PACK_DR_FULL) >> 6, 
-                                           (level->flagsBlue & PACK_DR_FULL) >> 6, 
-                                           (level->flagsAlpha & PACK_DR_FULL) >> 6) - level;
+                                           UNPACK_DR_FULL(level->flagsRed), 
+                                           UNPACK_DR_FULL(level->flagsGreen), 
+                                           UNPACK_DR_FULL(level->flagsBlue), 
+                                           UNPACK_DR_FULL(level->flagsAlpha)) - level;
             }
             pixelResult = DuPackAddTextureRec(dimension, left + level->dimension / 2, bottom, level + level->dr);
             if (pixelResult) {
@@ -207,26 +291,31 @@ static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint16_t left, uint1
         }
 
     } else if (dimension <= level->dimension) {
-        // check red
+        bool lessThanThreeFourths = (level->dimension > 2 && dimension <= (level->dimension - level->dimension/4));
+        pixelData_t *pixelData = NULL;
         if (level->flagsRed == PACK_EMPTY) {
-            pixelData_t *pixelData = DuPackAddPixelData(COLORMASK_RED, left, bottom, level->dimension);
-            level->flagsRed = PACK_DL_DATA | PACK_DR_DATA | PACK_UL_DATA | PACK_UR_DATA;
-            return pixelData;
+            pixelData = AddToLowerLeftEdge(COLORMASK_RED, left, bottom, level, lessThanThreeFourths);
+            if (pixelData != NULL) {
+                return pixelData;
+            }
         }
         if (level->flagsGreen == PACK_EMPTY) {
-            pixelData_t *pixelData = DuPackAddPixelData(COLORMASK_GREEN, left, bottom, level->dimension);
-            level->flagsGreen = PACK_DL_DATA | PACK_DR_DATA | PACK_UL_DATA | PACK_UR_DATA;
-            return pixelData;
+            pixelData = AddToLowerLeftEdge(COLORMASK_GREEN, left, bottom, level, lessThanThreeFourths);
+            if (pixelData != NULL) {
+                return pixelData;
+            }
         }
         if (level->flagsBlue == PACK_EMPTY) {
-            pixelData_t *pixelData = DuPackAddPixelData(COLORMASK_BLUE, left, bottom, level->dimension);
-            level->flagsBlue = PACK_DL_DATA | PACK_DR_DATA | PACK_UL_DATA | PACK_UR_DATA;
-            return pixelData;
+            pixelData = AddToLowerLeftEdge(COLORMASK_BLUE, left, bottom, level, lessThanThreeFourths);
+            if (pixelData != NULL) {
+                return pixelData;
+            }
         }
         if (level->flagsAlpha == PACK_EMPTY) {
-            pixelData_t *pixelData = DuPackAddPixelData(COLORMASK_ALPHA, left, bottom, level->dimension);
-            level->flagsAlpha = PACK_DL_DATA | PACK_DR_DATA | PACK_UL_DATA | PACK_UR_DATA;
-            return pixelData;
+            pixelData = AddToLowerLeftEdge(COLORMASK_ALPHA, left, bottom, level, lessThanThreeFourths);
+            if (pixelData != NULL) {
+                return pixelData;
+            }
         }
     }
     return NULL;

@@ -701,18 +701,23 @@ void VL_MemToScreenScaledCoord (unsigned char *source, int width, int height, in
 
     assert (bufferInternals.index < bufferInternals.capacity);
 
-    bufferInternals.vertices[2*offset] = -1.0f;
-    bufferInternals.vertices[2*offset+1] = -1.0f;
-    bufferInternals.vertices[2*offset+2] = 1.0f;
-    bufferInternals.vertices[2*offset+3] = -1.0f;
-    bufferInternals.vertices[2*offset+4] = -1.0f;
-    bufferInternals.vertices[2*offset+5] = 1.0f;
-    bufferInternals.vertices[2*offset+6] = 1.0f;
-    bufferInternals.vertices[2*offset+7] = -1.0f;
-    bufferInternals.vertices[2*offset+8] = 1.0f;
-    bufferInternals.vertices[2*offset+9] = 1.0f;
-    bufferInternals.vertices[2*offset+10] = -1.0f;
-    bufferInternals.vertices[2*offset+11] = 1.0f;
+    float minX = 2.f * (destx/ 320.f) - 1.f;
+    float maxX = 2.f * (destx + width)/ 320.f - 1.f;
+
+    float maxY = 2.f * (200.f-desty)/ 200.f - 1.f;
+    float minY = 2.f * (200.f-(desty + height))/ 200.f - 1.f;
+    bufferInternals.vertices[2*offset] = minX;
+    bufferInternals.vertices[2*offset+1] = minY;
+    bufferInternals.vertices[2*offset+2] = maxX;
+    bufferInternals.vertices[2*offset+3] = minY;
+    bufferInternals.vertices[2*offset+4] = minX;
+    bufferInternals.vertices[2*offset+5] = maxY;
+    bufferInternals.vertices[2*offset+6] = maxX;
+    bufferInternals.vertices[2*offset+7] = minY;
+    bufferInternals.vertices[2*offset+8] = maxX;
+    bufferInternals.vertices[2*offset+9] = maxY;
+    bufferInternals.vertices[2*offset+10] = minX;
+    bufferInternals.vertices[2*offset+11] = maxY;
 
     bufferInternals.texCoords[2*offset] = left;
     bufferInternals.texCoords[2*offset+1] = bottom;
