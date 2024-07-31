@@ -1,0 +1,943 @@
+commit 22d95017b7b3e0349d17cb4777e6b64dd6d78d5a
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Fri May 31 16:48:29 2024 +0200
+
+    Adde window coords
+
+commit d09768fd1b1134067c5562517267e2545c2000c2
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Fri May 31 16:35:50 2024 +0200
+
+    Corrected setting vga mode
+
+commit 1b22f569b2ba6473a09f5aa1947b42019b0304ae
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Fri May 31 16:22:04 2024 +0200
+
+    Removed screen pitch
+
+commit 4d2eb42b9f5c0b44564920004b747eb1dba0738b
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Fri May 31 16:15:47 2024 +0200
+
+    Undo buffer pitch setup
+
+commit 6d4fd06034fdeda160ff2e35b41b28c8a065a543
+Merge: b6bb019 5425d8e
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Fri May 31 15:20:32 2024 +0200
+
+    Merge branch 'shaderStuff' of https://github.com/Ret-Mode/Chocolate-Wolfenstein-3D into shaderStuff
+
+commit b6bb019efbb1c230c649784e5b198e43aef8e966
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Fri May 31 15:17:32 2024 +0200
+
+    Undo last commit
+
+commit 5425d8eca840c2e1f92d67822d87033f3fb43fa7
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Fri May 31 11:55:04 2024 +0200
+
+    Updated event processing, simplified setting vga mode
+
+commit dbbb172aba30a73d576978dde18c0a9645df3e74
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Fri May 31 00:07:57 2024 +0200
+
+    Update
+
+commit b4a99419f7f8318cfc2a056ee751a06cae27e827
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Thu May 30 22:39:16 2024 +0200
+
+    Separating SDL
+
+commit 31d084a60d34f44ec6ec525d59f8845427910587
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Thu May 30 20:26:15 2024 +0200
+
+    further separating sdl
+
+commit ddc6a93efd2a79b3c8a2cc594655a9f509572c77
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Thu May 30 18:34:37 2024 +0200
+
+    Moved wl_draw to backend
+
+commit dc75b8f5f758cccfe8ef0c62c62fa9d6948c6466
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Thu May 30 13:17:21 2024 +0200
+
+    removed redundant comment
+
+commit a39fa1aa13c317d9b157b8f687ecdb98e7d383e2
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Thu May 30 13:15:48 2024 +0200
+
+    Updated linux version
+
+commit 830980b2cd330f4f851b7e32e5d89a944cc89f14
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Wed May 29 23:46:55 2024 +0200
+
+    Parametrized drawing functions, separating SDL
+
+commit 703de79e65b4a3a11d19dc1c30d69945dbb9fdc8
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Tue May 28 21:48:26 2024 +0200
+
+    Removing unused functions, separating SDL
+
+commit eab42f6cdcd2cecd1ea19a4d176905d8498d4fa2
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Mon May 27 21:17:16 2024 +0200
+
+    added list of used sdl functions
+
+commit 987c3834fb92900c2a274515f2227c7115619db6
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Mon May 27 20:53:29 2024 +0200
+
+    Finished removing unused functions
+
+commit f29736c300a56d5f85723ade5639f05ffa579623
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sun May 26 20:56:49 2024 +0200
+
+    Removing unused functions from both backends
+
+commit a72310d4557aa284cb81c7fa3f22f29b39fd3f03
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sun May 26 20:17:44 2024 +0200
+
+    Fixed aspect ratio
+
+commit b19bcbe5b08543c8f016afb35e2004c7d6275d8d
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sun May 26 19:56:20 2024 +0200
+
+    Corrected issues
+
+commit d828ed7cdf26ba2a0100b20424631378451cd75a
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sun May 26 19:34:19 2024 +0200
+
+    Added proper quit from glfw
+
+commit e5e0200a63264c93b1275a2ce02fda9ddef92feb
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sun May 26 18:15:28 2024 +0200
+
+    Corrected munge equation
+
+commit a4e2be866a27818a34ed4a81845ff70f607c463b
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sun May 26 14:14:48 2024 +0200
+
+    Removing sdl from glfw
+
+commit 435b6c0d895b863e945a2672e72a809c62562f32
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Wed May 22 22:27:11 2024 +0200
+
+    Updated doxygen files
+
+commit 7293ba05ece35a7c60e4fcab9a6b2506792b08ea
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Mon May 20 21:27:37 2024 +0200
+
+    Added doxygen graph
+
+commit 57da522b648da7641e8f8a537a6f1146ee4e582c
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sun May 5 21:35:41 2024 +0200
+
+    Inited shader stuff
+
+commit 2dd36a45702c85b7b78574b381d406daeb90474b
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sun May 5 17:52:08 2024 +0200
+
+    moved pixel op functions to sdl part
+
+commit 2f3d458343c744c8275e9e8c3abc64a57978ef10
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sat May 4 23:02:12 2024 +0200
+
+    removed redundant 'funnnc'
+
+commit 10ef83e9da782a3e69372377a28a058cbdd21b39
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sat May 4 19:54:02 2024 +0200
+
+    Added glfw stubs
+
+commit 6b4c2ea29f2033e9024586c66c9ce73d6294cda7
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Fri May 3 15:42:18 2024 +0200
+
+    Small cmake bin output fix
+
+commit 1fb99cdb08904e25c847aaac74b4bebe8d8239ac
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Fri May 3 15:33:13 2024 +0200
+
+    Groundwork for GLFW finished
+
+commit a75d9599f5c55962d228bbcae309629fb3ffa5d2
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Fri May 3 14:24:23 2024 +0200
+
+    Correcting backends. Miniaudio implemented. Can remove SDL graphics
+
+commit bb51357d7a0eb6fee09b8d6d0e628a54cebd4cc2
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Wed May 1 18:45:04 2024 +0200
+
+    Removed sdl_mixer
+
+commit 04dba552cd7b764af110e7d5e57845f613895f9e
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Wed May 1 15:53:01 2024 +0200
+
+    Adding miniaudio
+
+commit cab4d7b3c572b48d4ef4f7062aca0a9432abd01f
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Tue Apr 30 22:39:42 2024 +0200
+
+    Adding miniaudio
+
+commit 086837a3cdefaccfe5f6ef8f333fa1f29718b116
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Mon Apr 29 21:21:50 2024 +0200
+
+    implementing miniaudio
+
+commit 31e10404235133ccbc49812f099be969d43bb1d4
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sun Apr 28 22:11:13 2024 +0200
+
+    Adding miniaudio
+
+commit fa30234653af5ca12ea163977185005a383fe220
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sun Apr 28 21:00:08 2024 +0200
+
+    Adding miniaudio
+
+commit 5e02cdc85cf2e552e40208e341f92a331e632293
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sat Apr 27 22:54:05 2024 +0200
+
+    Adding miniaudio
+
+commit 46ccc53056af7c20180e5bfef9184d8d06217795
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sat Apr 27 16:59:43 2024 +0200
+
+    Adding miniaudio
+
+commit bba55054e8749f50cd0757dd0400b13ba9e666d5
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sat Apr 27 12:52:30 2024 +0200
+
+    Separating sdl and adding glfw
+
+commit ab381f9361eb42f473ab4916935e8eb6be963957
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sat Apr 27 12:32:47 2024 +0200
+
+    Separating CRT
+
+commit 77cc49ec9fc1d77f3826db61158a5f125a0697a4
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Fri Apr 26 23:29:39 2024 +0200
+
+    separating sdl
+
+commit e182f87b4810e6df1f23237d3f35b0cc2aa3efe3
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Fri Apr 26 23:18:22 2024 +0200
+
+    Separating sdl
+
+commit 9924088d3cfd601966c657b9e14fa8bc6cd239be
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Thu Apr 25 22:34:37 2024 +0200
+
+    Separating SDL
+
+commit 7c211599a25fbaa9aeed59d94bea85c9228d3e5b
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Wed Apr 24 22:42:02 2024 +0200
+
+    separating sdl
+
+commit 54ac931e5a217aa6caf0b50627487281c80cab3f
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Wed Apr 24 21:40:34 2024 +0200
+
+    Removing SDL
+
+commit d081e2ab46209e3e27c823587b7edcfa712e65fc
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Tue Apr 23 21:37:31 2024 +0200
+
+    Removing SDL
+
+commit d7e4a43ed68cbf919c0b221e145efae65cede5b1
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Tue Apr 23 19:24:45 2024 +0200
+
+    removing sdl
+
+commit 07873752ce989c87723e712e898fedd9fabb277f
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sun Jan 21 22:42:26 2024 +0100
+
+    Separating SDL
+
+commit 862b507f7a5349068ebd8d66e36d4c1e4b9a1b7f
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sun Jan 21 19:50:26 2024 +0100
+
+    Separating SDL
+
+commit 80607677424bf0a54e3ad93c0d2f9acba6256b04
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sun Jan 21 19:17:05 2024 +0100
+
+    Separating SDL
+
+commit a348174bba4fcea1b7584831674986c78c9469e5
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Thu Jan 18 21:49:26 2024 +0100
+
+    Separating sdl
+
+commit 1ad2bffd9fd0b65a7d95d496150ad8aa8c56102b
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Thu Jan 18 19:54:36 2024 +0100
+
+    Separating SDL
+
+commit 676e5bbf25fc8ec09de798ae258ecfd5872fd032
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Tue Jan 9 10:00:04 2024 +0100
+
+    Extracting SDL continued
+
+commit 25cef3397413e9fef62bad53ebb2c533ae9389c1
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Mon Jan 8 20:11:57 2024 +0100
+
+    Moved crt corrections to sdl_graphics
+
+commit 035dacebdf5e98c46457704a0cc115d04afe89d8
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Mon Jan 8 20:09:16 2024 +0100
+
+    Extracting SDL
+
+commit 581394e67bef20a786a9aa1783334b6904f07793
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sat Jan 6 11:03:55 2024 +0100
+
+    Chopped SLD Mixer to separate file
+
+commit 23f7b9737ce33e2f2c8984e2bf262a74bcd9ee45
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Fri Jan 5 20:17:27 2024 +0100
+
+    Separating sdl mixer
+
+commit ed96cc0f01326a6fbb99301046d8037be02f67ec
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Wed Jan 3 14:39:28 2024 +0100
+
+    Update wolf demo
+
+commit c70eecae9f8f0b408505d21705f0558fa1bdeea0
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Wed Jan 3 13:58:22 2024 +0100
+
+    Update wolf demo
+
+commit d22ed7b559a0264014e3e71cdc547ac948feb9ba
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Wed Jan 3 10:59:07 2024 +0100
+
+    Chopping into subprojects
+
+commit 1e364b107858af0b261e28bb3bccf7529026b50b
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Tue Jan 2 20:41:11 2024 +0100
+
+    Chopping into subprojects
+
+commit a26e22983e768b695ab8f5090b27df6e18146ff6
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sat Dec 30 21:31:15 2023 +0100
+
+    Windows fixes
+
+commit 5d95d8f546f195d5befee7d43cff9308a8cc232d
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Fri Dec 29 14:24:34 2023 +0100
+
+    Cmake corrections
+
+commit 9b985f95573a047745414016a05aff46a76036af
+Author: Ret-Mode <ernest.harcej@wp.pl>
+Date:   Sat Dec 23 02:56:57 2023 +0100
+
+    First iteration on CMake
+
+commit eaade7d5c1887a144c6468d4777ef9f8841203ab
+Merge: 9038733 1403177
+Author: Fabien <fabien.sanglard@gmail.com>
+Date:   Mon Jan 23 16:39:29 2017 -0800
+
+    Merge pull request #20 from fragglet/patch-1
+    
+    Fix for minor typo
+
+commit 140317722ea86a5bb63315094de8dc28c0bddf8b
+Author: Simon Howard <fraggle+github@gmail.com>
+Date:   Sat Nov 26 15:29:30 2016 -0500
+
+    Fix for minor typo
+
+commit 9038733b25b0a53fd7522d5fd62e62bd3f52a6e9
+Author: MacPro: Fabien Sanglard <fabiensanglard.net@gmail.com>
+Date:   Sun Oct 16 22:17:42 2016 -0700
+
+    Delete unused variable (postwidth)
+    
+    Delete an old variable (postwidth) which was used in the old
+    engine in order to draw two column of pixels at the same height.
+
+commit e7ffe9b392a815f2b63b4e012fafec1c59e26ae1
+Author: MacPro: Fabien Sanglard <fabiensanglard.net@gmail.com>
+Date:   Sun Oct 16 22:08:26 2016 -0700
+
+    Fix MacOS X startup crash due to cmdline parameter
+    
+    It seems XCode adds automatically a parameter called
+    NSDocumentRevisionsDebugMode which is not recognized by Chocolate
+    Wolfenstein 3D. Instead of crashing, we now only issue a warning.
+
+commit 4bda67085b8c356cd9f4eae5a3420a6c33e01ba9
+Merge: f52d7ab 757b5aa
+Author: Fabien <fabien.sanglard@gmail.com>
+Date:   Sun May 31 09:36:46 2015 -0700
+
+    Merge pull request #18 from ericrrichards/patch-1
+    
+    Update README.md
+
+commit 757b5aa9414d96ac76cbe508933ca8afa29d1f47
+Author: Eric Richards <ericrrichards@gmail.com>
+Date:   Sun May 31 00:30:03 2015 -0400
+
+    Update README.md
+    
+    Add windows VS2013 setup guide
+
+commit f52d7ab1f63cbd2a8a399990951be18e03ddba7e
+Author: Fabien <fabien.sanglard@gmail.com>
+Date:   Sun Nov 23 18:36:18 2014 -0800
+
+    Update README.md
+
+commit 73bf697465ff5636ff647fbe7b1a97115a8b872a
+Merge: fc82aa2 d965fa4
+Author: Fabien <fabien.sanglard@gmail.com>
+Date:   Mon Sep 29 00:06:19 2014 -0700
+
+    Merge pull request #13 from shanebeavis/master
+    
+    Updated MinGW Makefile
+
+commit d965fa4e506095d2cec8f56d41310e35b4dbf78f
+Author: shanebeavis <scuttlebucket@telstra.com>
+Date:   Mon Sep 29 16:11:39 2014 +1000
+
+    Updated MinGW Makefile
+    
+    Generates dependency files.
+
+commit fc82aa2e40b6dc61909be40465d0cec218f4ef0c
+Author: Fabien Sanglard <fabien.sanglard@gmail.com>
+Date:   Sat Sep 27 03:59:04 2014 -0400
+
+    Add screenshot capability.
+
+commit b5c951323e0f372cdf25ab7dd6b7a96f9fa4ba30
+Author: Fabien Sanglard <fabien.sanglard@gmail.com>
+Date:   Sat Sep 27 00:28:05 2014 -0400
+
+    Fix VS port.
+
+commit 6049102ccf750faf4712f28e45dbf4e3924059a2
+Merge: fdbe8fb 22def9d
+Author: Fabien <fabien.sanglard@gmail.com>
+Date:   Mon Sep 22 13:44:12 2014 -0700
+
+    Merge pull request #12 from shanebeavis/master
+    
+    Mingw Makefile
+
+commit 22def9dc34f507c0ec146cb13a65148b53265c01
+Author: shanebeavis <scuttlebucket@telstra.com>
+Date:   Tue Sep 23 00:45:57 2014 +1000
+
+    Mingw Makefile
+    
+    Makefile to compile with mingw under windows.
+
+commit fdbe8fb8c71bd9051625ac0824465b5104be89f7
+Merge: 01b7805 3e58e8f
+Author: Fabien <fabien.sanglard@gmail.com>
+Date:   Sun Sep 7 11:27:35 2014 -0700
+
+    Merge pull request #10 from theinternetftw/remove-docs-from-vs-project
+    
+    Remove old docs from VS project
+
+commit 42ce996cb77cd7e61890d8092b1f501748ff0ca9
+Merge: 031bc9b 01b7805
+Author: shanebeavis <scuttlebucket@telstra.com>
+Date:   Sun Sep 7 19:38:40 2014 +1000
+
+    Merge remote-tracking branch 'upstream/master'
+
+commit 031bc9b12fb464cb47f9ca9640a1e63a06d5976c
+Author: theinternetftw <theinternetftw@gmail.com>
+Date:   Sun Sep 7 01:40:42 2014 -0400
+
+    Fix name in VS/Makefile/Program Dialogs, move docs
+    
+    Move almost everything over to new project name.
+    All that's left is a few vestiges in the xcode project
+    (Info.plist, English.lproj, icon filename, etc)
+    
+    Also put all the docs/licenses in a folder and made clear that
+    they're still written for Wolf4SDL
+
+commit b6e31ae7c44b35a57dd838bfbcd9362496dc700f
+Author: theinternetftw <theinternetftw@gmail.com>
+Date:   Sun Sep 7 00:20:38 2014 -0400
+
+    Retab files to match style of new code
+    
+    Were once ugly mess of tabs and spaces
+    Now using 4 space indents (same as crt.cpp)
+
+commit f54f0c56853356283e8286f385018094244ea746
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Sat Sep 6 18:50:08 2014 -0700
+
+    Add supported platforms.
+
+commit 67d7e36a8d84b24723926f6f11e831d5f5b37cf0
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Sat Sep 6 18:48:03 2014 -0700
+
+    Restore palette effects.
+
+commit 1a9adc073e97ec2760ad8f6a3a1f33ee4b236ff8
+Author: theinternetftw <theinternetftw@gmail.com>
+Date:   Sat Sep 6 20:52:23 2014 -0400
+
+    Fix FizzleFade effect
+    
+    The CRT hack caused the FizzleFade effect to be skipped, thanks
+    to that function writing directly to the screen surface (as opposed
+    to screenBuffer, which is what crt.cpp expects things to be written
+    to)
+
+commit 989522b27dced0131519f25838048c4a33d83dc6
+Author: theinternetftw <theinternetftw@gmail.com>
+Date:   Sat Sep 6 19:27:16 2014 -0400
+
+    Remove Windows CE support (dreamcast vestige?)
+
+commit 742debcade73e73798835df2d567d9459de6541b
+Author: theinternetftw <theinternetftw@gmail.com>
+Date:   Sat Sep 6 19:25:19 2014 -0400
+
+    Remove dreamcast changelog and makefile
+
+commit 0ffe63135fae32547324d733e6c459a093e6f5ab
+Author: theinternetftw <theinternetftw@gmail.com>
+Date:   Sat Sep 6 19:24:36 2014 -0400
+
+    Remove empty and unused file
+
+commit 8fc7be20f07f00aee1218c62521c2380254b12a9
+Author: theinternetftw <theinternetftw@gmail.com>
+Date:   Sat Sep 6 19:11:58 2014 -0400
+
+    Clean up cruft and obsolete windows files
+    
+    Added more visualstudio cruft to the .gitignore
+    Removed suo and vcxproj.user files, shouldn't be in repos
+    dsp and dsw files were from vc++ circa 1998
+    original sln and vcproj were from vs circa 2005
+    dev file was from an out of date version of Dev-C++
+    VC9.vcproj wasn't being used, other than conversion to vcxproj
+    
+    moved sdl_winmain to windows folder, which was renamed win32,
+    and removed windows specific files from macosx project, all
+    to mimic what's already being done in /macosx (i.e. should
+    be for os specific files, not just ide-specific projects)
+
+commit 070f699f34ab937d4b236541d6801a966806afe3
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Sat Sep 6 15:26:09 2014 -0700
+
+    VS port cleanup.
+
+commit 3e58e8fdddb3db37e07f6aed1dfd18c14049fc65
+Author: theinternetftw <theinternetftw@gmail.com>
+Date:   Sun Sep 7 03:09:56 2014 -0400
+
+    Remove old docs from VS project
+
+commit 01b7805e785be7e2d72bd566fbed0d7b57e301f3
+Merge: 7b01434 e03e7e8
+Author: Fabien <fabien.sanglard@gmail.com>
+Date:   Sat Sep 6 23:57:50 2014 -0700
+
+    Merge pull request #9 from theinternetftw/more-name-changing
+    
+    Fix name in VS/Makefile/Program Dialogs, move docs
+
+commit 7b014344a93e8e093044f9d62b758c9b9b9a763d
+Merge: 9e1c3d4 e9312ba
+Author: Fabien <fabien.sanglard@gmail.com>
+Date:   Sat Sep 6 23:57:39 2014 -0700
+
+    Merge pull request #8 from theinternetftw/retab-files
+    
+    Retab files to match style of new code
+
+commit e03e7e8aa37d0be3facfd1694318eaebad41abe9
+Author: theinternetftw <theinternetftw@gmail.com>
+Date:   Sun Sep 7 01:40:42 2014 -0400
+
+    Fix name in VS/Makefile/Program Dialogs, move docs
+    
+    Move almost everything over to new project name.
+    All that's left is a few vestiges in the xcode project
+    (Info.plist, English.lproj, icon filename, etc)
+    
+    Also put all the docs/licenses in a folder and made clear that
+    they're still written for Wolf4SDL
+
+commit e9312ba5617f3e89e5f23224395c35c13ff8f5ae
+Author: theinternetftw <theinternetftw@gmail.com>
+Date:   Sun Sep 7 00:20:38 2014 -0400
+
+    Retab files to match style of new code
+    
+    Were once ugly mess of tabs and spaces
+    Now using 4 space indents (same as crt.cpp)
+
+commit 9e1c3d4aa3e7f081ebcd11f50c8146b90b8b6da4
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Sat Sep 6 18:50:08 2014 -0700
+
+    Add supported platforms.
+
+commit d17070f0de83877d095c2e97b19b42e3d91b53aa
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Sat Sep 6 18:48:03 2014 -0700
+
+    Restore palette effects.
+
+commit 1e35e261e24f7d220ff3a97c484635d49276ece0
+Merge: e858780 66c310c
+Author: Fabien <fabien.sanglard@gmail.com>
+Date:   Sat Sep 6 18:41:37 2014 -0700
+
+    Merge pull request #6 from theinternetftw/cleanup-cruft-and-obsolete-files
+    
+    Cleanup cruft and obsolete files
+
+commit e8587808568ddfef11004bc86b6f161ba168bb66
+Merge: 3ad7fed 190d393
+Author: Fabien <fabien.sanglard@gmail.com>
+Date:   Sat Sep 6 18:41:17 2014 -0700
+
+    Merge pull request #7 from theinternetftw/fix-fizzlefade
+    
+    Fix FizzleFade effect
+
+commit 190d39364cbbb7bae247234ea95c67fb37a0d6fb
+Author: theinternetftw <theinternetftw@gmail.com>
+Date:   Sat Sep 6 20:52:23 2014 -0400
+
+    Fix FizzleFade effect
+    
+    The CRT hack caused the FizzleFade effect to be skipped, thanks
+    to that function writing directly to the screen surface (as opposed
+    to screenBuffer, which is what crt.cpp expects things to be written
+    to)
+
+commit 66c310c5f5e796073f54ebc3169bff24b93d41fe
+Author: theinternetftw <theinternetftw@gmail.com>
+Date:   Sat Sep 6 19:27:16 2014 -0400
+
+    Remove Windows CE support (dreamcast vestige?)
+
+commit 42b9d6a825a5c82f07c8bf2087fff6c5dcf3154f
+Author: theinternetftw <theinternetftw@gmail.com>
+Date:   Sat Sep 6 19:25:19 2014 -0400
+
+    Remove dreamcast changelog and makefile
+
+commit db82d633e756b7bdbfc56f771f7106f45ef277eb
+Author: theinternetftw <theinternetftw@gmail.com>
+Date:   Sat Sep 6 19:24:36 2014 -0400
+
+    Remove empty and unused file
+
+commit bec82544593c863d2589a2ca58cb844333e27a99
+Author: theinternetftw <theinternetftw@gmail.com>
+Date:   Sat Sep 6 19:11:58 2014 -0400
+
+    Clean up cruft and obsolete windows files
+    
+    Added more visualstudio cruft to the .gitignore
+    Removed suo and vcxproj.user files, shouldn't be in repos
+    dsp and dsw files were from vc++ circa 1998
+    original sln and vcproj were from vs circa 2005
+    dev file was from an out of date version of Dev-C++
+    VC9.vcproj wasn't being used, other than conversion to vcxproj
+    
+    moved sdl_winmain to windows folder, which was renamed win32,
+    and removed windows specific files from macosx project, all
+    to mimic what's already being done in /macosx (i.e. should
+    be for os specific files, not just ide-specific projects)
+
+commit 3ad7fed7fb78237caac0e300077506a51c4cb45f
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Sat Sep 6 15:26:09 2014 -0700
+
+    VS port cleanup.
+
+commit 42c983c4ed48be11b38299e75c80dfc555c84692
+Merge: d836060 df3c175
+Author: Fabien <fabien.sanglard@gmail.com>
+Date:   Sat Sep 6 15:23:31 2014 -0700
+
+    Merge pull request #5 from shanebeavis/master
+    
+    Moved visual studio project to own directory
+
+commit df3c1753e6426625e74098d43a14bc9691faa008
+Author: shanebeavis <scuttlebucket@telstra.com>
+Date:   Sat Sep 6 21:39:09 2014 +1000
+
+    Moved visual studio project to own directory
+    
+    Moved visual studio project to own directory and removed dead file links
+    from project.
+
+commit d8360609bd9f9751b46be9c7ba42d2cd98daecfb
+Merge: d70354c d879f23
+Author: Fabien <fabien.sanglard@gmail.com>
+Date:   Fri Sep 5 15:18:08 2014 -0700
+
+    Merge pull request #4 from shanebeavis/master
+    
+    Upgrade visual studio project to 2010
+
+commit d879f23fb6497a7b08da3b0e1c3f6d91020c0a6e
+Author: shanebeavis <scuttlebucket@telstra.com>
+Date:   Fri Sep 5 21:55:48 2014 +1000
+
+    Upgrade visual studio project to 2010
+    
+    Changes to project and files needed to compile with visual studio 2010
+    on windows.
+
+commit d70354c42aa1f7a6b9ee790d5bd7b4085f3efc16
+Merge: f54e079 e12d789
+Author: Fabien <fabien.sanglard@gmail.com>
+Date:   Fri Aug 29 18:39:23 2014 -0700
+
+    Merge pull request #3 from nickdesaulniers/makeOSX
+    
+    fix build errors against GL in OSX
+
+commit e12d78946419a126c4557a29618478853f72d8a4
+Author: Nick Desaulniers <ndesaulniers@mozilla.com>
+Date:   Fri Aug 29 10:15:51 2014 -0700
+
+    fix build errors against GL in OSX
+
+commit f54e079aa4b6cb1a218e024d31c4d0481c8a8b80
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Thu Aug 28 10:24:47 2014 -0700
+
+    Add comments.
+
+commit 512764f346a935f2c0cb1e42aada68b43d87dd67
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Thu Aug 28 10:23:15 2014 -0700
+
+    Fix CRT_DAC proto with void.
+
+commit 063c15fddb8e52295b19c45647d4a7c74ccf5365
+Merge: 031f303 fa1857e
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Thu Aug 28 10:22:17 2014 -0700
+
+    Merge branch 'master' of github.com:fabiensanglard/Chocolate-Wolfenstein-3D
+
+commit 031f303ba4e9616fa2a81d78b834cad2d62a960e
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Thu Aug 28 10:22:14 2014 -0700
+
+    Remove Debug, Clear DAC method.
+
+commit fa1857e1e7a0b5b7d67637260d14390648bc3178
+Merge: 4ba4154 7301548
+Author: Fabien <fabien.sanglard@gmail.com>
+Date:   Thu Aug 28 10:16:57 2014 -0700
+
+    Merge pull request #2 from taylor001/master
+    
+    Fix Linux build
+
+commit 73015489fd44908b1499df32f7d336c540af8a8e
+Author: Daniele Bartolini <danyatk@gmail.com>
+Date:   Thu Aug 28 17:25:33 2014 +0200
+
+    Fix Linux build
+
+commit 4ba41540af5bfba7433de4552e8c013ac968efaa
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Tue Aug 26 23:05:28 2014 -0700
+
+    Fixed typo.
+
+commit ca35c722131e32fb6ad2f3be350ce4a8dd7eeabe
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Tue Aug 26 23:03:50 2014 -0700
+
+    Fixed typo.
+
+commit 3ead1407a20266f030333c35d5d0b65d37d9fbcf
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Tue Aug 26 23:03:25 2014 -0700
+
+    Add missing return carriage.
+
+commit dc70fd703617d6268886cd96f8828dad64e221f3
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Tue Aug 26 20:40:23 2014 -0700
+
+    Resized screenshot.
+
+commit d13a1fa6acd4218976a3f56e43463b0c2b6144eb
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Tue Aug 26 20:39:13 2014 -0700
+
+    Add missing image.
+
+commit c936cbd03cf8f4406a893aa04fef37e17b4030a9
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Tue Aug 26 20:38:11 2014 -0700
+
+    Fixed typo.
+
+commit 47e5bd11e3f6a74f5e5bd220ee11a80952168f77
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Tue Aug 26 20:36:29 2014 -0700
+
+    Done.
+
+commit 16ebe02c20ac27bd1bf5899b0094c24d1a6bfd3d
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Tue Aug 26 20:23:31 2014 -0700
+
+    Working 4:3 CRT emulator at 640x480
+
+commit bf769224ec93ad0fdf01506d711d8ef2e9cb9142
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Tue Aug 26 19:08:12 2014 -0700
+
+    Added Read me note.
+
+commit 1932eb340f8720107e80f62f46a2595c49ba9cb9
+Merge: ac4e215 7373e55
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Tue Aug 26 19:04:22 2014 -0700
+
+    Merge branch 'master' of github.com:fabiensanglard/Chocolate-Wolfenstein-3D
+
+commit ac4e215043a1af145eab67870bdf5bd2d93df62f
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Tue Aug 26 19:03:42 2014 -0700
+
+    Add project.
+
+commit 5479f0f436b730e6d454d47ab30cb642ece553a9
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Tue Aug 26 19:01:23 2014 -0700
+
+    Fix minor formating.
+
+commit 7373e55d84eaf556151eaa4e9edfad2e541d13a6
+Author: Fabien <fabien.sanglard@gmail.com>
+Date:   Tue Aug 26 19:00:10 2014 -0700
+
+    Initial commit
+
+commit 495b2be9eb0115aa946502b284d364ca54e36768
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Sat Jul 19 22:26:04 2014 -0700
+
+    Renamed Chocolate Wolfenstein 3D
+
+commit bad6faa85ab26644d9d24c67b5b043be39dbdcd0
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Sat Jul 19 22:25:00 2014 -0700
+
+    Obsolete platforms: GP2X and Dreamcast.
+
+commit f109352ff6668f63867513e6792a8a0906da8b73
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Sun Jul 13 10:12:27 2014 -0700
+
+    Removed all GP2X code.
+
+commit 1f701ada5a6058cb567db0d6a627d204e4b051b7
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Sun Jul 13 10:10:41 2014 -0700
+
+    Removed all dreamcast code.
+
+commit db8bcf050068cdaba2360c99ab90e2fa29bdbcf3
+Author: fabien sanglard <fabien.sanglard@gmail.com>
+Date:   Sat Jul 12 21:22:36 2014 -0700
+
+    Removed things like snow and sky and parallax.
+
+commit 8460157be01accb2065c08fd98d997258a5738fb
+Author: mozzwald <mozzwald@gmail.com>
+Date:   Mon Dec 24 13:26:23 2012 -0600
+
+    Change supported Wolf3D version
+
+commit 3e9d49d1b558004a91ed9fd28cf3ed2bf024fe1b
+Author: mozzwald <mozzwald@gmail.com>
+Date:   Mon Dec 24 12:14:43 2012 -0600
+
+    Fresh sources from http://www.chaos-software.de.vu/
