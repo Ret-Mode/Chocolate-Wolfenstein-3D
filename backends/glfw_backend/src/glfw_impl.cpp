@@ -16,7 +16,7 @@
  #endif
 
 #include "wl_def.h"
-#define WOLF_RGB(r, g, b) {(r)*255/63, (g)*255/63, (b)*255/63, 1}
+#define WOLF_RGB(r, g, b) {(r)*255/63, (g)*255/63, (b)*255/63, 255}
 
 extern void DuPackInit(unsigned int textureSize, 
                 unsigned int levelStackSize, 
@@ -337,6 +337,8 @@ int initGlfw(void)
 
     glfwSwapInterval(1);
  
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     GLint maxTextureSize;
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
     if (maxTextureSize < 2048) {

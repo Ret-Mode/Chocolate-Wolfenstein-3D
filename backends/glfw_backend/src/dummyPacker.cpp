@@ -11,38 +11,40 @@
 #define COLORMASK_ALPHA 3
 
 #define EMPTY_NODE   (0xFFFF)
-#define PACK_EMPTY   (0)
+#define FLAG_EMPTY   (0)
 #define FLAG_STARTED (1)
 #define FLAG_FULL    (2)
 #define FLAG_DATA    (3)
-#define PACK_UL(x) (x & 0x3)
-#define PACK_UR(x) ((x & 0x3) << 2)
-#define PACK_DL(x) ((x & 0x3) << 4)
-#define PACK_DR(x) ((x & 0x3) << 6)
-#define PACK_UL_STARTED (1)
-#define PACK_UL_FULL (2)
-#define PACK_UL_DATA (3)
-#define PACK_UR_STARTED (1 << 2)
-#define PACK_UR_FULL (2 << 2)
-#define PACK_UR_DATA (3 << 2)
-#define PACK_DL_STARTED (1 << 4)
-#define PACK_DL_FULL (2 << 4)
-#define PACK_DL_DATA (3 << 4)
-#define PACK_DR_STARTED (1 << 6)
-#define PACK_DR_FULL (2 << 6)
-#define PACK_DR_DATA (3 << 6)
-#define UNPACK_UL_STARTED(x) ( x     & 0x1)
-#define UNPACK_UR_STARTED(x) ((x>>2) & 0x1)
-#define UNPACK_DL_STARTED(x) ((x>>4) & 0x1)
-#define UNPACK_DR_STARTED(x) ((x>>6) & 0x1)
-#define UNPACK_UL_FULL(x) ( x     & 0x2) 
-#define UNPACK_UR_FULL(x) ((x>>2) & 0x2)
-#define UNPACK_DL_FULL(x) ((x>>4) & 0x2) 
-#define UNPACK_DR_FULL(x) ((x>>6) & 0x2) 
-#define UNPACK_UL_DATA(x) ( x     & 0x3) 
-#define UNPACK_UR_DATA(x) ((x>>2) & 0x3)
-#define UNPACK_DL_DATA(x) ((x>>4) & 0x3) 
-#define UNPACK_DR_DATA(x) ((x>>6) & 0x3) 
+#define PACK_UL(x) (x & FLAG_DATA)
+#define PACK_UR(x) ((x & FLAG_DATA) << 2)
+#define PACK_DL(x) ((x & FLAG_DATA) << 4)
+#define PACK_DR(x) ((x & FLAG_DATA) << 6)
+#define PACK_UL_STARTED (FLAG_STARTED)
+#define PACK_UL_FULL (FLAG_FULL)
+#define PACK_UL_DATA (FLAG_DATA)
+#define PACK_UR_STARTED (FLAG_STARTED << 2)
+#define PACK_UR_FULL (FLAG_FULL << 2)
+#define PACK_UR_DATA (FLAG_DATA << 2)
+#define PACK_DL_STARTED (FLAG_STARTED << 4)
+#define PACK_DL_FULL (FLAG_FULL << 4)
+#define PACK_DL_DATA (FLAG_DATA << 4)
+#define PACK_DR_STARTED (FLAG_STARTED << 6)
+#define PACK_DR_FULL (FLAG_FULL << 6)
+#define PACK_DR_DATA (FLAG_DATA << 6)
+#define UNPACK_UL_STARTED(x) ( x     & FLAG_STARTED)
+#define UNPACK_UR_STARTED(x) ((x>>2) & FLAG_STARTED)
+#define UNPACK_DL_STARTED(x) ((x>>4) & FLAG_STARTED)
+#define UNPACK_DR_STARTED(x) ((x>>6) & FLAG_STARTED)
+#define UNPACK_UL_FULL(x) ( x     & FLAG_FULL) 
+#define UNPACK_UR_FULL(x) ((x>>2) & FLAG_FULL)
+#define UNPACK_DL_FULL(x) ((x>>4) & FLAG_FULL) 
+#define UNPACK_DR_FULL(x) ((x>>6) & FLAG_FULL) 
+#define UNPACK_UL_DATA(x) ( x     & FLAG_DATA) 
+#define UNPACK_UR_DATA(x) ((x>>2) & FLAG_DATA)
+#define UNPACK_DL_DATA(x) ((x>>4) & FLAG_DATA) 
+#define UNPACK_DR_DATA(x) ((x>>6) & FLAG_DATA) 
+#define ALL_ARE_FULL(x) ((x >> 1) & (x >> 3) & (x >> 5) & (x >> 7) & 0x1)
+#define ANY_FULL_OR_STARTED(x) (((x) | (x >> 2) | (x >> 4) | (x >> 6)) & 0x3)
 
 struct pixelData_t {
     uint16_t x;
@@ -141,12 +143,29 @@ inline static uint8_t* GetColorFlag(uint8_t colormask, level_t *level) {
     return result;
 }
 
-static pixelData_t *AddToLowerLeftEdge(uint8_t colormask, uint16_t left, uint16_t bottom, level_t* level, bool fitToEdge) {
+static void DescendWithFlags(uint8_t colormask, level_t *level, uint8_t ul, uint8_t ur, uint8_t dl, uint8_t dr) {
+    uint8_t *flag = GetColorFlag(colormask, level);
+    *flag = *flag | PACK_UL(ul) | PACK_UR(ur) | PACK_DL(dl) | PACK_DR(dr);
+    if (level->ul != EMPTY_NODE) {
+        DescendWithFlags(colormask, level + level->ul, ul, ul, ul, ul);
+    }
+    if (level->ur != EMPTY_NODE) {
+        DescendWithFlags(colormask, level + level->ur, ur, ur, ur, ur);
+    }
+    if (level->dl != EMPTY_NODE) {
+        DescendWithFlags(colormask, level + level->dl, dl, dl, dl, dl);
+    }
+    if (level->dr != EMPTY_NODE) {
+        DescendWithFlags(colormask, level + level->dr, dr, dr, dr, dr);
+    }
+}
+
+static pixelData_t *AddToLowerLeftEdge(uint8_t colormask, uint16_t left, uint16_t bottom, level_t* level, bool lessThanThreeFourths) {
     pixelData_t *pixelData = DuPackAddPixelData(colormask, left, bottom, level->dimension);
     if (pixelData == NULL) {
         return NULL;
     }
-    if (fitToEdge) {
+    if (lessThanThreeFourths) {
         if (level->ul == EMPTY_NODE) {
             level->ul = DuPackAddLevel(level->dimension / 2, 
                                     UNPACK_UL_FULL(level->flagsRed),
@@ -172,55 +191,49 @@ static pixelData_t *AddToLowerLeftEdge(uint8_t colormask, uint16_t left, uint16_
                                     UNPACK_DR_FULL(level->flagsBlue), 
                                     UNPACK_DR_FULL(level->flagsAlpha)) - level;
         }
-
         uint8_t* flag;
-        flag = GetColorFlag(colormask, level + level->ul);
-        *flag = *flag | PACK_DL_DATA | PACK_DR_DATA;
-        flag = GetColorFlag(colormask, level + level->ur);
-        *flag = *flag | PACK_DL_DATA;
-        flag = GetColorFlag(colormask, level + level->dr);
-        *flag = *flag | PACK_DL_DATA | PACK_UL_DATA;
+        DescendWithFlags(colormask, level + level->ul, FLAG_EMPTY, FLAG_EMPTY, FLAG_DATA, FLAG_DATA); 
+        DescendWithFlags(colormask, level + level->ur, FLAG_EMPTY, FLAG_EMPTY, FLAG_DATA, FLAG_EMPTY); 
+        DescendWithFlags(colormask, level + level->dr, FLAG_DATA, FLAG_EMPTY, FLAG_DATA, FLAG_EMPTY); 
         flag = GetColorFlag(colormask, level);
         *flag = PACK_DL_DATA | PACK_DR_STARTED | PACK_UL_STARTED | PACK_UR_STARTED;
     } else {
-        uint8_t* flag;
-        flag = GetColorFlag(colormask, level);
-        *flag = PACK_DL_DATA | PACK_DR_DATA | PACK_UL_DATA | PACK_UR_DATA;
+        DescendWithFlags(colormask, level, FLAG_DATA, FLAG_DATA, FLAG_DATA, FLAG_DATA); 
     }
     return pixelData;
 }
 
 static void DuPackUpdateFlags(level_t *level, level_t *child, uint8_t fullFlag, uint8_t startedFlag){
     uint8_t tmpFlags = child->flagsRed;
-    uint8_t tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
-    uint8_t tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x3);
-    if (tmpAndFlags) {
+    uint8_t allFull = ALL_ARE_FULL(tmpFlags);
+    uint8_t anyNonEmpty = ANY_FULL_OR_STARTED(tmpFlags);
+    if (allFull) {
         level->flagsRed |= fullFlag;
-    } else if (tmpOrFlags) {
+    } else if (anyNonEmpty) {
         level->flagsRed |= startedFlag;
     }
     tmpFlags = child->flagsGreen;
-    tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
-    tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x3);
-    if (tmpAndFlags) {
+    allFull = ALL_ARE_FULL(tmpFlags);
+    anyNonEmpty = ANY_FULL_OR_STARTED(tmpFlags);
+    if (allFull) {
         level->flagsGreen |= fullFlag;
-    } else if (tmpOrFlags) {
+    } else if (anyNonEmpty) {
         level->flagsGreen |= startedFlag;
     }
     tmpFlags = child->flagsBlue;
-    tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
-    tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x3);
-    if (tmpAndFlags) {
+    allFull = ALL_ARE_FULL(tmpFlags);
+    anyNonEmpty = ANY_FULL_OR_STARTED(tmpFlags);
+    if (allFull) {
         level->flagsBlue |= fullFlag;
-    } else if (tmpOrFlags) {
+    } else if (anyNonEmpty) {
         level->flagsBlue |= startedFlag;
     }
     tmpFlags = child->flagsAlpha;
-    tmpAndFlags = ((tmpFlags >> 1) & (tmpFlags >> 3) & (tmpFlags >> 5) & (tmpFlags >> 7) & 0x1);
-    tmpOrFlags = (((tmpFlags) | (tmpFlags >> 2) | (tmpFlags >> 4) | (tmpFlags >> 6)) & 0x3);
-    if (tmpAndFlags) {
+    allFull = ALL_ARE_FULL(tmpFlags);
+    anyNonEmpty = ANY_FULL_OR_STARTED(tmpFlags);
+    if (allFull) {
         level->flagsAlpha |= fullFlag;
-    } else if (tmpOrFlags) {
+    } else if (anyNonEmpty) {
         level->flagsAlpha |= startedFlag;
     }
 }
@@ -293,25 +306,25 @@ static pixelData_t *DuPackAddTextureRec(uint16_t dimension, uint16_t left, uint1
     } else if (dimension <= level->dimension) {
         bool lessThanThreeFourths = (level->dimension > 2 && dimension <= (level->dimension - level->dimension/4));
         pixelData_t *pixelData = NULL;
-        if (level->flagsRed == PACK_EMPTY) {
+        if (level->flagsRed == FLAG_EMPTY) {
             pixelData = AddToLowerLeftEdge(COLORMASK_RED, left, bottom, level, lessThanThreeFourths);
             if (pixelData != NULL) {
                 return pixelData;
             }
         }
-        if (level->flagsGreen == PACK_EMPTY) {
+        if (level->flagsGreen == FLAG_EMPTY) {
             pixelData = AddToLowerLeftEdge(COLORMASK_GREEN, left, bottom, level, lessThanThreeFourths);
             if (pixelData != NULL) {
                 return pixelData;
             }
         }
-        if (level->flagsBlue == PACK_EMPTY) {
+        if (level->flagsBlue == FLAG_EMPTY) {
             pixelData = AddToLowerLeftEdge(COLORMASK_BLUE, left, bottom, level, lessThanThreeFourths);
             if (pixelData != NULL) {
                 return pixelData;
             }
         }
-        if (level->flagsAlpha == PACK_EMPTY) {
+        if (level->flagsAlpha == FLAG_EMPTY) {
             pixelData = AddToLowerLeftEdge(COLORMASK_ALPHA, left, bottom, level, lessThanThreeFourths);
             if (pixelData != NULL) {
                 return pixelData;
@@ -391,7 +404,7 @@ void DuPackInit(unsigned int textureSize,
     if (!textureHead.textureData) {
         exit(-1);
     }
-    memset(textureHead.textureData, 0, textureHead.textureSizeInBytes);
+    memset(textureHead.textureData, 0xFF, textureHead.textureSizeInBytes);
     textureHead.textureStack = (level_t*)malloc(levelStackSize * sizeof(level_t)); 
     if (!textureHead.textureStack) {
         exit(-1);
@@ -403,7 +416,7 @@ void DuPackInit(unsigned int textureSize,
     textureHead.textureStackCurrent = 0;
     textureHead.dataStackCurrent = 0;
 
-    DuPackAddLevel(textureSize, PACK_EMPTY, PACK_EMPTY, PACK_EMPTY, PACK_EMPTY);
+    DuPackAddLevel(textureSize, FLAG_EMPTY, FLAG_EMPTY, FLAG_EMPTY, FLAG_EMPTY);
     textureHead.colorTexture = DuPackCreateAllColorsTexture();
 }
 
