@@ -89,6 +89,9 @@ static byte ShiftNames[] =     // Shifted ASCII for scan codes
 static GLuint paletteTexture;
 static GLuint imageTexture;
 
+static GLuint backgroundTexture;
+static GLuint vgaFramebuffer;
+
 static GLuint vertexBuffer;
 static GLuint paletteCoordBuffer;
 static GLuint paletteMaskBuffer;
@@ -339,6 +342,8 @@ int initGlfw(void)
  
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
     GLint maxTextureSize;
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
     if (maxTextureSize < 2048) {
@@ -346,9 +351,28 @@ int initGlfw(void)
     }
     DuPackInit(2048, 128*10, 200);
 
+    /* setup background texture */
+    glGenTextures(1, &backgroundTexture);
+
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, backgroundTexture);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, 320, 240, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glGenFramebuffers(1, &vgaFramebuffer);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, vgaFramebuffer);
+    glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, backgroundTexture, 0);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    /* end of setup background texture */
     
     glGenVertexArrays(1, &vboRects);
     glBindVertexArray(vboRects);
+
 
     vertexBuffer;
     glGenBuffers(1, &vertexBuffer);
@@ -908,6 +932,7 @@ static void VL_ScreenToScreen (void *source, void *dest)
 void VH_UpdateScreen()
 {
     GlfwDrawStuff();
+    //bufferInternals.index = 0;
 }
 
 void    ThreeDRefresh (void)
@@ -921,5 +946,5 @@ void VWB_DrawPropString(const char* string)
 }
 
 void BlitPictureToScreen(unsigned char *pic) {
-    ;
+    //bufferInternals.index = 0;;
 }
