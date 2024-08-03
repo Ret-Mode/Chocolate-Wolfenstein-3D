@@ -96,11 +96,13 @@ static GLuint vertexBuffer;
 static GLuint paletteCoordBuffer;
 static GLuint paletteMaskBuffer;
 
-static GLuint program;
 static GLuint programBackground;
+static GLuint programBlit;
 static GLuint vboRects;
 
 static int GrabInput = false;
+
+
 
 static const char *vertBackgroundSource = 
 "#version 330\n"
@@ -114,7 +116,6 @@ static const char *vertBackgroundSource =
 "  fPictPos = vTexPos;\n"
 "  fColorMask = vColorMask;\n"
 "}";
-
 
 static const char *fragBackgroundSource = 
 "#version 330\n"
@@ -132,35 +133,32 @@ static const char *fragBackgroundSource =
 "  color = uint(color2*255);\n"
 "}";
 
-static const char *vertSource = 
+
+
+static const char *vertBackBlitSource = 
 "#version 330\n"
-"layout(location=1)in vec2 vVertPos;\n"
-"layout(location=2)in vec2 vTexPos;\n"
-"layout(location=3)in float vColorMask;\n"
+"layout(location=4)in vec2 vVertPos;\n"
 "out vec2 fPictPos;\n"
-"flat out float fColorMask;\n"
 "void main() {\n"
 "  gl_Position = vec4(vVertPos, 0.0, 1.0);\n"
-"  fPictPos = vTexPos;\n"
-"  fColorMask = vColorMask;\n"
+"  fPictPos = (vVertPos+1.0)/2.0;\n"
 "}";
 
-static const char *fragSource = 
+static const char *fragBackBlitSource = 
 "#version 330\n"
 "in vec2 fPictPos;\n"
-"flat in float fColorMask;\n"
 "uniform usampler1D paletteTexture;\n"
-"uniform sampler2D imageTexture;\n"
+"uniform usampler2D backgroundTexture;\n"
 "out vec4 color;\n"
 "void main() {\n"
-"  vec4 color1 = texture(imageTexture, fPictPos);\n"
-"  float color2;\n"
-"  if(fColorMask>2.5) {color2 = color1.a;}\n"
-"  else if(fColorMask>1.5) {color2 = color1.b;}\n"
-"  else if(fColorMask>0.5) {color2 = color1.g;}\n"
-"  else {color2 = color1.r;}\n"
-"  color = texture(paletteTexture, color2)/255.0;\n"
+"  uvec4 color1 = texture(backgroundTexture, fPictPos);\n"
+"  float c = float(color1.r)/255;\n"
+"  uvec4 d = texture(paletteTexture, c);\n"
+"  vec4 e = vec4(d)/255.0;\n"
+"  color = e;\n"
 "}";
+
+
  
 static int SelectClosestPixelIndex(unsigned char red, unsigned char green, unsigned char blue) {
     unsigned char diffR = red - gamepal[0].red;
@@ -323,14 +321,12 @@ static void resize_callback(GLFWwindow* window, int width, int height) {
 
     if (hr > wr) {
         int diff = (hr - wr) / (320*2);
-        
         WindowCoords.viewportX = 0;
         WindowCoords.viewportY = diff;
         WindowCoords.viewportWidth = wr/240;
         WindowCoords.viewportHeight = wr/320;
     } else {
         int diff = (wr - hr) / (240*2);
-        //glViewport(diff,0, hr/240, hr/320);
         WindowCoords.viewportX = diff;
         WindowCoords.viewportY = 0;
         WindowCoords.viewportWidth = hr/240;
@@ -432,6 +428,19 @@ int initGlfw(void)
     glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(3);
 
+    {
+        //tmp background buffer, eventually to fix with geometry shader
+        GLuint tmpBackgrnd;
+        float bckgrndData[] = {-1.0f, -1.0f, 1.0f, -1.f, -1.0f, 1.0f,
+                                -1.0f, 1.0f, 1.0f, -1.f, 1.0f, 1.0f};
+        glGenBuffers(1, &tmpBackgrnd);
+        glBindBuffer(GL_ARRAY_BUFFER, tmpBackgrnd);
+
+        glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), bckgrndData, GL_STATIC_DRAW);
+        glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, 0, 0);
+        glEnableVertexAttribArray(4);
+    }
+
     bufferInternals.gpuCapacity = 320 * 3;
     bufferInternals.capacity = 320 * 3;
  
@@ -458,13 +467,14 @@ int initGlfw(void)
     glActiveTexture(GL_TEXTURE1);
     glGenTextures(1, &imageTexture);
     glBindTexture(GL_TEXTURE_2D, imageTexture);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, DuPackGetTextureDimension(), DuPackGetTextureDimension(), 0, GL_RGBA, GL_UNSIGNED_BYTE, DuPackGetPalettizedTexture());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, DuPackGetTextureDimension(), DuPackGetTextureDimension(), 0, GL_RGBA, GL_UNSIGNED_BYTE, DuPackGetPalettizedTexture());
- 
+
     {
         // create background shader
         const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -537,9 +547,9 @@ int initGlfw(void)
     }
 
     {
-        // create old shader
+        // create blit shader
         const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertex_shader, 1, &vertSource, NULL);
+        glShaderSource(vertex_shader, 1, &vertBackBlitSource, NULL);
         glCompileShader(vertex_shader);
         {
             GLint isCompiled = 0;
@@ -558,7 +568,7 @@ int initGlfw(void)
         }
     
         const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragment_shader, 1, &fragSource, NULL);
+        glShaderSource(fragment_shader, 1, &fragBackBlitSource, NULL);
         glCompileShader(fragment_shader);
 
         {
@@ -577,40 +587,39 @@ int initGlfw(void)
             }
         }
 
-        program = glCreateProgram();
-        glAttachShader(program, vertex_shader);
-        glAttachShader(program, fragment_shader);
-        glLinkProgram(program);
+        programBlit = glCreateProgram();
+        glAttachShader(programBlit, vertex_shader);
+        glAttachShader(programBlit, fragment_shader);
+        glLinkProgram(programBlit);
 
             {
             GLint isLinked = 0;
-            glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
+            glGetProgramiv(programBlit, GL_LINK_STATUS, &isLinked);
             if (isLinked == GL_FALSE)
             {
                 GLint maxLength = 0;
-                glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+                glGetProgramiv(programBlit, GL_INFO_LOG_LENGTH, &maxLength);
 
                 // The maxLength includes the NULL character
                 GLchar *infoLog = (GLchar *)malloc(maxLength+1);
                 
-                glGetProgramInfoLog(program, maxLength, &maxLength, infoLog);
+                glGetProgramInfoLog(programBlit, maxLength, &maxLength, infoLog);
                 printf("prog:%s", infoLog);
                 free(infoLog);
             }
         }
 
-        glUseProgram(program);
+        glUseProgram(programBlit);
 
-
-
-        const GLint paletteTexture_location = glGetUniformLocation(program, "paletteTexture");
+        const GLint paletteTexture_location = glGetUniformLocation(programBlit, "paletteTexture");
         if (paletteTexture_location >= 0) {
             glUniform1i(paletteTexture_location, 0);
         }
-        const GLint imageTexture_location = glGetUniformLocation(program, "imageTexture");
+        const GLint imageTexture_location = glGetUniformLocation(programBlit, "backgroundTexture");
         if (imageTexture_location >= 0) {
-            glUniform1i(imageTexture_location, 1);
+            glUniform1i(imageTexture_location, 2);
         }
+
     }
 
     int width, height;
@@ -641,20 +650,17 @@ static void GlfwDrawStuff(void) {
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, vgaFramebuffer);
         glUseProgram(programBackground);
         glDrawArrays(GL_TRIANGLES, 0, bufferInternals.index);
+    } 
 
-        glViewport(WindowCoords.viewportX,WindowCoords.viewportY, WindowCoords.viewportWidth, WindowCoords.viewportHeight);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-        glUseProgram(program);
-        glDrawArrays(GL_TRIANGLES, 0, bufferInternals.index);
-        
-        glfwSwapBuffers(window);
+    glViewport(WindowCoords.viewportX,WindowCoords.viewportY, WindowCoords.viewportWidth, WindowCoords.viewportHeight);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    //glUseProgram(program);
+    glUseProgram(programBlit);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 
+    glfwSwapBuffers(window);
 
-    } else {
-        glClear(GL_COLOR_BUFFER_BIT);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glfwSwapBuffers(window);
-    }
+    bufferInternals.index = 0;
     
 }
 
@@ -864,12 +870,6 @@ void VL_MemToScreenScaledCoord (unsigned char *source, int width, int height, in
     glActiveTexture(GL_TEXTURE1);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, DuPackGetTextureDimension(), DuPackGetTextureDimension(), 0, GL_RGBA, GL_UNSIGNED_BYTE, DuPackGetPalettizedTexture());
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    //glGenerateMipmap(GL_TEXTURE_2D);
     
     float left, right, top, bottom;
     int colorMask;
@@ -1044,7 +1044,7 @@ static void VL_ScreenToScreen (void *source, void *dest)
 void VH_UpdateScreen()
 {
     GlfwDrawStuff();
-    //bufferInternals.index = 0;
+    
 }
 
 void    ThreeDRefresh (void)
@@ -1058,5 +1058,5 @@ void VWB_DrawPropString(const char* string)
 }
 
 void BlitPictureToScreen(unsigned char *pic) {
-    //bufferInternals.index = 0;;
+    bufferInternals.index = 0;
 }
