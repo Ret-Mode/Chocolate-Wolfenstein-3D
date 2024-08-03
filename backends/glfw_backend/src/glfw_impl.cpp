@@ -96,9 +96,41 @@ static GLuint vertexBuffer;
 static GLuint paletteCoordBuffer;
 static GLuint paletteMaskBuffer;
 
+static GLuint program;
+static GLuint programBackground;
 static GLuint vboRects;
 
 static int GrabInput = false;
+
+static const char *vertBackgroundSource = 
+"#version 330\n"
+"layout(location=1)in vec2 vVertPos;\n"
+"layout(location=2)in vec2 vTexPos;\n"
+"layout(location=3)in float vColorMask;\n"
+"out vec2 fPictPos;\n"
+"flat out float fColorMask;\n"
+"void main() {\n"
+"  gl_Position = vec4(vVertPos, 0.0, 1.0);\n"
+"  fPictPos = vTexPos;\n"
+"  fColorMask = vColorMask;\n"
+"}";
+
+
+static const char *fragBackgroundSource = 
+"#version 330\n"
+"in vec2 fPictPos;\n"
+"flat in float fColorMask;\n"
+"uniform sampler2D imageTexture;\n"
+"out uint color;\n"
+"void main() {\n"
+"  vec4 color1 = texture(imageTexture, fPictPos);\n"
+"  float color2;\n"
+"  if(fColorMask>2.5) {color2 = color1.a;}\n"
+"  else if(fColorMask>1.5) {color2 = color1.b;}\n"
+"  else if(fColorMask>0.5) {color2 = color1.g;}\n"
+"  else {color2 = color1.r;}\n"
+"  color = uint(color2*255);\n"
+"}";
 
 static const char *vertSource = 
 "#version 330\n"
@@ -291,19 +323,20 @@ static void resize_callback(GLFWwindow* window, int width, int height) {
 
     if (hr > wr) {
         int diff = (hr - wr) / (320*2);
-        glViewport(0,diff, wr/240, wr/320);
+        
         WindowCoords.viewportX = 0;
-        WindowCoords.viewportY = 0;
+        WindowCoords.viewportY = diff;
         WindowCoords.viewportWidth = wr/240;
         WindowCoords.viewportHeight = wr/320;
     } else {
         int diff = (wr - hr) / (240*2);
-        glViewport(diff,0, hr/240, hr/320);
+        //glViewport(diff,0, hr/240, hr/320);
         WindowCoords.viewportX = diff;
         WindowCoords.viewportY = 0;
         WindowCoords.viewportWidth = hr/240;
         WindowCoords.viewportHeight = hr/320;
     }
+    glViewport(WindowCoords.viewportX,WindowCoords.viewportY, WindowCoords.viewportWidth, WindowCoords.viewportHeight);
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
@@ -354,15 +387,19 @@ int initGlfw(void)
     /* setup background texture */
     glGenTextures(1, &backgroundTexture);
 
+    uint8_t *tempDataa = (uint8_t*)malloc(320*240);
+    memset(tempDataa, 0x12, 320*240);
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, backgroundTexture);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, 320, 240, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, 320, 240, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, tempDataa);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    free(tempDataa);
+
 
     glGenFramebuffers(1, &vgaFramebuffer);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, vgaFramebuffer);
@@ -421,91 +458,160 @@ int initGlfw(void)
     glActiveTexture(GL_TEXTURE1);
     glGenTextures(1, &imageTexture);
     glBindTexture(GL_TEXTURE_2D, imageTexture);
-    uint8_t *tempData = (uint8_t*)malloc(320*200);
-    for (int i = 0; i < 320*200; ++i) {
-        tempData[i] = 20;
-    }
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 320, 200, 0, GL_RED, GL_UNSIGNED_BYTE, tempData);
-
-    free(tempData);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, DuPackGetTextureDimension(), DuPackGetTextureDimension(), 0, GL_RGBA, GL_UNSIGNED_BYTE, DuPackGetPalettizedTexture());
  
-    const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_shader, 1, &vertSource, NULL);
-    glCompileShader(vertex_shader);
     {
-        GLint isCompiled = 0;
-        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &isCompiled);
-        if(isCompiled == GL_FALSE)
+        // create background shader
+        const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+        glShaderSource(vertex_shader, 1, &vertBackgroundSource, NULL);
+        glCompileShader(vertex_shader);
         {
-            GLint maxLength = 0;
-            glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &maxLength);
+            GLint isCompiled = 0;
+            glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &isCompiled);
+            if(isCompiled == GL_FALSE)
+            {
+                GLint maxLength = 0;
+                glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &maxLength);
 
-            // The maxLength includes the NULL character
-            GLchar *errorLog = (GLchar *)malloc(maxLength+1);
-            glGetShaderInfoLog(vertex_shader, maxLength, &maxLength, errorLog);
-            printf("vs:%s", errorLog);
-            free(errorLog);
+                // The maxLength includes the NULL character
+                GLchar *errorLog = (GLchar *)malloc(maxLength+1);
+                glGetShaderInfoLog(vertex_shader, maxLength, &maxLength, errorLog);
+                printf("vs:%s", errorLog);
+                free(errorLog);
+            }
         }
+    
+        const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(fragment_shader, 1, &fragBackgroundSource, NULL);
+        glCompileShader(fragment_shader);
+
+        {
+            GLint isCompiled = 0;
+            glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &isCompiled);
+            if(isCompiled == GL_FALSE)
+            {
+                GLint maxLength = 0;
+                glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &maxLength);
+
+                // The maxLength includes the NULL character
+                GLchar *errorLog = (GLchar *)malloc(maxLength+1);
+                glGetShaderInfoLog(vertex_shader, maxLength, &maxLength, errorLog);
+                printf("fs:%s", errorLog);
+                free(errorLog);
+            }
+        }
+
+        programBackground = glCreateProgram();
+        glAttachShader(programBackground, vertex_shader);
+        glAttachShader(programBackground, fragment_shader);
+        glLinkProgram(programBackground);
+
+            {
+            GLint isLinked = 0;
+            glGetProgramiv(programBackground, GL_LINK_STATUS, &isLinked);
+            if (isLinked == GL_FALSE)
+            {
+                GLint maxLength = 0;
+                glGetProgramiv(programBackground, GL_INFO_LOG_LENGTH, &maxLength);
+
+                // The maxLength includes the NULL character
+                GLchar *infoLog = (GLchar *)malloc(maxLength+1);
+                
+                glGetProgramInfoLog(programBackground, maxLength, &maxLength, infoLog);
+                printf("prog:%s", infoLog);
+                free(infoLog);
+            }
+        }
+
+        glUseProgram(programBackground);
+        const GLint imageTexture_location = glGetUniformLocation(programBackground, "imageTexture");
+        if (imageTexture_location >= 0) {
+            glUniform1i(imageTexture_location, 1);
+        }
+
     }
- 
-    const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader, 1, &fragSource, NULL);
-    glCompileShader(fragment_shader);
 
     {
-        GLint isCompiled = 0;
-        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &isCompiled);
-        if(isCompiled == GL_FALSE)
+        // create old shader
+        const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+        glShaderSource(vertex_shader, 1, &vertSource, NULL);
+        glCompileShader(vertex_shader);
         {
-            GLint maxLength = 0;
-            glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &maxLength);
+            GLint isCompiled = 0;
+            glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &isCompiled);
+            if(isCompiled == GL_FALSE)
+            {
+                GLint maxLength = 0;
+                glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &maxLength);
 
-            // The maxLength includes the NULL character
-            GLchar *errorLog = (GLchar *)malloc(maxLength+1);
-            glGetShaderInfoLog(vertex_shader, maxLength, &maxLength, errorLog);
-            printf("fs:%s", errorLog);
-            free(errorLog);
+                // The maxLength includes the NULL character
+                GLchar *errorLog = (GLchar *)malloc(maxLength+1);
+                glGetShaderInfoLog(vertex_shader, maxLength, &maxLength, errorLog);
+                printf("vs:%s", errorLog);
+                free(errorLog);
+            }
+        }
+    
+        const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(fragment_shader, 1, &fragSource, NULL);
+        glCompileShader(fragment_shader);
+
+        {
+            GLint isCompiled = 0;
+            glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &isCompiled);
+            if(isCompiled == GL_FALSE)
+            {
+                GLint maxLength = 0;
+                glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &maxLength);
+
+                // The maxLength includes the NULL character
+                GLchar *errorLog = (GLchar *)malloc(maxLength+1);
+                glGetShaderInfoLog(vertex_shader, maxLength, &maxLength, errorLog);
+                printf("fs:%s", errorLog);
+                free(errorLog);
+            }
+        }
+
+        program = glCreateProgram();
+        glAttachShader(program, vertex_shader);
+        glAttachShader(program, fragment_shader);
+        glLinkProgram(program);
+
+            {
+            GLint isLinked = 0;
+            glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
+            if (isLinked == GL_FALSE)
+            {
+                GLint maxLength = 0;
+                glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+
+                // The maxLength includes the NULL character
+                GLchar *infoLog = (GLchar *)malloc(maxLength+1);
+                
+                glGetProgramInfoLog(program, maxLength, &maxLength, infoLog);
+                printf("prog:%s", infoLog);
+                free(infoLog);
+            }
+        }
+
+        glUseProgram(program);
+
+
+
+        const GLint paletteTexture_location = glGetUniformLocation(program, "paletteTexture");
+        if (paletteTexture_location >= 0) {
+            glUniform1i(paletteTexture_location, 0);
+        }
+        const GLint imageTexture_location = glGetUniformLocation(program, "imageTexture");
+        if (imageTexture_location >= 0) {
+            glUniform1i(imageTexture_location, 1);
         }
     }
-
-    const GLuint program = glCreateProgram();
-    glAttachShader(program, vertex_shader);
-    glAttachShader(program, fragment_shader);
-    glLinkProgram(program);
-
-        {
-        GLint isLinked = 0;
-        glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
-        if (isLinked == GL_FALSE)
-        {
-            GLint maxLength = 0;
-            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
-
-            // The maxLength includes the NULL character
-            GLchar *infoLog = (GLchar *)malloc(maxLength+1);
-            
-            glGetProgramInfoLog(program, maxLength, &maxLength, infoLog);
-            printf("prog:%s", infoLog);
-            free(infoLog);
-        }
-    }
-
-    glUseProgram(program);
-
-    const GLint paletteTexture_location = glGetUniformLocation(program, "paletteTexture");
-    if (paletteTexture_location >= 0) {
-        glUniform1i(paletteTexture_location, 0);
-    }
-    const GLint imageTexture_location = glGetUniformLocation(program, "imageTexture");
-    if (imageTexture_location >= 0) {
-        glUniform1i(imageTexture_location, 1);
-    }
- 
 
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
@@ -524,19 +630,25 @@ static void GlfwDrawStuff(void) {
 
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
         glBufferData(GL_ARRAY_BUFFER, 2 * bufferInternals.index * sizeof(float), bufferInternals.vertices, GL_DYNAMIC_DRAW);
-        //glBufferSubData(GL_ARRAY_BUFFER, 0, 2 * bufferInternals.index * sizeof(float), bufferInternals.vertices);
 
         glBindBuffer(GL_ARRAY_BUFFER, paletteCoordBuffer);
         glBufferData(GL_ARRAY_BUFFER, 2 * bufferInternals.index * sizeof(float), bufferInternals.texCoords, GL_DYNAMIC_DRAW);
-        //glBufferSubData(GL_ARRAY_BUFFER, 0, 2 * bufferInternals.index * sizeof(float), bufferInternals.texCoords);
 
         glBindBuffer(GL_ARRAY_BUFFER, paletteMaskBuffer);
         glBufferData(GL_ARRAY_BUFFER, bufferInternals.index * sizeof(float), bufferInternals.colorMasks, GL_DYNAMIC_DRAW);
-        //glBufferSubData(GL_ARRAY_BUFFER, 0, bufferInternals.index * sizeof(float), bufferInternals.colorMasks);
         
-        glClear(GL_COLOR_BUFFER_BIT);
+        glViewport(0, 0, 320, 240);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, vgaFramebuffer);
+        glUseProgram(programBackground);
         glDrawArrays(GL_TRIANGLES, 0, bufferInternals.index);
+
+        glViewport(WindowCoords.viewportX,WindowCoords.viewportY, WindowCoords.viewportWidth, WindowCoords.viewportHeight);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        glUseProgram(program);
+        glDrawArrays(GL_TRIANGLES, 0, bufferInternals.index);
+        
         glfwSwapBuffers(window);
+
 
     } else {
         glClear(GL_COLOR_BUFFER_BIT);
