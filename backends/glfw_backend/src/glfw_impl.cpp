@@ -27,12 +27,32 @@ extern int DuPackGetTextureDimension(void);
 extern void DuPackGetTextureCoords(int index, float *left, float *right, float *bottom, float *top, int *rgbaOffset);
 extern void DuPackGetColorCoords(int color, float *left, float *right, float *bottom, float *top, int *rgbaOffset);
 
+static inline void ShufflePicColumns(uint8_t *dest, uint8_t *src, uint32_t width, uint32_t height) {
+    for (int j = 0; j < 4; ++j) {
+        for (int k = height-1; k >= 0; --k) {
+            int offset = j;
+            for (int l = 0; l < width/4; ++l) {
+                dest[k * width + offset] = *src++;
+                offset = (offset + 4) % width;
+            }
+        }
+    }
+}
+
 static GLFWwindow* window;
+
 struct wolfColor_t {
     uint8_t red;
     uint8_t green;
     uint8_t blue;
     uint8_t alpha;
+};
+
+struct boxCoords_t {
+    float left;
+    float right;
+    float bottom;
+    float top;
 };
 
 struct WindowCoords_t {
@@ -61,6 +81,8 @@ static struct wolfColor_t gamepal[]={
     #endif
 };
  
+static int latchpics[NUMLATCHPICS];
+
  static byte ASCIINames[] =      // Unshifted ASCII for scan codes       // TODO: keypad
 {
 //   0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
@@ -158,7 +180,45 @@ static const char *fragBackBlitSource =
 "  color = e;\n"
 "}";
 
+static inline void SetBufferCoords(boxCoords_t viewport, boxCoords_t textureCoords, int colorMask) {
+    int offset = bufferInternals.index;
+    bufferInternals.index += 6;
 
+    assert (bufferInternals.index < bufferInternals.capacity);
+
+    bufferInternals.vertices[2*offset] = viewport.left;
+    bufferInternals.vertices[2*offset+1] = viewport.bottom;
+    bufferInternals.vertices[2*offset+2] = viewport.right;
+    bufferInternals.vertices[2*offset+3] = viewport.bottom;
+    bufferInternals.vertices[2*offset+4] = viewport.left;
+    bufferInternals.vertices[2*offset+5] = viewport.top;
+    bufferInternals.vertices[2*offset+6] = viewport.right;
+    bufferInternals.vertices[2*offset+7] = viewport.bottom;
+    bufferInternals.vertices[2*offset+8] = viewport.right;
+    bufferInternals.vertices[2*offset+9] = viewport.top;
+    bufferInternals.vertices[2*offset+10] = viewport.left;
+    bufferInternals.vertices[2*offset+11] = viewport.top;
+
+    bufferInternals.texCoords[2*offset] = textureCoords.left;
+    bufferInternals.texCoords[2*offset+1] = textureCoords.bottom;
+    bufferInternals.texCoords[2*offset+2] = textureCoords.right;
+    bufferInternals.texCoords[2*offset+3] = textureCoords.bottom;
+    bufferInternals.texCoords[2*offset+4] = textureCoords.left;
+    bufferInternals.texCoords[2*offset+5] = textureCoords.top;
+    bufferInternals.texCoords[2*offset+6] = textureCoords.right;
+    bufferInternals.texCoords[2*offset+7] = textureCoords.bottom;
+    bufferInternals.texCoords[2*offset+8] = textureCoords.right;
+    bufferInternals.texCoords[2*offset+9] = textureCoords.top;
+    bufferInternals.texCoords[2*offset+10] = textureCoords.left;
+    bufferInternals.texCoords[2*offset+11] = textureCoords.top;
+
+    bufferInternals.colorMasks[offset] = colorMask;
+    bufferInternals.colorMasks[offset+1] = colorMask;
+    bufferInternals.colorMasks[offset+2] = colorMask;
+    bufferInternals.colorMasks[offset+3] = colorMask;
+    bufferInternals.colorMasks[offset+4] = colorMask;
+    bufferInternals.colorMasks[offset+5] = colorMask;
+}
  
 static int SelectClosestPixelIndex(unsigned char red, unsigned char green, unsigned char blue) {
     unsigned char diffR = red - gamepal[0].red;
@@ -779,9 +839,76 @@ void SetVGAMode(unsigned *scrWidth, unsigned *scrHeight,
     *sclFactor = 1;
 }
 
-extern void _LoadLatchMemory (void);
 void LoadLatchMemory (void) {
-    ;
+    int i;
+    int start = LATCHPICS_LUMP_START;
+    int end = LATCHPICS_LUMP_END;
+
+    int w = 8*8;
+    int h = ((NUMTILE8 + 7) / 8) * 8;
+
+    CA_CacheGrChunk (STARTTILE8);
+    uint8_t *data = (uint8_t *)malloc(w*h);
+    uint8_t *subData = (uint8_t *)malloc(8*8);
+    uint8_t *src = grsegs[STARTTILE8];
+    for (i=0;i<NUMTILE8;i++){
+        int rrow = (i / 8) * 8;
+        int rcol = (i % 8) * 8;
+        ShufflePicColumns(subData, src + i*64, 8, 8);
+        for (int row = 0; row < 8; ++row) {
+            for (int col = 0; col < 8; ++col) {
+
+                data[(rrow + row) * w + rcol + col] = subData[row*8+col];
+            }
+        }
+
+    }
+    FILE *fp = fopen("data2.raw", "wb");
+    fwrite(data, w*h, 1, fp);
+    fclose(fp);
+
+    //memcpy(data, grsegs[STARTTILE8], w*h);
+    latchpics[0] = DuPackAddTexture(w, h, data);
+    free(data);
+//     src = grsegs[STARTTILE8];
+
+//     for (i=0;i<NUMTILE8;i++)
+//     {                  source w h dest x y
+//         VL_MemToLatch (src, 8, 8, (void*)surf, (i & 7) * 8, (i >> 3) * 8);
+            // int pitch =  GetSurfacePitch(destSurface);
+            // byte *dest = (byte *) GetSurfacePixels(destSurface) + y * pitch + x;
+            // for(int ysrc = 0; ysrc < height; ysrc++)
+            // {
+            //     for(int xsrc = 0; xsrc < width; xsrc++)
+            //     {
+            //         dest[ysrc * pitch + xsrc] = source[(ysrc * (width >> 2) + (xsrc >> 2))
+            //             + (xsrc & 3) * (width >> 2) * height];
+            //     }
+            // }
+//         src += 64;
+//     }
+    UNCACHEGRCHUNK (STARTTILE8);
+     
+    for (i=start;i<=end;i++)
+    {
+        w = pictable[i-STARTPICS].width;
+        h = pictable[i-STARTPICS].height;
+
+        CA_CacheGrChunk (i);
+        uint8_t *data = (uint8_t *)malloc(w*h);
+        
+        ShufflePicColumns(data, grsegs[i], w, h);
+        
+        latchpics[2+i-start] = DuPackAddTexture(w, h, data);
+
+        free(data);
+        UNCACHEGRCHUNK(i);
+    }
+
+    glActiveTexture(GL_TEXTURE1);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, DuPackGetTextureDimension(), DuPackGetTextureDimension(), 0, GL_RGBA, GL_UNSIGNED_BYTE, DuPackGetPalettizedTexture());
+    
 }
 
 /* This function should swap buffers */
@@ -856,73 +983,33 @@ void VL_MemToScreenScaledCoord (unsigned char *source, int width, int height, in
 {
     unsigned char *pixels = (unsigned char *)malloc(width * height);
 
-    for (int j = 0; j < 4; ++j) {
-        for (int k = height-1; k >= 0; --k) {
-            int offset = j;
-            for (int i = 0; i < width/4; ++i) {
-                pixels[k * width + offset] = *source++;
-                offset = (offset + 4) % width;
-            }
-       }
-    }
+    ShufflePicColumns(pixels, source, width, height);
+
     int index = DuPackAddTexture(width, height, pixels);
-    free(pixels);
+    
     glActiveTexture(GL_TEXTURE1);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, DuPackGetTextureDimension(), DuPackGetTextureDimension(), 0, GL_RGBA, GL_UNSIGNED_BYTE, DuPackGetPalettizedTexture());
     
-    float left, right, top, bottom;
+    free(pixels);
+
+    boxCoords_t colorCoords;
     int colorMask;
-    DuPackGetTextureCoords(index, &left, &right, &bottom, &top, &colorMask);
-    int offset = bufferInternals.index;
+    DuPackGetTextureCoords(index, &colorCoords.left, &colorCoords.right, &colorCoords.bottom, &colorCoords.top, &colorMask);
 
-    bufferInternals.index += 6;
-
-    assert (bufferInternals.index < bufferInternals.capacity);
-
-    float minX = 2.f * (destx/ 320.f) - 1.f;
-    float maxX = 2.f * (destx + width)/ 320.f - 1.f;
-
-    float maxY = 2.f * (200.f-desty)/ 200.f - 1.f;
-    float minY = 2.f * (200.f-(desty + height))/ 200.f - 1.f;
-    bufferInternals.vertices[2*offset] = minX;
-    bufferInternals.vertices[2*offset+1] = minY;
-    bufferInternals.vertices[2*offset+2] = maxX;
-    bufferInternals.vertices[2*offset+3] = minY;
-    bufferInternals.vertices[2*offset+4] = minX;
-    bufferInternals.vertices[2*offset+5] = maxY;
-    bufferInternals.vertices[2*offset+6] = maxX;
-    bufferInternals.vertices[2*offset+7] = minY;
-    bufferInternals.vertices[2*offset+8] = maxX;
-    bufferInternals.vertices[2*offset+9] = maxY;
-    bufferInternals.vertices[2*offset+10] = minX;
-    bufferInternals.vertices[2*offset+11] = maxY;
-
-    bufferInternals.texCoords[2*offset] = left;
-    bufferInternals.texCoords[2*offset+1] = bottom;
-    bufferInternals.texCoords[2*offset+2] = right;
-    bufferInternals.texCoords[2*offset+3] = bottom;
-    bufferInternals.texCoords[2*offset+4] = left;
-    bufferInternals.texCoords[2*offset+5] = top;
-    bufferInternals.texCoords[2*offset+6] = right;
-    bufferInternals.texCoords[2*offset+7] = bottom;
-    bufferInternals.texCoords[2*offset+8] = right;
-    bufferInternals.texCoords[2*offset+9] = top;
-    bufferInternals.texCoords[2*offset+10] = left;
-    bufferInternals.texCoords[2*offset+11] = top;
-
-    bufferInternals.colorMasks[offset] = colorMask;
-    bufferInternals.colorMasks[offset+1] = colorMask;
-    bufferInternals.colorMasks[offset+2] = colorMask;
-    bufferInternals.colorMasks[offset+3] = colorMask;
-    bufferInternals.colorMasks[offset+4] = colorMask;
-    bufferInternals.colorMasks[offset+5] = colorMask;
-
+    boxCoords_t viewportCoords = {2.f * (destx/ 320.f) - 1.f,
+                                  2.f * (destx + width)/ 320.f - 1.f,
+                                  2.f * (200.f-(desty + height))/ 200.f - 1.f,
+                                  2.f * (200.f-desty)/ 200.f - 1.f,};
+                            
+    SetBufferCoords(viewportCoords, colorCoords, colorMask);
 }
 
 void VL_Plot (int x, int y, int color)
 {
-    ;
+    uint8_t byte = color;
+    glActiveTexture(GL_TEXTURE2);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, x,y, 1, 1, GL_RED, GL_UNSIGNED_BYTE, &byte);
 }
 
 
@@ -931,68 +1018,49 @@ unsigned char VL_GetPixel (int x, int y)
     unsigned char pixels[4];
     GlfwDrawStuff();
     glFinish();
-    glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
     return SelectClosestPixelIndex(pixels[0], pixels[1], pixels[2]);
+
 }
 
 void VL_Hlin (unsigned x, unsigned y, unsigned width, int color)
 {
-    ;
+    boxCoords_t viewportCoords = {(x - 160.f) / 160.0f,
+                            (x+width - 160.0f) / 160.0f,
+                            (100.0f - y) / 100.0f,
+                            (100.0f - y - 1.0f) / 100.0f};
+    
+    boxCoords_t colorCoords;
+    int colorMask;
+    DuPackGetColorCoords(color, &colorCoords.left, &colorCoords.right, &colorCoords.bottom, &colorCoords.top, &colorMask);
+    SetBufferCoords(viewportCoords, colorCoords, colorMask);
 }
 
 void VL_Vlin (int x, int y, int height, int color)
 {
-    ;
+    boxCoords_t viewportCoords = {(x - 160.f) / 160.0f,
+                            (x+1.f - 160.0f) / 160.0f,
+                            (100.0f - y) / 100.0f,
+                            (100.0f - y - height) / 100.0f};
+    
+    boxCoords_t colorCoords;
+    int colorMask;
+    DuPackGetColorCoords(color, &colorCoords.left, &colorCoords.right, &colorCoords.bottom, &colorCoords.top, &colorMask);
+    SetBufferCoords(viewportCoords, colorCoords, colorMask);
 }
 
 
 void VL_BarScaledCoord (int scx, int scy, int scwidth, int scheight, int color)
 {
-    float leftViewport = (scx - 160.f) / 160.0f; 
-    float bottomViewport = (100.0f - scy) / 100.0f;
-    float rightViewport = (scx + scwidth - 160.0f) / 160.0f;
-    float topViewport = (100.0f - scy - scheight) / 100.0f;
+    boxCoords_t viewportCoords = {(scx - 160.f) / 160.0f,
+                            (scx + scwidth - 160.0f) / 160.0f,
+                            (100.0f - scy) / 100.0f,
+                            (100.0f - scy - scheight) / 100.0f};
     
-    float left, right, top, bottom;
+    boxCoords_t colorCoords;
     int colorMask;
-    DuPackGetColorCoords(color, &left, &right, &bottom, &top, &colorMask);
-    int offset = bufferInternals.index;
-    bufferInternals.index += 6;
-
-    assert (bufferInternals.index < bufferInternals.capacity);
-
-    bufferInternals.vertices[2*offset] = leftViewport;
-    bufferInternals.vertices[2*offset+1] = bottomViewport;
-    bufferInternals.vertices[2*offset+2] = rightViewport;
-    bufferInternals.vertices[2*offset+3] = bottomViewport;
-    bufferInternals.vertices[2*offset+4] = leftViewport;
-    bufferInternals.vertices[2*offset+5] = topViewport;
-    bufferInternals.vertices[2*offset+6] = rightViewport;
-    bufferInternals.vertices[2*offset+7] = bottomViewport;
-    bufferInternals.vertices[2*offset+8] = rightViewport;
-    bufferInternals.vertices[2*offset+9] = topViewport;
-    bufferInternals.vertices[2*offset+10] = leftViewport;
-    bufferInternals.vertices[2*offset+11] = topViewport;
-
-    bufferInternals.texCoords[2*offset] = left;
-    bufferInternals.texCoords[2*offset+1] = bottom;
-    bufferInternals.texCoords[2*offset+2] = right;
-    bufferInternals.texCoords[2*offset+3] = bottom;
-    bufferInternals.texCoords[2*offset+4] = left;
-    bufferInternals.texCoords[2*offset+5] = top;
-    bufferInternals.texCoords[2*offset+6] = right;
-    bufferInternals.texCoords[2*offset+7] = bottom;
-    bufferInternals.texCoords[2*offset+8] = right;
-    bufferInternals.texCoords[2*offset+9] = top;
-    bufferInternals.texCoords[2*offset+10] = left;
-    bufferInternals.texCoords[2*offset+11] = top;
-
-    bufferInternals.colorMasks[offset] = colorMask;
-    bufferInternals.colorMasks[offset+1] = colorMask;
-    bufferInternals.colorMasks[offset+2] = colorMask;
-    bufferInternals.colorMasks[offset+3] = colorMask;
-    bufferInternals.colorMasks[offset+4] = colorMask;
-    bufferInternals.colorMasks[offset+5] = colorMask;
+    DuPackGetColorCoords(color, &colorCoords.left, &colorCoords.right, &colorCoords.bottom, &colorCoords.top, &colorMask);
+    SetBufferCoords(viewportCoords, colorCoords, colorMask);
 }
 
 
@@ -1012,7 +1080,20 @@ void VL_MemToScreenScaledCoord (unsigned char *source, int origwidth, int orighe
 void VL_LatchToScreenScaledCoord(int which, int xsrc, int ysrc,
     int width, int height, int scxdest, int scydest)
 {
-    ;
+    int index = latchpics[which];
+
+
+    boxCoords_t colorCoords;
+    int colorMask;
+    DuPackGetTextureCoords(index, &colorCoords.left, &colorCoords.right, &colorCoords.bottom, &colorCoords.top, &colorMask);
+
+    boxCoords_t viewportCoords = {2.f * (xsrc/ 320.f) - 1.f,
+                                  2.f * (xsrc + width)/ 320.f - 1.f,
+                                  2.f * (200.f-(ysrc + height))/ 200.f - 1.f,
+                                  2.f * (200.f-ysrc)/ 200.f - 1.f,};
+                            
+    SetBufferCoords(viewportCoords, colorCoords, colorMask);
+
 }
 
 void LatchDrawPic (unsigned x, unsigned y, unsigned picnum)
