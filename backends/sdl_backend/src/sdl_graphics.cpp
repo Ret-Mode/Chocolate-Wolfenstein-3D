@@ -538,6 +538,11 @@ void LoadLatchMemory (void) {
         VL_MemToLatch (src, 8, 8, (void*)surf, (i & 7) * 8, (i >> 3) * 8);
         src += 64;
     }
+    // FILE *fp = fopen("data3.raw", "wb");
+    // GraphicLockBytes(surf);
+    // fwrite(GetSurfacePixels(surf), (8*8) * (((NUMTILE8 + 7) / 8) * 8), 1, fp);
+    // GraphicUnlockBytes(surf);
+    //fclose(fp);
     UNCACHEGRCHUNK (STARTTILE8);
 
 //

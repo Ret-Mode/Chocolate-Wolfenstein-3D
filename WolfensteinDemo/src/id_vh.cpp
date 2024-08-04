@@ -127,12 +127,6 @@ void VWB_DrawTile8 (int x, int y, int tile)
     VL_LatchToScreenScaledCoord(0,((tile)&7)*8,((tile)>>3)*8*64,8,8,scaleFactor*x,scaleFactor*y);
 }
 
-void VWB_DrawTile8M (int x, int y, int tile)
-{
-    //VL_MemToScreen (((byte *)grsegs[STARTTILE8M])+tile*64,8,8,x,y);
-    VL_MemToScreenScaledCoord(((byte *)grsegs[STARTTILE8M])+tile*64, 8, 8, scaleFactor*x, scaleFactor*y);
-}
-
 void VWB_DrawPic (int x, int y, int chunknum)
 {
     int picnum = chunknum - STARTPICS;
