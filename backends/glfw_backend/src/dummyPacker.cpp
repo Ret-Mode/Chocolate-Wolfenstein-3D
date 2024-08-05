@@ -372,6 +372,14 @@ int DuPackGetTextureDimension(void) {
     return textureHead.textureDimension;
 }
 
+void DuPackGetTextureIntCoords(int index, int *left, int *right, int *bottom, int *top) {
+    pixelData_t * pixelData = textureHead.dataStack + index;
+    *left = pixelData->x;
+    *right = pixelData->x + pixelData->width;
+    *bottom = pixelData->y;
+    *top = pixelData->y + pixelData->height;
+}
+
 void DuPackGetTextureCoords(int index, float *left, float *right, float *bottom, float *top, int *rgbaOffset) {
     pixelData_t * pixelData = textureHead.dataStack + index;
     float textureDimension = (float)textureHead.textureDimension;
