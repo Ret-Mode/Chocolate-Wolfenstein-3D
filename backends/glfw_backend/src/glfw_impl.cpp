@@ -24,6 +24,7 @@ extern void DuPackInit(unsigned int textureSize,
 extern int DuPackAddTexture(int width, int height, unsigned char *data);
 extern unsigned char *DuPackGetPalettizedTexture(void);
 extern int DuPackGetTextureDimension(void); 
+extern void DuPackGetTextureIntCoords(int index, int *left, int *right, int *bottom, int *top);
 extern void DuPackGetTextureCoords(int index, float *left, float *right, float *bottom, float *top, int *rgbaOffset);
 extern void DuPackGetColorCoords(int color, float *left, float *right, float *bottom, float *top, int *rgbaOffset);
 
@@ -1064,12 +1065,6 @@ void VL_BarScaledCoord (int scx, int scy, int scwidth, int scheight, int color)
 }
 
 
-void VL_MemToLatch(unsigned char *source, int width, int height,
-    void *destSurface, int x, int y)
-{
-    ;
-}
-
 void VL_MemToScreenScaledCoord (unsigned char *source, int origwidth, int origheight, int srcx, int srcy,
                                 int destx, int desty, int width, int height)
 {
@@ -1086,39 +1081,34 @@ void VL_LatchToScreenScaledCoord(int which, int xsrc, int ysrc,
     boxCoords_t colorCoords;
     int colorMask;
     DuPackGetTextureCoords(index, &colorCoords.left, &colorCoords.right, &colorCoords.bottom, &colorCoords.top, &colorMask);
+    
+    int l,r,u,d;
+    DuPackGetTextureIntCoords(index, &l, &r, &d, &u);
 
-    boxCoords_t viewportCoords = {2.f * (xsrc/ 320.f) - 1.f,
-                                  2.f * (xsrc + width)/ 320.f - 1.f,
-                                  2.f * (200.f-(ysrc + height))/ 200.f - 1.f,
-                                  2.f * (200.f-ysrc)/ 200.f - 1.f,};
-                            
+    boxCoords_t viewportCoords = {2.f * ((scxdest)/ 320.f) - 1.f,
+                                  2.f * (scxdest + r - l)/ 320.f - 1.f,
+                                  2.f * (200.f-(scydest + u - d))/ 200.f - 1.f,
+                                  2.f * (200.f-scydest)/ 200.f - 1.f,};
+
     SetBufferCoords(viewportCoords, colorCoords, colorMask);
 
 }
 
 void LatchDrawPic (unsigned x, unsigned y, unsigned picnum)
 {
-    ;
+    int which = 2+picnum-LATCHPICS_LUMP_START;
+    VL_LatchToScreenScaledCoord(which,0,0,0,0, scaleFactor*x*8,scaleFactor*y);
 }
 
 void LatchDrawPicScaledCoord (unsigned scx, unsigned scy, unsigned picnum)
 {
-    ;
-}
-
-unsigned char *VL_LockSurface(void* surface)
-{
-    return NULL;
-}
-
-void VL_UnlockSurface(void *surface)
-{
-    ;
+    int which = 2+picnum-LATCHPICS_LUMP_START;
+    VL_LatchToScreenScaledCoord(which,0,0,0,0,scx*8,scy);
 }
 
 static void VL_ScreenToScreen (void *source, void *dest)
 {
-    ;
+    GlfwDrawStuff();
 }
 
 /* this function should swap buffers*/
@@ -1135,9 +1125,43 @@ void    ThreeDRefresh (void)
 
 void VWB_DrawPropString(const char* string)
 {
-    ;
+    // fontstruct  *font;
+    // int         width, step, height;
+    // byte        *source, *dest;
+    // byte        ch;
+
+    // byte *vbuf = VL_LockSurface(GetCurSurface());
+
+    // font = (fontstruct *) grsegs[STARTFONT+fontnumber];
+    // height = font->height;
+    // dest = vbuf + scaleFactor * (py * curPitch + px);
+
+    // while ((ch = (byte)*string++)!=0)
+    // {
+    //     width = step = font->width[ch];
+    //     source = ((byte *)font)+font->location[ch];
+    //     while (width--)
+    //     {
+    //         for(int i=0;i<height;i++)
+    //         {
+    //             if(source[i*step])
+    //             {
+    //                 for(unsigned sy=0; sy<scaleFactor; sy++)
+    //                     for(unsigned sx=0; sx<scaleFactor; sx++)
+    //                         dest[(scaleFactor*i+sy)*curPitch+sx]=fontcolor;
+    //             }
+    //         }
+
+    //         source++;
+    //         px++;
+    //         dest+=scaleFactor;
+    //     }
+    // }
+
+
 }
 
 void BlitPictureToScreen(unsigned char *pic) {
-    bufferInternals.index = 0;
+    VL_MemToScreenScaledCoord(pic, 320, 200, 0, 0);
+    GlfwDrawStuff();
 }
