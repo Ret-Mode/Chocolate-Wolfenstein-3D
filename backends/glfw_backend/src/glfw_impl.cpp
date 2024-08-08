@@ -1126,22 +1126,29 @@ void    ThreeDRefresh (void)
 void VWB_DrawPropString(const char* string)
 {
     // fontstruct  *font;
-    // int         width, step, height;
-    // byte        *source, *dest;
-    // byte        ch;
+    int         width, step, height;
+    byte        *source, *dest;
+    byte        ch;
 
     // byte *vbuf = VL_LockSurface(GetCurSurface());
 
-    // font = (fontstruct *) grsegs[STARTFONT+fontnumber];
-    // height = font->height;
+    fontstruct  *font = (fontstruct *) grsegs[STARTFONT+fontnumber];
+    height = font->height;
     // dest = vbuf + scaleFactor * (py * curPitch + px);
 
-    // while ((ch = (byte)*string++)!=0)
-    // {
-    //     width = step = font->width[ch];
-    //     source = ((byte *)font)+font->location[ch];
-    //     while (width--)
-    //     {
+    while ((ch = (byte)*string++)!=0)
+    {
+        width = step = font->width[ch];
+        source = ((byte *)font)+font->location[ch];
+        // byte *pixels = (byte*)malloc(width*height);
+
+        // memcpy(pixels, source, width*height);
+        // ShufflePicColumns(pixels, source, width, height);
+        // int index = DuPackAddTexture(width, height, pixels);
+        // free(pixels);
+
+        while (width--)
+        {
     //         for(int i=0;i<height;i++)
     //         {
     //             if(source[i*step])
@@ -1155,9 +1162,12 @@ void VWB_DrawPropString(const char* string)
     //         source++;
     //         px++;
     //         dest+=scaleFactor;
-    //     }
-    // }
-
+        }
+    }
+    glActiveTexture(GL_TEXTURE1);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, DuPackGetTextureDimension(), DuPackGetTextureDimension(), 0, GL_RGBA, GL_UNSIGNED_BYTE, DuPackGetPalettizedTexture());
+    
 
 }
 
