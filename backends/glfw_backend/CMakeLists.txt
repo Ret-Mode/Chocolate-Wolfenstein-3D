@@ -14,7 +14,7 @@ endif()
 
 find_package(OpenGL REQUIRED)
 
-set(bFiles
+set(subglfwFiles
   ${CMAKE_CURRENT_SOURCE_DIR}/src/sdl_keys.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/miniaudio_impl.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/glfw_impl.cpp
@@ -22,14 +22,14 @@ set(bFiles
   ${GLAD_FILE}
   PARENT_SCOPE)
 
-set(bIncludes
+set(subglfwIncludes
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${OPENGL_INCLUDE_DIRS}
   ${GFLW3_INCLUDES}
   ${GLAD_INCLUDES}
   PARENT_SCOPE)
 
-set(bLibs
+set(subglfwLibs
   ${OPENGL_LIBRARIES}
   ${GFLW3_LIBS}
   PARENT_SCOPE)
