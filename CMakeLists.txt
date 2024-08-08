@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(Chocolate_Wolfenstein_3D VERSION 0.1.1 LANGUAGES C CXX)
+project(Candy_Wolfenstein_3D VERSION 0.1.1 LANGUAGES C CXX)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/data")
