@@ -1180,7 +1180,7 @@ void VH_UpdateScreen()
     VL_ScreenToScreen(GetScreenBuffer(), GetScreen());
 }
 
-void VWB_DrawPropString(const char* string, int *px, int py)
+void VWB_DrawPropString(const char* string, int *px, int py, int fontnumber)
 {
     fontstruct  *font;
     int         width, step, height;
@@ -1189,7 +1189,7 @@ void VWB_DrawPropString(const char* string, int *px, int py)
 
     byte *vbuf = VL_LockSurface(GetCurSurface());
 
-    font = (fontstruct *) GetGrSegs(STARTFONT+GetFontNumber());
+    font = (fontstruct *) GetGrSegs(STARTFONT+fontnumber);
     height = font->height;
     dest = vbuf + scaleFactor * (py * curPitch + *px);
 

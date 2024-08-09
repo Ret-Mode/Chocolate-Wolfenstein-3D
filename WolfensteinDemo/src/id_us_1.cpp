@@ -38,7 +38,7 @@
 static  boolean     US_Started;
 
 void        (*USL_MeasureString)(const char *,word *,word *) = VW_MeasurePropString;
-void        (*USL_DrawString)(const char *, int *x, int y) = VWB_DrawPropString;
+void        (*USL_DrawString)(const char *, int *x, int y, int fontnumber) = VWB_DrawPropString;
 
 SaveGame    Games[MaxSaveGames];
 HighScore   Scores[MaxScores] =
@@ -120,7 +120,7 @@ US_Shutdown(void)
 ///////////////////////////////////////////////////////////////////////////
 void
 US_SetPrintRoutines(void (*measure)(const char *,word *,word *),
-    void (*print)(const char *, int *, int))
+    void (*print)(const char *, int *, int, int))
 {
     USL_MeasureString = measure;
     USL_DrawString = print;
@@ -151,7 +151,7 @@ US_Print(const char *sorg)
         USL_MeasureString(s,&w,&h);
         px = PrintX;
         py = PrintY;
-        USL_DrawString(s, &px, py);
+        USL_DrawString(s, &px, py, GetFontNumber());
 
         s = se;
         if (c)
@@ -212,7 +212,7 @@ USL_PrintInCenter(const char *s,Rect r)
 
     px = r.ul.x + ((rw - w) / 2);
     py = r.ul.y + ((rh - h) / 2);
-    USL_DrawString(s, &px, py);
+    USL_DrawString(s, &px, py, GetFontNumber());
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -250,7 +250,7 @@ US_CPrintLine(const char *s)
         Quit("US_CPrintLine() - String exceeds width");
     px = WindowX + ((WindowW - w) / 2);
     py = PrintY;
-    USL_DrawString(s, &px, py);
+    USL_DrawString(s, &px, py, GetFontNumber());
     PrintY += h;
 }
 
@@ -433,12 +433,12 @@ USL_XORICursor(int x,int y,const char *s,word cursor)
     px = x + w - 1;
     py = y;
     if (status^=1)
-        USL_DrawString("\x80", &px, py);
+        USL_DrawString("\x80", &px, py, GetFontNumber());
     else
     {
         temp = fontcolor;
         fontcolor = backcolor;
-        USL_DrawString("\x80", &px, py);
+        USL_DrawString("\x80", &px, py, GetFontNumber());
         fontcolor = temp;
     }
 }
@@ -706,13 +706,13 @@ US_LineInput(int x,int y,char *buf,const char *def,boolean escok,
             py = y;
             temp = fontcolor;
             fontcolor = backcolor;
-            USL_DrawString(olds, &px, py);
+            USL_DrawString(olds, &px, py, GetFontNumber());
             fontcolor = (byte) temp;
             strcpy(olds,s);
 
             px = x;
             py = y;
-            USL_DrawString(s, &px, py);
+            USL_DrawString(s, &px, py, GetFontNumber());
 
             redraw = false;
         }
@@ -743,7 +743,7 @@ US_LineInput(int x,int y,char *buf,const char *def,boolean escok,
     {
         px = x;
         py = y;
-        USL_DrawString(olds, &px, py);
+        USL_DrawString(olds, &px, py, GetFontNumber());
     }
     VW_UpdateScreen();
 

@@ -1123,7 +1123,7 @@ void    ThreeDRefresh (void)
     ;
 }
 
-void VWB_DrawPropString(const char* string, int *px, int py)
+void VWB_DrawPropString(const char* string, int *px, int py, int fontnumber)
 {
     // fontstruct  *font;
     int         width, step, height;
@@ -1132,7 +1132,7 @@ void VWB_DrawPropString(const char* string, int *px, int py)
 
     // byte *vbuf = VL_LockSurface(GetCurSurface());
 
-    fontstruct  *font = (fontstruct *) GetGrSegs(STARTFONT+GetFontNumber());
+    fontstruct  *font = (fontstruct *) GetGrSegs(STARTFONT+fontnumber);
     height = font->height;
     // dest = vbuf + scaleFactor * (py * curPitch + px);
 

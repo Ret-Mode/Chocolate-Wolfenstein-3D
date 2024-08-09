@@ -388,7 +388,7 @@ void HandleWord (void)
     // print it
     //
     newpos = px+wwidth;
-    VWB_DrawPropString (wword, &px, py);
+    VWB_DrawPropString (wword, &px, py, GetFontNumber());
     px = newpos;
 
     //
@@ -487,7 +487,7 @@ void PageLayout (boolean shownumber)
         py = 183;
         fontcolor = 0x4f;                          //12^BACKCOLOR;
 
-        VWB_DrawPropString (str, &px, py);
+        VWB_DrawPropString (str, &px, py, GetFontNumber());
     }
 
     fontcolor = oldfontcolor;

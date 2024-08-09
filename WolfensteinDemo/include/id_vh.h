@@ -49,7 +49,7 @@ extern  int             px,py;
 void SetFontNumber(int number);
 int GetFontNumber(void);
 
-void VWB_DrawPropString  (const char *string, int *x, int y);
+void VWB_DrawPropString  (const char *string, int *x, int y, int fontnumber);
 
 void VWB_DrawTile8 (int x, int y, int tile);
 void VWB_DrawTile16 (int x, int y, int tile);
