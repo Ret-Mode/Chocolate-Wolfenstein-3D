@@ -367,7 +367,7 @@ CP_CheckQuick (ScanCode scancode)
             }
 
             WindowH = 200;
-            fontnumber = 0;
+            SetFontNumber(0);
             MainMenu[savegame].active = 0;
             return 1;
 
@@ -378,10 +378,10 @@ CP_CheckQuick (ScanCode scancode)
             if (SaveGamesAvail[LSItems.curpos] && pickquick)
             {
                 CA_CacheGrChunk (STARTFONT + 1);
-                fontnumber = 1;
+                SetFontNumber(0);
                 Message (STR_SAVING "...");
                 CP_SaveGame (1);
-                fontnumber = 0;
+                SetFontNumber(1);
             }
             else
             {
@@ -436,7 +436,7 @@ CP_CheckQuick (ScanCode scancode)
 
 
                 CA_CacheGrChunk (STARTFONT + 1);
-                fontnumber = 1;
+                SetFontNumber(1);
 
                 strcat (string, SaveGameNames[LSItems.curpos]);
                 strcat (string, "\"?");
@@ -444,7 +444,7 @@ CP_CheckQuick (ScanCode scancode)
                 if (Confirm (string))
                     CP_LoadGame (1);
 
-                fontnumber = 0;
+                SetFontNumber(0);
             }
             else
             {
@@ -511,7 +511,7 @@ CP_CheckQuick (ScanCode scancode)
 
             DrawPlayBorder ();
             WindowH = 200;
-            fontnumber = 0;
+            SetFontNumber(0);
             return 1;
     }
     return 0;
@@ -553,14 +553,14 @@ CP_EndGame (int)
 int
 CP_ViewScores (int)
 {
-    fontnumber = 0;
+    SetFontNumber(0);
     StartCPMusic (ROSTER_MUS);
 
 
     DrawHighScores ();
     VW_UpdateScreen ();
     MenuFadeIn ();
-    fontnumber = 1;
+    SetFontNumber(1);
 
     IN_Ack ();
 
@@ -949,7 +949,7 @@ DrawLSAction (int which)
     DrawOutline (LSA_X, LSA_Y, LSA_W, LSA_H, 0, HIGHLIGHT);
     VWB_DrawPic (LSA_X + 8, LSA_Y + 5, C_DISKLOADING1PIC);
 
-    fontnumber = 1;
+    SetFontNumber(1);
     SETFONTCOLOR (0, TEXTCOLOR);
     PrintX = LSA_X + 46;
     PrintY = LSA_Y + 13;
@@ -1087,7 +1087,7 @@ DrawLoadSaveScreen (int loadsave)
 
 
     ClearMScreen ();
-    fontnumber = 1;
+    SetFontNumber(1);
     VWB_DrawPic (112, 184, C_MOUSELBACKPIC);
     DrawWindow (LSM_X - 10, LSM_Y - 5, LSM_W, LSM_H, BKGDCOLOR);
     DrawStripes (10);
@@ -1119,14 +1119,14 @@ PrintLSEntry (int w, int color)
                  color);
     PrintX = LSM_X + LSItems.indent + 2;
     PrintY = LSM_Y + w * 13 + 1;
-    fontnumber = 0;
+    SetFontNumber(0);
 
     if (SaveGamesAvail[w])
         US_Print (SaveGameNames[w]);
     else
         US_Print ("      - " STR_EMPTY " -");
 
-    fontnumber = 1;
+    SetFontNumber(1);
 }
 
 
@@ -1207,7 +1207,7 @@ CP_SaveGame (int quick)
             strcpy (input, &SaveGameNames[which][0]);
             name[7] = which + '0';
 
-            fontnumber = 0;
+            SetFontNumber(0);
             if (!SaveGamesAvail[which])
                 VWB_Bar (LSM_X + LSItems.indent + 1, LSM_Y + which * 13 + 1,
                          LSM_W - LSItems.indent - 16, 10, BKGDCOLOR);
@@ -1248,7 +1248,7 @@ CP_SaveGame (int quick)
                 continue;
             }
 
-            fontnumber = 1;
+            SetFontNumber(1);
             break;
         }
 
@@ -2402,7 +2402,7 @@ SetupControlPanel (void)
 
 
     SETFONTCOLOR (TEXTCOLOR, BKGDCOLOR);
-    fontnumber = 1;
+    SetFontNumber(1);
     WindowH = 200;
     if(screenHeight % 200 != 0)
         VL_ClearScreen(0);
@@ -2462,7 +2462,7 @@ void
 CleanupControlPanel (void)
 {
     UnCacheLump (CONTROLS_LUMP_START, CONTROLS_LUMP_END);
-    fontnumber = 0;
+    SetFontNumber(0);
 }
 
 
@@ -3008,8 +3008,8 @@ Message (const char *string)
 
 
     CA_CacheGrChunk (STARTFONT + 1);
-    fontnumber = 1;
-    font = (fontstruct *) GetGrSegs(STARTFONT + fontnumber);
+    SetFontNumber(1);
+    font = (fontstruct *) GetGrSegs(STARTFONT + GetFontNumber());
     h = font->height;
     for (i = 0; i < len; i++)
     {

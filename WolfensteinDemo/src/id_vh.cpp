@@ -7,6 +7,13 @@ int     px,py;
 byte    fontcolor,backcolor;
 int     fontnumber;
 
+void SetFontNumber(int number) {
+    fontnumber = number;
+}
+int GetFontNumber(void) {
+    return fontnumber;
+}
+
 //==========================================================================
 
 // Moved to backend

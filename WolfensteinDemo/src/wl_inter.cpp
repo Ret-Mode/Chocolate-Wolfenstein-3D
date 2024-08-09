@@ -124,7 +124,7 @@ Victory (void)
     x = RATIOX + 24 - (int) strlen(tempstr) * 2;
     Write (x, RATIOY + 4, tempstr);
 
-    fontnumber = 1;
+    SetFontNumber(1);
 
     VW_UpdateScreen ();
     VW_FadeIn ();
@@ -774,7 +774,7 @@ DrawHighScores (void)
     VWB_DrawPic (20 * 8, 68, C_LEVELPIC);
     VWB_DrawPic (28 * 8, 68, C_SCOREPIC);
 
-    fontnumber = 0;
+    SetFontNumber(0);
 
     SETFONTCOLOR (15, 0x29);
 

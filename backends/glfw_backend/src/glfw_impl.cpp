@@ -1132,7 +1132,7 @@ void VWB_DrawPropString(const char* string, int *px, int py)
 
     // byte *vbuf = VL_LockSurface(GetCurSurface());
 
-    fontstruct  *font = (fontstruct *) GetGrSegs(STARTFONT+fontnumber);
+    fontstruct  *font = (fontstruct *) GetGrSegs(STARTFONT+GetFontNumber());
     height = font->height;
     // dest = vbuf + scaleFactor * (py * curPitch + px);
 

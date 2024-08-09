@@ -990,7 +990,7 @@ void FinishDemoRecord (void)
     VW_FadeIn();
     CenterWindow(24,3);
     PrintY+=6;
-    fontnumber=0;
+    SetFontNumber(0);
     SETFONTCOLOR(0,15);
     US_Print(" Demo number (0-9): ");
     VW_UpdateScreen();
@@ -1027,7 +1027,7 @@ void RecordDemo (void)
     CenterWindow(26,3);
     PrintY+=6;
     CA_CacheGrChunk(STARTFONT);
-    fontnumber=0;
+    SetFontNumber(0);
     SETFONTCOLOR(0,15);
     US_Print("  Demo which level(1-10): "); maps = 10;
 

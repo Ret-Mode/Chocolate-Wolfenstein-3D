@@ -2899,7 +2899,7 @@ void    A_StartDeathCam (objtype *ob)
     if (bordercol != VIEWCOLOR)
     {
         CA_CacheGrChunk (STARTFONT+1);
-        fontnumber = 1;
+        SetFontNumber(1);
         SETFONTCOLOR(15,bordercol);
         PrintX = 68; PrintY = 45;
         US_Print (STR_SEEAGAIN);

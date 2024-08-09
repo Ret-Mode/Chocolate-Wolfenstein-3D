@@ -595,8 +595,8 @@ void ShowArticle (char *article)
 
 
     text = article;
-    oldfontnumber = fontnumber;
-    fontnumber = 0;
+    oldfontnumber = GetFontNumber();
+    SetFontNumber(0);
     CA_CacheGrChunk(STARTFONT);
     VWB_Bar (0,0,320,200,BACKCOLOR);
     CacheLayoutGraphics ();
@@ -676,7 +676,7 @@ void ShowArticle (char *article)
     } while (LastScan != sc_Escape && !ci.button1);
 
     IN_ClearKeysDown ();
-    fontnumber = oldfontnumber;
+    SetFontNumber(oldfontnumber);
 }
 
 

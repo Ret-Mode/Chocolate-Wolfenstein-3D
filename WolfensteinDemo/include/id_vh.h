@@ -35,7 +35,7 @@ extern  pictabletype    *pictable;
 extern  pictabletype    *picmtable;
 
 extern  byte            fontcolor,backcolor;
-extern  int             fontnumber;
+//extern  int             fontnumber;
 extern  int             px,py;
 
 #define SETFONTCOLOR(f,b) fontcolor=f;backcolor=b;
@@ -45,6 +45,9 @@ extern  int             px,py;
 // coordinates in pixels, rounded to best screen res
 // regions marked in double buffer
 //
+
+void SetFontNumber(int number);
+int GetFontNumber(void);
 
 void VWB_DrawPropString  (const char *string, int *x, int y);
 
