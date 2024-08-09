@@ -416,12 +416,12 @@ CP_CheckQuick (ScanCode scancode)
 
                 if (MousePresent && IN_IsInputGrabbed())
                     IN_CenterMouse();     // Clear accumulated mouse movement
-                UNCACHEGRCHUNK (C_CURSOR1PIC);
-                UNCACHEGRCHUNK (C_CURSOR2PIC);
-                UNCACHEGRCHUNK (C_DISKLOADING1PIC);
-                UNCACHEGRCHUNK (C_DISKLOADING2PIC);
-                UNCACHEGRCHUNK (C_SAVEGAMEPIC);
-                UNCACHEGRCHUNK (C_MOUSELBACKPIC);
+                ClearGrSegs (C_CURSOR1PIC);
+                ClearGrSegs (C_CURSOR2PIC);
+                ClearGrSegs (C_DISKLOADING1PIC);
+                ClearGrSegs (C_DISKLOADING2PIC);
+                ClearGrSegs (C_SAVEGAMEPIC);
+                ClearGrSegs (C_MOUSELBACKPIC);
 
             }
             return 1;
@@ -480,12 +480,12 @@ CP_CheckQuick (ScanCode scancode)
 
                 if (MousePresent && IN_IsInputGrabbed())
                     IN_CenterMouse();     // Clear accumulated mouse movement
-                UNCACHEGRCHUNK (C_CURSOR1PIC);
-                UNCACHEGRCHUNK (C_CURSOR2PIC);
-                UNCACHEGRCHUNK (C_DISKLOADING1PIC);
-                UNCACHEGRCHUNK (C_DISKLOADING2PIC);
-                UNCACHEGRCHUNK (C_LOADGAMEPIC);
-                UNCACHEGRCHUNK (C_MOUSELBACKPIC);
+                ClearGrSegs (C_CURSOR1PIC);
+                ClearGrSegs (C_CURSOR2PIC);
+                ClearGrSegs (C_DISKLOADING1PIC);
+                ClearGrSegs (C_DISKLOADING2PIC);
+                ClearGrSegs (C_LOADGAMEPIC);
+                ClearGrSegs (C_MOUSELBACKPIC);
 
             }
             return 1;
@@ -2357,9 +2357,9 @@ UnCacheLump (int lumpstart, int lumpend)
 {
     int i;
 
-    for (i = lumpstart; i <= lumpend; i++)
-        if (grsegs[i])
-            UNCACHEGRCHUNK (i);
+    for (i = lumpstart; i <= lumpend; i++) {
+        ClearGrSegs (i);
+    }
 }
 
 
@@ -3009,7 +3009,7 @@ Message (const char *string)
 
     CA_CacheGrChunk (STARTFONT + 1);
     fontnumber = 1;
-    font = (fontstruct *) grsegs[STARTFONT + fontnumber];
+    font = (fontstruct *) GetGrSegs(STARTFONT + fontnumber);
     h = font->height;
     for (i = 0; i < len; i++)
     {

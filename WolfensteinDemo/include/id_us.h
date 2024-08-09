@@ -54,7 +54,7 @@ extern  word        WindowX,WindowY,// Current location of window
                     WindowW,WindowH;// Current size of window
 
 extern  void        (*USL_MeasureString)(const char *,word *,word *);
-extern void         (*USL_DrawString)(const char *);
+extern void         (*USL_DrawString)(const char *, int *, int);
 
 extern  boolean     (*USL_SaveGame)(int),(*USL_LoadGame)(int);
 extern  void        (*USL_ResetGame)(void);

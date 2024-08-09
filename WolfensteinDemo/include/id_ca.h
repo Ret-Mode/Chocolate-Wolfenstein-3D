@@ -6,7 +6,7 @@
 #define NUMMAPS         60
 #define MAPPLANES       2
 
-#define UNCACHEGRCHUNK(chunk) {if(grsegs[chunk]) {free(grsegs[chunk]); grsegs[chunk]=NULL;}}
+//#define UNCACHEGRCHUNK(chunk) {if(grsegs[chunk]) {free(grsegs[chunk]); grsegs[chunk]=NULL;}}
 #define UNCACHEAUDIOCHUNK(chunk) {if(audiosegs[chunk]) {free(audiosegs[chunk]); audiosegs[chunk]=NULL;}}
 
 //===========================================================================
@@ -25,7 +25,10 @@ extern  int   mapon;
 
 extern  word *mapsegs[MAPPLANES];
 extern  byte *audiosegs[NUMSNDCHUNKS];
-extern  byte *grsegs[NUMCHUNKS];
+//extern  byte *grsegs[NUMCHUNKS];
+void SetGrsegs(int chunk);
+void* GetGrSegs(int chunk);
+void ClearGrSegs(int chunk);
 
 extern  char  extension[5];
 extern  char  graphext[5];

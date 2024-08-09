@@ -102,7 +102,8 @@ void VWL_MeasureString (const char *string, word *width, word *height, fontstruc
 
 void VW_MeasurePropString (const char *string, word *width, word *height)
 {
-    VWL_MeasureString(string,width,height,(fontstruct *)grsegs[STARTFONT+fontnumber]);
+    byte *b = (byte*)GetGrSegs(STARTFONT+fontnumber);
+    VWL_MeasureString(string,width,height,(fontstruct *)b);
 }
 
 /*
@@ -138,7 +139,8 @@ void VWB_DrawPic (int x, int y, int chunknum)
     height = pictable[picnum].height;
 
     //VL_MemToScreen (grsegs[chunknum],width,height,x,y);
-    VL_MemToScreenScaledCoord(grsegs[chunknum], width, height, scaleFactor*x, scaleFactor*y);
+    byte *b = (byte*)GetGrSegs(chunknum);
+    VL_MemToScreenScaledCoord(b, width, height, scaleFactor*x, scaleFactor*y);
 }
 
 void VWB_DrawPicScaledCoord (int scx, int scy, int chunknum)
@@ -148,8 +150,8 @@ void VWB_DrawPicScaledCoord (int scx, int scy, int chunknum)
 
     width = pictable[picnum].width;
     height = pictable[picnum].height;
-
-    VL_MemToScreenScaledCoord (grsegs[chunknum],width,height,scx,scy);
+    byte *b = (byte*)GetGrSegs(chunknum);
+    VL_MemToScreenScaledCoord (b,width,height,scx,scy);
 }
 
 

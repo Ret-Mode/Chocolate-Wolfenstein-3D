@@ -46,7 +46,7 @@ extern  int             px,py;
 // regions marked in double buffer
 //
 
-void VWB_DrawPropString  (const char *string);
+void VWB_DrawPropString  (const char *string, int *x, int y);
 
 void VWB_DrawTile8 (int x, int y, int tile);
 void VWB_DrawTile16 (int x, int y, int tile);

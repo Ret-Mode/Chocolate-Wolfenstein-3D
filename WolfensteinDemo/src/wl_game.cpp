@@ -917,7 +917,7 @@ void LatchNumberHERE (int x, int y, unsigned width, int32_t number)
 void ShowActStatus()
 {
     // Draw status bar without borders
-    byte *source = grsegs[STATUSBARPIC];
+    byte *source = (byte*)GetGrSegs(STATUSBARPIC);
     int picnum = STATUSBARPIC - STARTPICS;
     int width = pictable[picnum].width;
     int height = pictable[picnum].height;
@@ -1104,7 +1104,7 @@ void PlayDemo (int demonumber)
 #endif
 
     CA_CacheGrChunk(dems[demonumber]);
-    demoptr = (int8_t *) grsegs[dems[demonumber]];
+    demoptr = (int8_t *) (byte*)GetGrSegs(dems[demonumber]);
 #else
     demoname[4] = '0'+demonumber;
     CA_LoadFile (demoname,&demobuffer);
@@ -1134,7 +1134,7 @@ void PlayDemo (int demonumber)
     PlayLoop ();
 
 #ifdef DEMOSEXTERN
-    UNCACHEGRCHUNK(dems[demonumber]);
+    ClearGrSegs(dems[demonumber]);
 #else
     MM_FreePtr (&demobuffer);
 #endif

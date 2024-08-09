@@ -388,7 +388,7 @@ void HandleWord (void)
     // print it
     //
     newpos = px+wwidth;
-    VWB_DrawPropString (wword);
+    VWB_DrawPropString (wword, &px, py);
     px = newpos;
 
     //
@@ -487,7 +487,7 @@ void PageLayout (boolean shownumber)
         py = 183;
         fontcolor = 0x4f;                          //12^BACKCOLOR;
 
-        VWB_DrawPropString (str);
+        VWB_DrawPropString (str, &px, py);
     }
 
     fontcolor = oldfontcolor;
@@ -704,11 +704,10 @@ void HelpScreens (void)
 
     artnum = helpextern;
     CA_CacheGrChunk (artnum);
-    text = (char *)grsegs[artnum];
-
+    text = (char *)GetGrSegs(artnum);
     ShowArticle (text);
 
-    UNCACHEGRCHUNK(artnum);
+    ClearGrSegs(artnum);
 
     VW_FadeOut();
 
@@ -728,11 +727,11 @@ void EndText (void)
 
     artnum = endextern+gamestate.episode;
     CA_CacheGrChunk (artnum);
-    text = (char *)grsegs[artnum];
+    text = (char *)GetGrSegs(artnum);
 
     ShowArticle (text);
 
-    UNCACHEGRCHUNK(artnum);
+    ClearGrSegs(artnum);
 
     VW_FadeOut();
     SETFONTCOLOR(0,15);

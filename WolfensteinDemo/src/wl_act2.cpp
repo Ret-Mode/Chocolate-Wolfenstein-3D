@@ -2903,7 +2903,7 @@ void    A_StartDeathCam (objtype *ob)
         SETFONTCOLOR(15,bordercol);
         PrintX = 68; PrintY = 45;
         US_Print (STR_SEEAGAIN);
-        UNCACHEGRCHUNK(STARTFONT+1);
+        ClearGrSegs(STARTFONT+1);
     }
     else
     {

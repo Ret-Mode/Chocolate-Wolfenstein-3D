@@ -547,7 +547,7 @@ void CheckKeys (void)
         Message (STR_CHEATER1 "\n"
                  STR_CHEATER2 "\n\n" STR_CHEATER3 "\n" STR_CHEATER4 "\n" STR_CHEATER5);
 
-        UNCACHEGRCHUNK (STARTFONT + 1);
+        ClearGrSegs (STARTFONT + 1);
         IN_ClearKeysDown ();
         IN_Ack ();
 
@@ -566,7 +566,7 @@ void CheckKeys (void)
         ClearSplitVWB ();
 
         Message ("Debugging keys are\nnow available!");
-        UNCACHEGRCHUNK (STARTFONT + 1);
+        ClearGrSegs (STARTFONT + 1);
         IN_ClearKeysDown ();
         IN_Ack ();
 
@@ -588,7 +588,7 @@ void CheckKeys (void)
                  "available from Apogee, but\n"
                  "then, you already know\n" "that - right, Cheatmeister?!");
 
-        UNCACHEGRCHUNK (STARTFONT + 1);
+        ClearGrSegs (STARTFONT + 1);
         IN_ClearKeysDown ();
         IN_Ack ();
 

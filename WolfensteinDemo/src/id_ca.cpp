@@ -120,6 +120,24 @@ static int32_t GRFILEPOS(const size_t idx)
 =============================================================================
 */
 
+
+void SetGrsegs(int chunk, byte *value) {
+    assert (chunk >= 0 && chunk <= NUMCHUNKS);
+    grsegs[chunk] = value;
+}
+void* GetGrSegs(int chunk) {
+    assert (chunk >= 0 && chunk <= NUMCHUNKS);
+    return grsegs[chunk];
+}
+
+void ClearGrSegs(int chunk) {
+    if(grsegs[chunk]) {
+        free(grsegs[chunk]); 
+        grsegs[chunk]=NULL;
+    }
+}
+
+
 /*
 ============================
 =
@@ -678,7 +696,7 @@ void CA_Shutdown (void)
         close(audiohandle);
 
     for(i=0; i<NUMCHUNKS; i++)
-        UNCACHEGRCHUNK(i);
+        ClearGrSegs(i);
     free(pictable);
 
     switch(oldsoundmode)
@@ -837,8 +855,9 @@ cachein:
 ======================
 */
 
-void CAL_ExpandGrChunk (int chunk, int32_t *source)
+byte * CAL_ExpandGrChunk (int chunk, int32_t *source)
 {
+    byte *tmp;
     int32_t    expanded;
 
     if (chunk >= STARTTILE8 && chunk < STARTEXTERNS)
@@ -875,9 +894,13 @@ void CAL_ExpandGrChunk (int chunk, int32_t *source)
     // allocate final space, decompress it, and free bigbuffer
     // Sprites need to have shifts made and various other junk
     //
-    grsegs[chunk]=(byte *) malloc(expanded);
-    CHECKMALLOCRESULT(grsegs[chunk]);
-    CAL_HuffExpand((byte *) source, grsegs[chunk], expanded, grhuffman);
+    //grsegs[chunk]=(byte *) malloc(expanded);
+    //     CHECKMALLOCRESULT(grsegs[chunk]);
+    // CAL_HuffExpand((byte *) source, grsegs[chunk], expanded, grhuffman);
+    tmp = (byte *) malloc(expanded);
+    CHECKMALLOCRESULT(tmp);
+    CAL_HuffExpand((byte *) source, tmp, expanded, grhuffman);
+    return tmp;
 }
 
 
@@ -928,7 +951,7 @@ void CA_CacheGrChunk (int chunk)
         read(grhandle,source,compressed);
     }
 
-    CAL_ExpandGrChunk (chunk,source);
+    grsegs[chunk] = CAL_ExpandGrChunk (chunk,source);
 
     if (compressed>BUFFERSIZE)
         free(source);

@@ -851,7 +851,7 @@ void LoadLatchMemory (void) {
     CA_CacheGrChunk (STARTTILE8);
     uint8_t *data = (uint8_t *)malloc(w*h);
     uint8_t *subData = (uint8_t *)malloc(8*8);
-    uint8_t *src = grsegs[STARTTILE8];
+    uint8_t *src = (uint8_t *)GetGrSegs(STARTTILE8);
     for (i=0;i<NUMTILE8;i++){
         int rrow = (i / 8) * 8;
         int rcol = (i % 8) * 8;
@@ -888,7 +888,7 @@ void LoadLatchMemory (void) {
             // }
 //         src += 64;
 //     }
-    UNCACHEGRCHUNK (STARTTILE8);
+    ClearGrSegs (STARTTILE8);
      
     for (i=start;i<=end;i++)
     {
@@ -898,12 +898,12 @@ void LoadLatchMemory (void) {
         CA_CacheGrChunk (i);
         uint8_t *data = (uint8_t *)malloc(w*h);
         
-        ShufflePicColumns(data, grsegs[i], w, h);
+        ShufflePicColumns(data, (uint8_t*)GetGrSegs(i), w, h);
         
         latchpics[2+i-start] = DuPackAddTexture(w, h, data);
 
         free(data);
-        UNCACHEGRCHUNK(i);
+        ClearGrSegs(i);
     }
 
     glActiveTexture(GL_TEXTURE1);
@@ -1123,7 +1123,7 @@ void    ThreeDRefresh (void)
     ;
 }
 
-void VWB_DrawPropString(const char* string)
+void VWB_DrawPropString(const char* string, int *px, int py)
 {
     // fontstruct  *font;
     int         width, step, height;
@@ -1132,7 +1132,7 @@ void VWB_DrawPropString(const char* string)
 
     // byte *vbuf = VL_LockSurface(GetCurSurface());
 
-    fontstruct  *font = (fontstruct *) grsegs[STARTFONT+fontnumber];
+    fontstruct  *font = (fontstruct *) GetGrSegs(STARTFONT+fontnumber);
     height = font->height;
     // dest = vbuf + scaleFactor * (py * curPitch + px);
 

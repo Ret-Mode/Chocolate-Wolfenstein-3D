@@ -531,7 +531,7 @@ void LoadLatchMemory (void) {
 
     latchpics[0] = surf;
     CA_CacheGrChunk (STARTTILE8);
-    src = grsegs[STARTTILE8];
+    src = (byte*)GetGrSegs(STARTTILE8);
 
     for (i=0;i<NUMTILE8;i++)
     {
@@ -543,7 +543,7 @@ void LoadLatchMemory (void) {
     // fwrite(GetSurfacePixels(surf), (8*8) * (((NUMTILE8 + 7) / 8) * 8), 1, fp);
     // GraphicUnlockBytes(surf);
     //fclose(fp);
-    UNCACHEGRCHUNK (STARTTILE8);
+    ClearGrSegs (STARTTILE8);
 
 //
 // pics
@@ -565,8 +565,8 @@ void LoadLatchMemory (void) {
         latchpics[2+i-start] = surf;
 
         CA_CacheGrChunk (i);
-        VL_MemToLatch (grsegs[i], width, height, (void*)surf, 0, 0);
-        UNCACHEGRCHUNK(i);
+        VL_MemToLatch ((byte*)GetGrSegs(i), width, height, (void*)surf, 0, 0);
+        ClearGrSegs(i);
     }
 }
 
@@ -1180,7 +1180,7 @@ void VH_UpdateScreen()
     VL_ScreenToScreen(GetScreenBuffer(), GetScreen());
 }
 
-void VWB_DrawPropString(const char* string)
+void VWB_DrawPropString(const char* string, int *px, int py)
 {
     fontstruct  *font;
     int         width, step, height;
@@ -1189,9 +1189,9 @@ void VWB_DrawPropString(const char* string)
 
     byte *vbuf = VL_LockSurface(GetCurSurface());
 
-    font = (fontstruct *) grsegs[STARTFONT+fontnumber];
+    font = (fontstruct *) GetGrSegs(STARTFONT+fontnumber);
     height = font->height;
-    dest = vbuf + scaleFactor * (py * curPitch + px);
+    dest = vbuf + scaleFactor * (py * curPitch + *px);
 
     while ((ch = (byte)*string++)!=0)
     {
@@ -1210,7 +1210,7 @@ void VWB_DrawPropString(const char* string)
             }
 
             source++;
-            px++;
+            (*px)++;
             dest+=scaleFactor;
         }
     }

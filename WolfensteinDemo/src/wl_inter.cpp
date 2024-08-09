@@ -135,7 +135,7 @@ Victory (void)
     if(screenHeight % 200 != 0)
         VL_ClearScreen(0);
 
-    UNCACHEGRCHUNK (C_TIMECODEPIC);
+    ClearGrSegs (C_TIMECODEPIC);
 
     UnCacheLump (LEVELEND_LUMP_START, LEVELEND_LUMP_END);
 
@@ -164,7 +164,7 @@ PG13 (void)
     VWB_DrawPic (216, 110, PG13PIC);
     VW_UpdateScreen ();
 
-    UNCACHEGRCHUNK (PG13PIC);
+    ClearGrSegs (PG13PIC);
 
     VW_FadeIn ();
     IN_UserInput (TickBase * 7);
@@ -768,7 +768,7 @@ DrawHighScores (void)
     DrawStripes (10);
 
     VWB_DrawPic (48, 0, HIGHSCORESPIC);
-    UNCACHEGRCHUNK (HIGHSCORESPIC);
+    ClearGrSegs (HIGHSCORESPIC);
 
     VWB_DrawPic (4 * 8, 68, C_NAMEPIC);
     VWB_DrawPic (20 * 8, 68, C_LEVELPIC);
