@@ -105,7 +105,6 @@ objtype dummyobj;
 // LIST OF SONGS FOR EACH VERSION
 //
 int songs[] = {
-#ifndef SPEAR
     //
     // Episode One
     //
@@ -195,40 +194,7 @@ int songs[] = {
 
     ULTIMATE_MUS,               // Boss level
     FUNKYOU_MUS                 // Secret level
-#else
 
-    //////////////////////////////////////////////////////////////
-    //
-    // SPEAR OF DESTINY TRACKS
-    //
-    //////////////////////////////////////////////////////////////
-    XTIPTOE_MUS,
-    XFUNKIE_MUS,
-    XDEATH_MUS,
-    XGETYOU_MUS,                // DON'T KNOW
-    ULTIMATE_MUS,               // Trans Gr”sse
-
-    DUNGEON_MUS,
-    GOINGAFT_MUS,
-    POW_MUS,
-    TWELFTH_MUS,
-    ULTIMATE_MUS,               // Barnacle Wilhelm BOSS
-
-    NAZI_OMI_MUS,
-    GETTHEM_MUS,
-    SUSPENSE_MUS,
-    SEARCHN_MUS,
-    ZEROHOUR_MUS,
-    ULTIMATE_MUS,               // Super Mutant BOSS
-
-    XPUTIT_MUS,
-    ULTIMATE_MUS,               // Death Knight BOSS
-
-    XJAZNAZI_MUS,               // Secret level
-    XFUNKIE_MUS,                // Secret level (DON'T KNOW)
-
-    XEVIL_MUS                   // Angel of Death BOSS
-#endif
 };
 
 
@@ -556,33 +522,6 @@ void CheckKeys (void)
     scan = LastScan;
 
 
-#ifdef SPEAR
-    //
-    // SECRET CHEAT CODE: TAB-G-F10
-    //
-    if (Keyboard[sc_Tab] && Keyboard[sc_G] && Keyboard[sc_F10])
-    {
-        WindowH = 160;
-        if (godmode)
-        {
-            Message ("God mode OFF");
-            SD_PlaySound (NOBONUSSND);
-        }
-        else
-        {
-            Message ("God mode ON");
-            SD_PlaySound (ENDBONUS2SND);
-        }
-
-        IN_Ack ();
-        godmode ^= 1;
-        DrawPlayBorderSides ();
-        IN_ClearKeysDown ();
-        return;
-    }
-#endif
-
-
     //
     // SECRET CHEAT CODE: 'MLI'
     //
@@ -618,7 +557,7 @@ void CheckKeys (void)
     //
     // OPEN UP DEBUG KEYS
     //
-#ifdef DEBUGKEYS
+
     if (Keyboard[sc_BackSpace] && Keyboard[sc_LShift] && Keyboard[sc_Alt] && param_debugmode)
     {
         ClearMemory ();
@@ -633,7 +572,7 @@ void CheckKeys (void)
         DrawPlayBorderSides ();
         DebugOk = 1;
     }
-#endif
+
 
     //
     // TRYING THE KEEN CHEAT CODE!
@@ -678,9 +617,8 @@ void CheckKeys (void)
 // F1-F7/ESC to enter control panel
 //
     if (
-#ifndef DEBCHECK
            scan == sc_F10 ||
-#endif
+
            scan == sc_F9 || scan == sc_F7 || scan == sc_F8)     // pop up quit dialog
     {
         ClearMemory ();
@@ -720,7 +658,7 @@ void CheckKeys (void)
 //
 // TAB-? debug keys
 //
-#ifdef DEBUGKEYS
+
     if (Keyboard[sc_Tab] && DebugOk)
     {
         CA_CacheGrChunk (STARTFONT);
@@ -735,7 +673,7 @@ void CheckKeys (void)
         lasttimecount = GetTimeCount();
         return;
     }
-#endif
+
 }
 
 
@@ -1292,16 +1230,6 @@ void PlayLoop (void)
         //
         // MAKE FUNNY FACE IF BJ DOESN'T MOVE FOR AWHILE
         //
-#ifdef SPEAR
-        funnyticount += tics;
-        if (funnyticount > 30l * 70)
-        {
-            funnyticount = 0;
-            if(viewsize != 21)
-                StatusDrawFace(BJWAITING1PIC + (US_RndT () & 1));
-            facecount = 0;
-        }
-#endif
 
         gamestate.TimeCount += tics;
 
