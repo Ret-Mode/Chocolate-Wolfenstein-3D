@@ -38,7 +38,7 @@
 static  boolean     US_Started;
 
 void        (*USL_MeasureString)(const char *,word *,word *) = VW_MeasurePropString;
-void        (*USL_DrawString)(const char *, int *x, int y, int fontnumber) = VWB_DrawPropString;
+void        (*USL_DrawString)(const char *, fontData_t *fontdata) = VWB_DrawPropString;
 
 SaveGame    Games[MaxSaveGames];
 HighScore   Scores[MaxScores] =
@@ -120,7 +120,7 @@ US_Shutdown(void)
 ///////////////////////////////////////////////////////////////////////////
 void
 US_SetPrintRoutines(void (*measure)(const char *,word *,word *),
-    void (*print)(const char *, int *, int, int))
+    void (*print)(const char *, fontData_t*))
 {
     USL_MeasureString = measure;
     USL_DrawString = print;
@@ -140,7 +140,7 @@ US_Print(const char *sorg)
     char *s = sstart;
     char *se;
     word w,h;
-
+    fontData_t *fd = GetFontData();
     while (*s)
     {
         se = s;
@@ -149,9 +149,9 @@ US_Print(const char *sorg)
         *se = '\0';
 
         USL_MeasureString(s,&w,&h);
-        px = PrintX;
-        py = PrintY;
-        USL_DrawString(s, &px, py, GetFontNumber());
+        fd->px = PrintX;
+        fd->py = PrintY;
+        USL_DrawString(s, fd);
 
         s = se;
         if (c)
@@ -205,14 +205,14 @@ USL_PrintInCenter(const char *s,Rect r)
 {
     word    w,h,
             rw,rh;
-
+    fontData_t *fd = GetFontData();
     USL_MeasureString(s,&w,&h);
     rw = r.lr.x - r.ul.x;
     rh = r.lr.y - r.ul.y;
 
-    px = r.ul.x + ((rw - w) / 2);
-    py = r.ul.y + ((rh - h) / 2);
-    USL_DrawString(s, &px, py, GetFontNumber());
+    fd->px = r.ul.x + ((rw - w) / 2);
+    fd->py = r.ul.y + ((rh - h) / 2);
+    USL_DrawString(s, fd);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -243,14 +243,15 @@ void
 US_CPrintLine(const char *s)
 {
     word    w,h;
+    fontData_t *fd = GetFontData();
 
     USL_MeasureString(s,&w,&h);
 
     if (w > WindowW)
         Quit("US_CPrintLine() - String exceeds width");
-    px = WindowX + ((WindowW - w) / 2);
-    py = PrintY;
-    USL_DrawString(s, &px, py, GetFontNumber());
+    fd->px = WindowX + ((WindowW - w) / 2);
+    fd->py = PrintY;
+    USL_DrawString(s, fd);
     PrintY += h;
 }
 
@@ -425,20 +426,22 @@ USL_XORICursor(int x,int y,const char *s,word cursor)
     char    buf[MaxString];
     int     temp;
     word    w,h;
+    fontData_t *fd = GetFontData();
 
     strcpy(buf,s);
     buf[cursor] = '\0';
     USL_MeasureString(buf,&w,&h);
 
-    px = x + w - 1;
-    py = y;
+    fd->px = x + w - 1;
+    fd->py = y;
+
     if (status^=1)
-        USL_DrawString("\x80", &px, py, GetFontNumber());
+        USL_DrawString("\x80", fd);
     else
     {
         temp = fontcolor;
         fontcolor = backcolor;
-        USL_DrawString("\x80", &px, py, GetFontNumber());
+        USL_DrawString("\x80", fd);
         fontcolor = temp;
     }
 }
@@ -488,6 +491,7 @@ US_LineInput(int x,int y,char *buf,const char *def,boolean escok,
     longword    curtime, lasttime, lastdirtime, lastbuttontime, lastdirmovetime;
     ControlInfo ci;
     Direction   lastdir = dir_None;
+    fontData_t *fd = GetFontData();
 
     if (def)
         strcpy(s,def);
@@ -702,17 +706,17 @@ US_LineInput(int x,int y,char *buf,const char *def,boolean escok,
 
         if (redraw)
         {
-            px = x;
-            py = y;
+            fd->px = x;
+            fd->py = y;
             temp = fontcolor;
             fontcolor = backcolor;
-            USL_DrawString(olds, &px, py, GetFontNumber());
+            USL_DrawString(olds, fd);
             fontcolor = (byte) temp;
             strcpy(olds,s);
 
-            px = x;
-            py = y;
-            USL_DrawString(s, &px, py, GetFontNumber());
+            fd->px = x;
+            fd->py = y;
+            USL_DrawString(s, fd);
 
             redraw = false;
         }
@@ -741,9 +745,9 @@ US_LineInput(int x,int y,char *buf,const char *def,boolean escok,
         USL_XORICursor(x,y,s,cursor);
     if (!result)
     {
-        px = x;
-        py = y;
-        USL_DrawString(olds, &px, py, GetFontNumber());
+        fd->px = x;
+        fd->py = y;
+        USL_DrawString(olds, fd);
     }
     VW_UpdateScreen();
 

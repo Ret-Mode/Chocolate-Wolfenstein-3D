@@ -664,7 +664,8 @@ void CheckKeys (void)
     if (Keyboard[sc_Tab] && DebugOk)
     {
         CA_CacheGrChunk (STARTFONT);
-        SetFontNumber(0);
+        GetFontData()->fontnumber = 0;
+        //SetFontNumber(0);
         SETFONTCOLOR (0, 15);
         if (DebugKeys () && viewsize < 20)
             DrawPlayBorder ();       // dont let the blue borders flash

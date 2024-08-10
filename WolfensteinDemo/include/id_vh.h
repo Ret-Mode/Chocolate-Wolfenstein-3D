@@ -36,7 +36,16 @@ extern  pictabletype    *picmtable;
 
 extern  byte            fontcolor,backcolor;
 //extern  int             fontnumber;
-extern  int             px,py;
+//extern  int             px,py;
+struct fontData_t {
+    int px;
+    int py;
+    int fontnumber;
+    byte fontcolor;
+    byte backcolor;
+};
+
+fontData_t *GetFontData(void);
 
 #define SETFONTCOLOR(f,b) fontcolor=f;backcolor=b;
 
@@ -46,10 +55,10 @@ extern  int             px,py;
 // regions marked in double buffer
 //
 
-void SetFontNumber(int number);
-int GetFontNumber(void);
+// void SetFontNumber(int number);
+// int GetFontNumber(void);
 
-void VWB_DrawPropString  (const char *string, int *x, int y, int fontnumber);
+void VWB_DrawPropString  (const char *string, fontData_t *fontdata);
 
 void VWB_DrawTile8 (int x, int y, int tile);
 void VWB_DrawTile16 (int x, int y, int tile);

@@ -982,7 +982,8 @@ void DoJukebox(void)
 
     CA_LoadAllSounds ();
 
-    SetFontNumber(1);
+    GetFontData()->fontnumber = 1;
+    //SetFontNumber(1);
     ClearMScreen ();
     VWB_DrawPic(112,184,C_MOUSELBACKPIC);
     DrawStripes (10);

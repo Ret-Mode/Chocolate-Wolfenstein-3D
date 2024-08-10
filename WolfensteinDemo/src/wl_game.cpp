@@ -977,7 +977,7 @@ void StartDemoRecord (int levelnumber)
 void FinishDemoRecord (void)
 {
     int32_t    length,level;
-
+    fontData_t *fd = GetFontData();
     demorecord = false;
 
     length = (int32_t) (demoptr - (int8_t *)demobuffer);
@@ -990,12 +990,13 @@ void FinishDemoRecord (void)
     VW_FadeIn();
     CenterWindow(24,3);
     PrintY+=6;
-    SetFontNumber(0);
+    GetFontData()->fontnumber = 0;
+    //SetFontNumber(0);
     SETFONTCOLOR(0,15);
     US_Print(" Demo number (0-9): ");
     VW_UpdateScreen();
 
-    if (US_LineInput (px,py,str,NULL,true,1,0))
+    if (US_LineInput (fd->px,fd->py,str,NULL,true,1,0))
     {
         level = atoi (str);
         if (level>=0 && level<=9)
@@ -1023,17 +1024,18 @@ void FinishDemoRecord (void)
 void RecordDemo (void)
 {
     int level,esc,maps;
-
+    fontData_t *fd = GetFontData();
     CenterWindow(26,3);
     PrintY+=6;
     CA_CacheGrChunk(STARTFONT);
-    SetFontNumber(0);
+    GetFontData()->fontnumber = 0;
+    //SetFontNumber(0);
     SETFONTCOLOR(0,15);
     US_Print("  Demo which level(1-10): "); maps = 10;
 
     VW_UpdateScreen();
     VW_FadeIn ();
-    esc = !US_LineInput (px,py,str,NULL,true,2,0);
+    esc = !US_LineInput (fd->px,fd->py,str,NULL,true,2,0);
     if (esc)
         return;
 

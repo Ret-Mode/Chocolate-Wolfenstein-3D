@@ -920,7 +920,8 @@ void CA_CacheGrChunk (int chunk)
     int32_t *source;
     int  next;
 
-    if (grsegs[chunk])
+    byte *val = (byte*)GetGrSegs(chunk);
+    if (val)
         return;                             // already in memory
 
 //
@@ -951,7 +952,7 @@ void CA_CacheGrChunk (int chunk)
         read(grhandle,source,compressed);
     }
 
-    grsegs[chunk] = CAL_ExpandGrChunk (chunk,source);
+    SetGrsegs(chunk, CAL_ExpandGrChunk(chunk,source));
 
     if (compressed>BUFFERSIZE)
         free(source);

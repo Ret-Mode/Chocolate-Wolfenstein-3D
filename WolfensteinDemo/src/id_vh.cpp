@@ -7,12 +7,19 @@ int     px,py;
 byte    fontcolor,backcolor;
 int     fontnumber;
 
-void SetFontNumber(int number) {
-    fontnumber = number;
+
+fontData_t fontData;
+
+fontData_t *GetFontData(void) {
+    return &fontData;
 }
-int GetFontNumber(void) {
-    return fontnumber;
-}
+
+// void SetFontNumber(int number) {
+//     fontnumber = number;
+// }
+// int GetFontNumber(void) {
+//     return fontnumber;
+// }
 
 //==========================================================================
 

@@ -193,7 +193,7 @@ void HandleCommand (void)
 {
     int     i,margin,top,bottom;
     int     picwidth,picheight,picmid;
-
+    fontData_t *fd = GetFontData();
     switch (toupper(*++text))
     {
         case 'B':
@@ -230,15 +230,15 @@ void HandleCommand (void)
             break;
 
         case '>':
-            px = 160;
+            fd->px = 160;
             text++;
             break;
 
         case 'L':
-            py=ParseNumber();
-            rowon = (py-TOPMARGIN)/FONTHEIGHT;
-            py = TOPMARGIN+rowon*FONTHEIGHT;
-            px=ParseNumber();
+            fd->py=ParseNumber();
+            rowon = (fd->py-TOPMARGIN)/FONTHEIGHT;
+            fd->py = TOPMARGIN+rowon*FONTHEIGHT;
+            fd->px=ParseNumber();
             while (*text++ != '\n')         // scan to end of line
                 ;
             break;
@@ -277,8 +277,8 @@ void HandleCommand (void)
             //
             // adjust this line if needed
             //
-            if (px < (int) leftmargin[rowon])
-                px = leftmargin[rowon];
+            if (fd->px < (int) leftmargin[rowon])
+                fd->px = leftmargin[rowon];
             break;
     }
 }
@@ -295,7 +295,7 @@ void HandleCommand (void)
 void NewLine (void)
 {
     char    ch;
-
+    fontData_t *fd = GetFontData();
     if (++rowon == TEXTROWS)
     {
         //
@@ -316,8 +316,8 @@ void NewLine (void)
             text++;
         } while (1);
     }
-    px = leftmargin[rowon];
-    py+= FONTHEIGHT;
+    fd->px = leftmargin[rowon];
+    fd->py+= FONTHEIGHT;
 }
 
 
@@ -357,7 +357,7 @@ void HandleWord (void)
     char    wword[WORDLIMIT];
     int     wordindex;
     word    wwidth,wheight,newpos;
-
+    fontData_t *fd = GetFontData();
 
     //
     // copy the next word into [word]
@@ -377,7 +377,7 @@ void HandleWord (void)
     //
     VW_MeasurePropString (wword,&wwidth,&wheight);
 
-    while (px+wwidth > (int) rightmargin[rowon])
+    while (fd->px+wwidth > (int) rightmargin[rowon])
     {
         NewLine ();
         if (layoutdone)
@@ -387,16 +387,16 @@ void HandleWord (void)
     //
     // print it
     //
-    newpos = px+wwidth;
-    VWB_DrawPropString (wword, &px, py, GetFontNumber());
-    px = newpos;
+    newpos = fd->px+wwidth;
+    VWB_DrawPropString (wword, fd);
+    fd->px = newpos;
 
     //
     // suck up any extra spaces
     //
     while (*text == ' ')
     {
-        px += SPACEWIDTH;
+        fd->px += SPACEWIDTH;
         text++;
     }
 }
@@ -416,7 +416,7 @@ void PageLayout (boolean shownumber)
 {
     int     i,oldfontcolor;
     char    ch;
-
+    fontData_t *fd = GetFontData();
     oldfontcolor = fontcolor;
 
     fontcolor = 0;
@@ -437,8 +437,8 @@ void PageLayout (boolean shownumber)
         rightmargin[i] = SCREENPIXWIDTH-RIGHTMARGIN;
     }
 
-    px = LEFTMARGIN;
-    py = TOPMARGIN;
+    fd->px = LEFTMARGIN;
+    fd->py = TOPMARGIN;
     rowon = 0;
     layoutdone = false;
 
@@ -467,7 +467,7 @@ void PageLayout (boolean shownumber)
         else
             if (ch == 9)
             {
-                px = (px+8)&0xf8;
+                fd->px = (fd->px+8)&0xf8;
                 text++;
             }
             else if (ch <= 32)
@@ -482,12 +482,12 @@ void PageLayout (boolean shownumber)
     if (shownumber)
     {
         sprintf(str, "pg %d of %d", pagenum, numpages);
-        px = 213;
+        fd->px = 213;
 
-        py = 183;
+        fd->py = 183;
         fontcolor = 0x4f;                          //12^BACKCOLOR;
 
-        VWB_DrawPropString (str, &px, py, GetFontNumber());
+        VWB_DrawPropString (str, fd);
     }
 
     fontcolor = oldfontcolor;
@@ -592,11 +592,12 @@ void ShowArticle (char *article)
     unsigned    oldfontnumber;
     boolean     newpage,firstpage;
     ControlInfo ci;
-
+    fontData_t *fd = GetFontData();
 
     text = article;
-    oldfontnumber = GetFontNumber();
-    SetFontNumber(0);
+    oldfontnumber = fd->fontnumber;
+    fd->fontnumber = 0;
+    //SetFontNumber(0);
     CA_CacheGrChunk(STARTFONT);
     VWB_Bar (0,0,320,200,BACKCOLOR);
     CacheLayoutGraphics ();
@@ -676,7 +677,8 @@ void ShowArticle (char *article)
     } while (LastScan != sc_Escape && !ci.button1);
 
     IN_ClearKeysDown ();
-    SetFontNumber(oldfontnumber);
+    fd->fontnumber = oldfontnumber;
+    //SetFontNumber(oldfontnumber);
 }
 
 

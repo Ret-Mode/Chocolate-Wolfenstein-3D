@@ -423,14 +423,14 @@ int DebugKeys (void)
 {
     boolean esc;
     int level;
-
+    fontData_t *fd = GetFontData();
     if (Keyboard[sc_B])             // B = border color
     {
         CenterWindow(20,3);
         PrintY+=6;
         US_Print(" Border color (0-56): ");
         VW_UpdateScreen();
-        esc = !US_LineInput (px,py,str,NULL,true,2,0);
+        esc = !US_LineInput (fd->px,fd->py,str,NULL,true,2,0);
         if (!esc)
         {
             level = atoi (str);
@@ -545,7 +545,7 @@ int DebugKeys (void)
         PrintY+=6;
         US_Print("  Give Key (1-4): ");
         VW_UpdateScreen();
-        esc = !US_LineInput (px,py,str,NULL,true,1,0);
+        esc = !US_LineInput (fd->px,fd->py,str,NULL,true,1,0);
         if (!esc)
         {
             level = atoi (str);
@@ -627,7 +627,7 @@ again:
         PrintY+=6;
         US_Print(" Slow Motion steps (default 14): ");
         VW_UpdateScreen();
-        esc = !US_LineInput (px,py,str,NULL,true,2,0);
+        esc = !US_LineInput (fd->px,fd->py,str,NULL,true,2,0);
         if (!esc)
         {
             level = atoi (str);
@@ -647,7 +647,7 @@ again:
         PrintY+=6;
         US_Print("  Add how many extra VBLs(0-8): ");
         VW_UpdateScreen();
-        esc = !US_LineInput (px,py,str,NULL,true,1,0);
+        esc = !US_LineInput (fd->px,fd->py,str,NULL,true,1,0);
         if (!esc)
         {
             level = atoi (str);
@@ -662,7 +662,7 @@ again:
         PrintY+=6;
         US_Print("  Warp to which level(1-10): ");
         VW_UpdateScreen();
-        esc = !US_LineInput (px,py,str,NULL,true,2,0);
+        esc = !US_LineInput (fd->px,fd->py,str,NULL,true,2,0);
         if (!esc)
         {
             level = atoi (str);
