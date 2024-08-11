@@ -568,21 +568,13 @@ void CAL_SetupMapFile (void)
 //
 // open the data file
 //
-#ifdef CARMACIZED
     strcpy(fname, "gamemaps.");
     strcat(fname, extension);
 
     maphandle = open(fname, O_RDONLY | O_BINARY);
     if (maphandle == -1)
         CA_CannotOpen(fname);
-#else
-    strcpy(fname,mfilename);
-    strcat(fname,extension);
 
-    maphandle = open(fname, O_RDONLY | O_BINARY);
-    if (maphandle == -1)
-        CA_CannotOpen(fname);
-#endif
 
 //
 // load all map header
