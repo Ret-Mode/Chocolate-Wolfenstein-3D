@@ -30,7 +30,6 @@
 =============================================================================
 */
 
-#ifdef DEBUGKEYS
 
 int DebugKeys (void);
 
@@ -164,12 +163,6 @@ void BasicOverhead (void)
     offx = 320/2;
     offy = (160-MAPSIZE*z)/2;
 
-#ifdef MAPBORDER
-    int temp = viewsize;
-    NewViewSize(16);
-    DrawPlayBorder();
-#endif
-
     // right side (raw)
 
     for(x=0;x<MAPSIZE;x++)
@@ -209,10 +202,6 @@ void BasicOverhead (void)
     VW_UpdateScreen();
     IN_Ack();
 
-#ifdef MAPBORDER
-    NewViewSize(temp);
-    DrawPlayBorder();
-#endif
 }
 
 
@@ -229,187 +218,6 @@ void BasicOverhead (void)
 void ShapeTest (void)
 {
     //TODO
-#if NOTYET
-    extern  word    NumDigi;
-    extern  word    *DigiList;
-    extern  int     postx;
-    extern  byte    *postsource;
-    static  char    buf[10];
-
-    boolean         done;
-    ScanCode        scan;
-    int             i,j,k,x;
-    longword        l;
-    byte            *addr;
-    soundnames      sound;
-    //      PageListStruct  far *page;
-
-    CenterWindow(20,16);
-    VW_UpdateScreen();
-    for (i = 0,done = false; !done;)
-    {
-        US_ClearWindow();
-        sound = (soundnames) -1;
-
-        //              page = &PMPages[i];
-        US_Print(" Page #");
-        US_PrintUnsigned(i);
-        if (i < PMSpriteStart)
-            US_Print(" (Wall)");
-        else if (i < PMSoundStart)
-            US_Print(" (Sprite)");
-        else if (i == ChunksInFile - 1)
-            US_Print(" (Sound Info)");
-        else
-            US_Print(" (Sound)");
-
-        /*              US_Print("\n XMS: ");
-        if (page->xmsPage != -1)
-        US_PrintUnsigned(page->xmsPage);
-        else
-        US_Print("No");
-
-        US_Print("\n Main: ");
-        if (page->mainPage != -1)
-        US_PrintUnsigned(page->mainPage);
-        else if (page->emsPage != -1)
-        {
-        US_Print("EMS ");
-        US_PrintUnsigned(page->emsPage);
-        }
-        else
-        US_Print("No");
-
-        US_Print("\n Last hit: ");
-        US_PrintUnsigned(page->lastHit);*/
-
-        US_Print("\n Address: ");
-        addr = (byte *) PM_GetPage(i);
-        sprintf(buf,"0x%08X",(int32_t) addr);
-        US_Print(buf);
-
-        if (addr)
-        {
-            if (i < PMSpriteStart)
-            {
-                //
-                // draw the wall
-                //
-                vbuf += 32*SCREENWIDTH;
-                postx = 128;
-                postsource = addr;
-                for (x=0;x<64;x++,postx++,postsource+=64)
-                {
-                    wallheight[postx] = 256;
-                    ScalePost ();
-                }
-                vbuf -= 32*SCREENWIDTH;
-            }
-            else if (i < PMSoundStart)
-            {
-                //
-                // draw the sprite
-                //
-                vbuf += 32*SCREENWIDTH;
-                SimpleScaleShape (160, i-PMSpriteStart, 64);
-                vbuf -= 32*SCREENWIDTH;
-            }
-            else if (i == ChunksInFile - 1)
-            {
-                US_Print("\n\n Number of sounds: ");
-                US_PrintUnsigned(NumDigi);
-                for (l = j = k = 0;j < NumDigi;j++)
-                {
-                    l += DigiList[(j * 2) + 1];
-                    k += (DigiList[(j * 2) + 1] + (PMPageSize - 1)) / PMPageSize;
-                }
-                US_Print("\n Total bytes: ");
-                US_PrintUnsigned(l);
-                US_Print("\n Total pages: ");
-                US_PrintUnsigned(k);
-            }
-            else
-            {
-                byte *dp = addr;
-                for (j = 0;j < NumDigi;j++)
-                {
-                    k = (DigiList[(j * 2) + 1] + (PMPageSize - 1)) / PMPageSize;
-                    if ((i >= PMSoundStart + DigiList[j * 2])
-                            && (i < PMSoundStart + DigiList[j * 2] + k))
-                        break;
-                }
-                if (j < NumDigi)
-                {
-                    sound = (soundnames) j;
-                    US_Print("\n Sound #");
-                    US_PrintUnsigned(j);
-                    US_Print("\n Segment #");
-                    US_PrintUnsigned(i - PMSoundStart - DigiList[j * 2]);
-                }
-                for (j = 0;j < PageLengths[i];j += 32)
-                {
-                    byte v = dp[j];
-                    int v2 = (unsigned)v;
-                    v2 -= 128;
-                    v2 /= 4;
-                    if (v2 < 0)
-                        VWB_Vlin(WindowY + WindowH - 32 + v2,
-                        WindowY + WindowH - 32,
-                        WindowX + 8 + (j / 32),BLACK);
-                    else
-                        VWB_Vlin(WindowY + WindowH - 32,
-                        WindowY + WindowH - 32 + v2,
-                        WindowX + 8 + (j / 32),BLACK);
-                }
-            }
-        }
-
-        VW_UpdateScreen();
-
-        IN_Ack();
-        scan = LastScan;
-
-        IN_ClearKey(scan);
-        switch (scan)
-        {
-            case sc_LeftArrow:
-                if (i)
-                    i--;
-                break;
-            case sc_RightArrow:
-                if (++i >= ChunksInFile)
-                    i--;
-                break;
-            case sc_W:      // Walls
-                i = 0;
-                break;
-            case sc_S:      // Sprites
-                i = PMSpriteStart;
-                break;
-            case sc_D:      // Digitized
-                i = PMSoundStart;
-                break;
-            case sc_I:      // Digitized info
-                i = ChunksInFile - 1;
-                break;
-/*            case sc_L:      // Load all pages
-                for (j = 0;j < ChunksInFile;j++)
-                    PM_GetPage(j);
-                break;*/
-            case sc_P:
-                if (sound != -1)
-                    SD_PlayDigitized(sound,8,8);
-                break;
-            case sc_Escape:
-                done = true;
-                break;
-/*            case sc_Enter:
-                PM_GetPage(i);
-                break;*/
-        }
-    }
-    SD_StopDigitized();
-#endif
 }
 
 
@@ -665,21 +473,15 @@ again:
     {
         CenterWindow(26,3);
         PrintY+=6;
-#ifndef SPEAR
-        US_Print("  Warp to which level(1-10): ");
-#else
         US_Print("  Warp to which level(1-21): ");
-#endif
+
         VW_UpdateScreen();
         esc = !US_LineInput (px,py,str,NULL,true,2,0);
         if (!esc)
         {
             level = atoi (str);
-#ifndef SPEAR
-            if (level>0 && level<11)
-#else
             if (level>0 && level<22)
-#endif
+
             {
                 gamestate.mapon = level-1;
                 playstate = ex_warped;
@@ -700,127 +502,3 @@ again:
 
     return 0;
 }
-
-
-#if 0
-/*
-===================
-=
-= OverheadRefresh
-=
-===================
-*/
-
-void OverheadRefresh (void)
-{
-    unsigned        x,y,endx,endy,sx,sy;
-    unsigned        tile;
-
-
-    endx = maporgx+VIEWTILEX;
-    endy = maporgy+VIEWTILEY;
-
-    for (y=maporgy;y<endy;y++)
-    {
-        for (x=maporgx;x<endx;x++)
-        {
-            sx = (x-maporgx)*16;
-            sy = (y-maporgy)*16;
-
-            switch (viewtype)
-            {
-#if 0
-                case mapview:
-                    tile = *(mapsegs[0]+farmapylookup[y]+x);
-                    break;
-
-                case tilemapview:
-                    tile = tilemap[x][y];
-                    break;
-
-                case visview:
-                    tile = spotvis[x][y];
-                    break;
-#endif
-                case actoratview:
-                    tile = (unsigned)actorat[x][y];
-                    break;
-            }
-
-            if (tile<MAXWALLTILES)
-                LatchDrawTile(sx,sy,tile);
-            else
-            {
-                LatchDrawChar(sx,sy,NUMBERCHARS+((tile&0xf000)>>12));
-                LatchDrawChar(sx+8,sy,NUMBERCHARS+((tile&0x0f00)>>8));
-                LatchDrawChar(sx,sy+8,NUMBERCHARS+((tile&0x00f0)>>4));
-                LatchDrawChar(sx+8,sy+8,NUMBERCHARS+(tile&0x000f));
-            }
-        }
-    }
-}
-#endif
-
-#if 0
-/*
-===================
-=
-= ViewMap
-=
-===================
-*/
-
-void ViewMap (void)
-{
-    boolean         button0held;
-
-    viewtype = actoratview;
-    //      button0held = false;
-
-
-    maporgx = player->tilex - VIEWTILEX/2;
-    if (maporgx<0)
-        maporgx = 0;
-    if (maporgx>MAPSIZE-VIEWTILEX)
-        maporgx=MAPSIZE-VIEWTILEX;
-    maporgy = player->tiley - VIEWTILEY/2;
-    if (maporgy<0)
-        maporgy = 0;
-    if (maporgy>MAPSIZE-VIEWTILEY)
-        maporgy=MAPSIZE-VIEWTILEY;
-
-    do
-    {
-        //
-        // let user pan around
-        //
-        PollControls ();
-        if (controlx < 0 && maporgx>0)
-            maporgx--;
-        if (controlx > 0 && maporgx<mapwidth-VIEWTILEX)
-            maporgx++;
-        if (controly < 0 && maporgy>0)
-            maporgy--;
-        if (controly > 0 && maporgy<mapheight-VIEWTILEY)
-            maporgy++;
-
-#if 0
-        if (c.button0 && !button0held)
-        {
-            button0held = true;
-            viewtype++;
-            if (viewtype>visview)
-                viewtype = mapview;
-        }
-        if (!c.button0)
-            button0held = false;
-#endif
-
-        OverheadRefresh ();
-
-    } while (!Keyboard[sc_Escape]);
-
-    IN_ClearKeysDown ();
-}
-#endif
-#endif

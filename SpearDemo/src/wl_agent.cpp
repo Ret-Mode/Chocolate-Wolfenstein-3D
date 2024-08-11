@@ -290,20 +290,16 @@ void DrawFace (void)
         StatusDrawFace(GOTGATLINGPIC);
     else if (gamestate.health)
     {
-#ifdef SPEAR
+
         if (godmode)
             StatusDrawFace(GODMODEFACE1PIC+gamestate.faceframe);
         else
-#endif
+
             StatusDrawFace(FACE1APIC+3*((100-gamestate.health)/16)+gamestate.faceframe);
     }
     else
     {
-#ifndef SPEAR
-        if (LastAttacker && LastAttacker->obclass == needleobj)
-            StatusDrawFace(MUTANTBJPIC);
-        else
-#endif
+
             StatusDrawFace(FACE8APIC);
     }
 }
@@ -744,7 +740,6 @@ void GetBonus (statobj_t *check)
             GiveAmmo (4);
             break;
 
-#ifdef SPEAR
         case    bo_25clip:
             if (gamestate.ammo == 99)
                 return;
@@ -752,7 +747,6 @@ void GetBonus (statobj_t *check)
             SD_PlaySound (GETAMMOBOXSND);
             GiveAmmo (25);
             break;
-#endif
 
         case    bo_machinegun:
             SD_PlaySound (GETMACHINESND);
@@ -800,14 +794,14 @@ void GetBonus (statobj_t *check)
             HealSelf (1);
             break;
 
-#ifdef SPEAR
+
         case    bo_spear:
             spearflag = true;
             spearx = player->x;
             speary = player->y;
             spearangle = player->angle;
             playstate = ex_completed;
-#endif
+
     }
 
     StartBonusFlash ();
@@ -930,12 +924,11 @@ void ClipMove (objtype *ob, int32_t xmove, int32_t ymove)
     if (TryMove (ob))
         return;
 
-#ifndef REMDEBUG
     if (noclip && ob->x > 2*TILEGLOBAL && ob->y > 2*TILEGLOBAL
         && ob->x < (((int32_t)(mapwidth-1))<<TILESHIFT)
         && ob->y < (((int32_t)(mapheight-1))<<TILESHIFT) )
         return;         // walk through walls
-#endif
+
 
     if (!SD_SoundPlaying())
         SD_PlaySound (HITWALLSND);
@@ -966,9 +959,7 @@ void ClipMove (objtype *ob, int32_t xmove, int32_t ymove)
 
 void VictoryTile (void)
 {
-#ifndef SPEAR
-    SpawnBJVictory ();
-#endif
+
 
     gamestate.victoryflag = true;
 }
@@ -1013,10 +1004,10 @@ void Thrust (int angle, int32_t speed)
     //
     // ZERO FUNNY COUNTER IF MOVED!
     //
-#ifdef SPEAR
+
     if (speed)
         funnyticount = 0;
-#endif
+
 
     thrustspeed += speed;
     //
