@@ -142,9 +142,6 @@ typedef enum {
     MUTANTBJPIC,                         // 132
     PAUSEDPIC,                           // 133
     GETPSYCHEDPIC,                       // 134
-
-
-
     ORDERSCREEN=136,
     ERRORSCREEN,                         // 137
     T_HELPART,                           // 138

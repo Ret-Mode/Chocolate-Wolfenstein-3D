@@ -37,22 +37,11 @@
 
 #include "foreign.h"
 
-#ifndef SPEAR
-    #include "audiowl6.h"
-    #ifdef UPLOAD
-        #include "gfxv_apo.h"
-    #else
-        #ifdef GOODTIMES
-            #include "gfxv_wl6.h"
-        #else
-            #include "gfxv_apo.h"
-        #endif
-    #endif
-#else
+
     #include "audiosod.h"
     #include "gfxv_sod.h"
     #include "f_spear.h"
-#endif
+
 
 typedef uint8_t byte;
 typedef uint16_t word;
@@ -142,11 +131,9 @@ void Quit(const char *errorStr, ...);
 #define FLASHCOLOR      5
 #define FLASHTICS       4
 
-#ifndef SPEAR
-    #define LRpack      8       // # of levels to store in endgame
-#else
-    #define LRpack      20
-#endif
+
+#define LRpack      20
+
 
 #define PLAYERSIZE      MINDIST         // player radius
 #define MINACTORDIST    0x10000l        // minimum dist from player center
@@ -241,9 +228,8 @@ typedef enum
 enum
 {
     SPR_DEMO,
-#ifndef APOGEE_1_0
     SPR_DEATHCAM,
-#endif
+
 //
 // static sprites
 //
@@ -264,10 +250,8 @@ enum
 
     SPR_STAT_40,SPR_STAT_41,SPR_STAT_42,SPR_STAT_43,
     SPR_STAT_44,SPR_STAT_45,SPR_STAT_46,SPR_STAT_47,
-
-#ifdef SPEAR
     SPR_STAT_48,SPR_STAT_49,SPR_STAT_50,SPR_STAT_51,
-#endif
+
 
 //
 // guard
@@ -381,61 +365,6 @@ enum
 
     SPR_OFC_SHOOT1,SPR_OFC_SHOOT2,SPR_OFC_SHOOT3,
 
-#ifndef SPEAR
-//
-// ghosts
-//
-    SPR_BLINKY_W1,SPR_BLINKY_W2,SPR_PINKY_W1,SPR_PINKY_W2,
-    SPR_CLYDE_W1,SPR_CLYDE_W2,SPR_INKY_W1,SPR_INKY_W2,
-
-//
-// hans
-//
-    SPR_BOSS_W1,SPR_BOSS_W2,SPR_BOSS_W3,SPR_BOSS_W4,
-    SPR_BOSS_SHOOT1,SPR_BOSS_SHOOT2,SPR_BOSS_SHOOT3,SPR_BOSS_DEAD,
-
-    SPR_BOSS_DIE1,SPR_BOSS_DIE2,SPR_BOSS_DIE3,
-
-//
-// schabbs
-//
-    SPR_SCHABB_W1,SPR_SCHABB_W2,SPR_SCHABB_W3,SPR_SCHABB_W4,
-    SPR_SCHABB_SHOOT1,SPR_SCHABB_SHOOT2,
-
-    SPR_SCHABB_DIE1,SPR_SCHABB_DIE2,SPR_SCHABB_DIE3,SPR_SCHABB_DEAD,
-    SPR_HYPO1,SPR_HYPO2,SPR_HYPO3,SPR_HYPO4,
-
-//
-// fake
-//
-    SPR_FAKE_W1,SPR_FAKE_W2,SPR_FAKE_W3,SPR_FAKE_W4,
-    SPR_FAKE_SHOOT,SPR_FIRE1,SPR_FIRE2,
-
-    SPR_FAKE_DIE1,SPR_FAKE_DIE2,SPR_FAKE_DIE3,SPR_FAKE_DIE4,
-    SPR_FAKE_DIE5,SPR_FAKE_DEAD,
-
-//
-// hitler
-//
-    SPR_MECHA_W1,SPR_MECHA_W2,SPR_MECHA_W3,SPR_MECHA_W4,
-    SPR_MECHA_SHOOT1,SPR_MECHA_SHOOT2,SPR_MECHA_SHOOT3,SPR_MECHA_DEAD,
-
-    SPR_MECHA_DIE1,SPR_MECHA_DIE2,SPR_MECHA_DIE3,
-
-    SPR_HITLER_W1,SPR_HITLER_W2,SPR_HITLER_W3,SPR_HITLER_W4,
-    SPR_HITLER_SHOOT1,SPR_HITLER_SHOOT2,SPR_HITLER_SHOOT3,SPR_HITLER_DEAD,
-
-    SPR_HITLER_DIE1,SPR_HITLER_DIE2,SPR_HITLER_DIE3,SPR_HITLER_DIE4,
-    SPR_HITLER_DIE5,SPR_HITLER_DIE6,SPR_HITLER_DIE7,
-
-//
-// giftmacher
-//
-    SPR_GIFT_W1,SPR_GIFT_W2,SPR_GIFT_W3,SPR_GIFT_W4,
-    SPR_GIFT_SHOOT1,SPR_GIFT_SHOOT2,
-
-    SPR_GIFT_DIE1,SPR_GIFT_DIE2,SPR_GIFT_DIE3,SPR_GIFT_DEAD,
-#endif
 //
 // Rocket, smoke and small explosion
 //
@@ -448,7 +377,6 @@ enum
 //
 // Angel of Death's DeathSparks(tm)
 //
-#ifdef SPEAR
     SPR_HROCKET_1,SPR_HROCKET_2,SPR_HROCKET_3,SPR_HROCKET_4,
     SPR_HROCKET_5,SPR_HROCKET_6,SPR_HROCKET_7,SPR_HROCKET_8,
 
@@ -456,38 +384,7 @@ enum
     SPR_HBOOM_1,SPR_HBOOM_2,SPR_HBOOM_3,
 
     SPR_SPARK1,SPR_SPARK2,SPR_SPARK3,SPR_SPARK4,
-#endif
 
-#ifndef SPEAR
-//
-// gretel
-//
-    SPR_GRETEL_W1,SPR_GRETEL_W2,SPR_GRETEL_W3,SPR_GRETEL_W4,
-    SPR_GRETEL_SHOOT1,SPR_GRETEL_SHOOT2,SPR_GRETEL_SHOOT3,SPR_GRETEL_DEAD,
-
-    SPR_GRETEL_DIE1,SPR_GRETEL_DIE2,SPR_GRETEL_DIE3,
-
-//
-// fat face
-//
-    SPR_FAT_W1,SPR_FAT_W2,SPR_FAT_W3,SPR_FAT_W4,
-    SPR_FAT_SHOOT1,SPR_FAT_SHOOT2,SPR_FAT_SHOOT3,SPR_FAT_SHOOT4,
-
-    SPR_FAT_DIE1,SPR_FAT_DIE2,SPR_FAT_DIE3,SPR_FAT_DEAD,
-
-//
-// bj
-//
-#ifdef APOGEE_1_0
-    SPR_BJ_W1=360,
-#elif defined(APOGEE_1_1) && defined(UPLOAD)
-    SPR_BJ_W1=406,
-#else
-    SPR_BJ_W1,
-#endif
-    SPR_BJ_W2,SPR_BJ_W3,SPR_BJ_W4,
-    SPR_BJ_JUMP1,SPR_BJ_JUMP2,SPR_BJ_JUMP3,SPR_BJ_JUMP4,
-#else
 //
 // THESE ARE FOR 'SPEAR OF DESTINY'
 //
@@ -541,7 +438,7 @@ enum
     SPR_ANGEL_DIE1,SPR_ANGEL_DIE2,SPR_ANGEL_DIE3,SPR_ANGEL_DIE4,
     SPR_ANGEL_DIE5,SPR_ANGEL_DIE6,SPR_ANGEL_DIE7,SPR_ANGEL_DEAD,
 
-#endif
+
 
 //
 // player attack frames
@@ -939,12 +836,9 @@ void    PlayDemo (int demonumber);
 void    RecordDemo (void);
 
 
-#ifdef SPEAR
 extern  int32_t            spearx,speary;
 extern  unsigned        spearangle;
 extern  boolean         spearflag;
-#endif
-
 
 #define ClearMemory SD_StopDigitized
 
@@ -1028,9 +922,8 @@ void    ContinueMusic(int offs);
 void    StartDamageFlash (int damage);
 void    StartBonusFlash (void);
 
-#ifdef SPEAR
 extern  int32_t     funnyticount;           // FOR FUNNY BJ FACE
-#endif
+
 
 extern  objtype     *objfreelist;     // *obj,*player,*lastobj,
 
@@ -1330,15 +1223,10 @@ static inline fixed FixedMul(fixed a, fixed b)
     return (fixed)(((int64_t)a * b + 0x8000) >> 16);
 }
 
-#ifdef PLAYDEMOLIKEORIGINAL
     #define DEMOCHOOSE_ORIG_SDL(orig, sdl) ((demorecord || demoplayback) ? (orig) : (sdl))
     #define DEMOCOND_ORIG                  (demorecord || demoplayback)
     #define DEMOIF_SDL                     if(DEMOCOND_SDL)
-#else
-    #define DEMOCHOOSE_ORIG_SDL(orig, sdl) (sdl)
-    #define DEMOCOND_ORIG                  false
-    #define DEMOIF_SDL
-#endif
+
 #define DEMOCOND_SDL                   (!DEMOCOND_ORIG)
 
 #define GetTicks() ((SDL_GetTicks()*7)/100)

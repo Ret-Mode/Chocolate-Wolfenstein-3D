@@ -25,9 +25,7 @@ typedef enum {
     H_LEFTWINDOWPIC,             // 18
     H_RIGHTWINDOWPIC,            // 19
     H_BOTTOMINFOPIC,             // 20
-#if !defined(APOGEE_1_0) && !defined(APOGEE_1_1) && !defined(APOGEE_1_2)
     H_SPEARADPIC,                // 21
-#endif
     // Lump Start
     C_OPTIONSPIC,                // 22
     C_CURSOR1PIC,                // 23
