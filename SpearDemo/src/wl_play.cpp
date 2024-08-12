@@ -105,97 +105,6 @@ objtype dummyobj;
 // LIST OF SONGS FOR EACH VERSION
 //
 int songs[] = {
-#ifndef SPEAR
-    //
-    // Episode One
-    //
-    GETTHEM_MUS,
-    SEARCHN_MUS,
-    POW_MUS,
-    SUSPENSE_MUS,
-    GETTHEM_MUS,
-    SEARCHN_MUS,
-    POW_MUS,
-    SUSPENSE_MUS,
-
-    WARMARCH_MUS,               // Boss level
-    CORNER_MUS,                 // Secret level
-
-    //
-    // Episode Two
-    //
-    NAZI_OMI_MUS,
-    PREGNANT_MUS,
-    GOINGAFT_MUS,
-    HEADACHE_MUS,
-    NAZI_OMI_MUS,
-    PREGNANT_MUS,
-    HEADACHE_MUS,
-    GOINGAFT_MUS,
-
-    WARMARCH_MUS,               // Boss level
-    DUNGEON_MUS,                // Secret level
-
-    //
-    // Episode Three
-    //
-    INTROCW3_MUS,
-    NAZI_RAP_MUS,
-    TWELFTH_MUS,
-    ZEROHOUR_MUS,
-    INTROCW3_MUS,
-    NAZI_RAP_MUS,
-    TWELFTH_MUS,
-    ZEROHOUR_MUS,
-
-    ULTIMATE_MUS,               // Boss level
-    PACMAN_MUS,                 // Secret level
-
-    //
-    // Episode Four
-    //
-    GETTHEM_MUS,
-    SEARCHN_MUS,
-    POW_MUS,
-    SUSPENSE_MUS,
-    GETTHEM_MUS,
-    SEARCHN_MUS,
-    POW_MUS,
-    SUSPENSE_MUS,
-
-    WARMARCH_MUS,               // Boss level
-    CORNER_MUS,                 // Secret level
-
-    //
-    // Episode Five
-    //
-    NAZI_OMI_MUS,
-    PREGNANT_MUS,
-    GOINGAFT_MUS,
-    HEADACHE_MUS,
-    NAZI_OMI_MUS,
-    PREGNANT_MUS,
-    HEADACHE_MUS,
-    GOINGAFT_MUS,
-
-    WARMARCH_MUS,               // Boss level
-    DUNGEON_MUS,                // Secret level
-
-    //
-    // Episode Six
-    //
-    INTROCW3_MUS,
-    NAZI_RAP_MUS,
-    TWELFTH_MUS,
-    ZEROHOUR_MUS,
-    INTROCW3_MUS,
-    NAZI_RAP_MUS,
-    TWELFTH_MUS,
-    ZEROHOUR_MUS,
-
-    ULTIMATE_MUS,               // Boss level
-    FUNKYOU_MUS                 // Secret level
-#else
 
     //////////////////////////////////////////////////////////////
     //
@@ -206,7 +115,7 @@ int songs[] = {
     XFUNKIE_MUS,
     XDEATH_MUS,
     XGETYOU_MUS,                // DON'T KNOW
-    ULTIMATE_MUS,               // Trans Gr”sse
+    ULTIMATE_MUS,               // Trans Grï¿½sse
 
     DUNGEON_MUS,
     GOINGAFT_MUS,
@@ -228,7 +137,7 @@ int songs[] = {
     XFUNKIE_MUS,                // Secret level (DON'T KNOW)
 
     XEVIL_MUS                   // Angel of Death BOSS
-#endif
+
 };
 
 
@@ -555,8 +464,6 @@ void CheckKeys (void)
 
     scan = LastScan;
 
-
-#ifdef SPEAR
     //
     // SECRET CHEAT CODE: TAB-G-F10
     //
@@ -580,7 +487,7 @@ void CheckKeys (void)
         IN_ClearKeysDown ();
         return;
     }
-#endif
+
 
 
     //
@@ -618,7 +525,7 @@ void CheckKeys (void)
     //
     // OPEN UP DEBUG KEYS
     //
-#ifdef DEBUGKEYS
+
     if (Keyboard[sc_BackSpace] && Keyboard[sc_LShift] && Keyboard[sc_Alt] && param_debugmode)
     {
         ClearMemory ();
@@ -633,7 +540,7 @@ void CheckKeys (void)
         DrawPlayBorderSides ();
         DebugOk = 1;
     }
-#endif
+
 
     //
     // TRYING THE KEEN CHEAT CODE!
@@ -678,9 +585,8 @@ void CheckKeys (void)
 // F1-F7/ESC to enter control panel
 //
     if (
-#ifndef DEBCHECK
+
            scan == sc_F10 ||
-#endif
            scan == sc_F9 || scan == sc_F7 || scan == sc_F8)     // pop up quit dialog
     {
         ClearMemory ();
@@ -720,7 +626,6 @@ void CheckKeys (void)
 //
 // TAB-? debug keys
 //
-#ifdef DEBUGKEYS
     if (Keyboard[sc_Tab] && DebugOk)
     {
         CA_CacheGrChunk (STARTFONT);
@@ -735,7 +640,7 @@ void CheckKeys (void)
         lasttimecount = GetTimeCount();
         return;
     }
-#endif
+
 }
 
 
@@ -1292,7 +1197,6 @@ void PlayLoop (void)
         //
         // MAKE FUNNY FACE IF BJ DOESN'T MOVE FOR AWHILE
         //
-#ifdef SPEAR
         funnyticount += tics;
         if (funnyticount > 30l * 70)
         {
@@ -1301,7 +1205,7 @@ void PlayLoop (void)
                 StatusDrawFace(BJWAITING1PIC + (US_RndT () & 1));
             facecount = 0;
         }
-#endif
+
 
         gamestate.TimeCount += tics;
 
