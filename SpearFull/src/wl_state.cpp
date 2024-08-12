@@ -165,7 +165,6 @@ void NewState (objtype *ob, statetype *state)
     }                                               \
 }
 
-
     #define DOORCHECK                                   \
             if(DEMOCOND_ORIG)                           \
                 doornum = temp&63;                      \
@@ -879,6 +878,7 @@ void KillActor (objtype *ob)
             GivePoints (200);
             NewState (ob,&s_dogdie1);
             break;
+
         case spectreobj:
             if (ob->flags&FL_BONUS)
             {

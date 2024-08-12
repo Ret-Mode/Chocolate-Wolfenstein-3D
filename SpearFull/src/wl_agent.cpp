@@ -290,6 +290,7 @@ void DrawFace (void)
         StatusDrawFace(GOTGATLINGPIC);
     else if (gamestate.health)
     {
+
         if (godmode)
             StatusDrawFace(GODMODEFACE1PIC+gamestate.faceframe);
         else
@@ -432,6 +433,7 @@ void TakeDamage (int points,objtype *attacker)
     //
     // MAKE BJ'S EYES BUG IF MAJOR DAMAGE!
     //
+
     if (points > 30 && gamestate.health!=0 && !godmode && viewsize != 21)
     {
         StatusDrawFace(BJOUCHPIC);
@@ -473,6 +475,7 @@ void HealSelf (int points)
 void DrawLevel (void)
 {
     if(viewsize == 21 && ingame) return;
+
     if (gamestate.mapon == 20)
         LatchNumber (2,16,2,18);
     else
@@ -737,7 +740,6 @@ void GetBonus (statobj_t *check)
             GiveAmmo (4);
             break;
 
-
         case    bo_25clip:
             if (gamestate.ammo == 99)
                 return;
@@ -745,7 +747,6 @@ void GetBonus (statobj_t *check)
             SD_PlaySound (GETAMMOBOXSND);
             GiveAmmo (25);
             break;
-
 
         case    bo_machinegun:
             SD_PlaySound (GETMACHINESND);
@@ -923,12 +924,11 @@ void ClipMove (objtype *ob, int32_t xmove, int32_t ymove)
     if (TryMove (ob))
         return;
 
-#ifndef REMDEBUG
     if (noclip && ob->x > 2*TILEGLOBAL && ob->y > 2*TILEGLOBAL
         && ob->x < (((int32_t)(mapwidth-1))<<TILESHIFT)
         && ob->y < (((int32_t)(mapheight-1))<<TILESHIFT) )
         return;         // walk through walls
-#endif
+
 
     if (!SD_SoundPlaying())
         SD_PlaySound (HITWALLSND);
@@ -1004,6 +1004,7 @@ void Thrust (int angle, int32_t speed)
     //
     // ZERO FUNNY COUNTER IF MOVED!
     //
+
     if (speed)
         funnyticount = 0;
 

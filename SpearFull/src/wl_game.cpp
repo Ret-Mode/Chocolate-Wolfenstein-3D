@@ -15,7 +15,6 @@
 #pragma hdrstop
 
 
-
 /*
 =============================================================================
 
@@ -36,6 +35,7 @@
 boolean         ingame,fizzlein;
 gametype        gamestate;
 byte            bordercol=VIEWCOLOR;        // color of the Change View/Ingame border
+
 
 int32_t         spearx,speary;
 unsigned        spearangle;
@@ -519,7 +519,6 @@ static void ScanInfoPlane(void)
                     break;
 
 
-
 //
 // mutants
 //
@@ -568,6 +567,7 @@ static void ScanInfoPlane(void)
 //
 // ghosts
 //
+
             }
         }
     }
@@ -1071,8 +1071,6 @@ void RecordDemo (void)
 }
 
 
-
-
 //==========================================================================
 
 /*
@@ -1333,7 +1331,6 @@ startplayloop:
 
         PlayLoop ();
 
-
         if (spearflag)
         {
             SD_StopSound();
@@ -1388,7 +1385,6 @@ startplayloop:
 
                 gamestate.oldscore = gamestate.score;
 
-
 #define FROMSECRET1             3
 #define FROMSECRET2             11
 
@@ -1433,7 +1429,6 @@ startplayloop:
                 ClearMemory ();
 
                 CheckHighScore (gamestate.score,gamestate.mapon+1);
-
                 strcpy(MainMenu[viewscores].string,STR_VS);
 
                 MainMenu[viewscores].routine = CP_ViewScores;
@@ -1451,7 +1446,6 @@ startplayloop:
                 ClearMemory ();
 
                 CheckHighScore (gamestate.score,gamestate.mapon+1);
-
                 strcpy(MainMenu[viewscores].string,STR_VS);
 
                 MainMenu[viewscores].routine = CP_ViewScores;

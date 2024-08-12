@@ -125,6 +125,7 @@ static void SDL_SoundFinished(void)
     SoundPriority = 0;
 }
 
+
 void
 SD_StopDigitized(void)
 {
@@ -291,6 +292,7 @@ SD_SetDigiDevice(SDSMode mode)
     if (!devicenotpresent)
     {
         DigiMode = mode;
+
     }
 }
 
@@ -811,6 +813,7 @@ SD_PlaySound(soundnames sound)
     {
         if ((DigiMode == sds_PC) && (SoundMode == sdm_PC))
         {
+
             return 0;
 
         }

@@ -94,8 +94,8 @@ void CA_CannotOpen(const char *string);
 static int32_t  grstarts[NUMCHUNKS + 1];
 static int32_t* audiostarts; // array of offsets in audio / audiot
 
-
 huffnode grhuffman[255];
+
 
 int    grhandle = -1;               // handle to EGAGRAPH
 int    maphandle = -1;              // handle to MAPTEMP / GAMEMAPS
@@ -554,7 +554,6 @@ void CAL_SetupMapFile (void)
 //
 // open the data file
 //
-
     strcpy(fname, "gamemaps.");
     strcat(fname, extension);
 
@@ -1044,6 +1043,7 @@ void CA_CacheMap (int mapnum)
         }
 
         read(maphandle,source,compressed);
+
         //
         // unhuffman, then unRLEW
         // The huffman'd chunk has a two byte expanded length first
@@ -1057,6 +1057,7 @@ void CA_CacheMap (int mapnum)
         CAL_CarmackExpand((byte *) source, buffer2seg,expanded);
         CA_RLEWexpand(buffer2seg+1,dest,size,RLEWtag);
         free(buffer2seg);
+
 
 
         if (compressed>BUFFERSIZE)

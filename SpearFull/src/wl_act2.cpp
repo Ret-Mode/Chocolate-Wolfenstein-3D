@@ -194,6 +194,8 @@ statetype s_boom1               = {false,SPR_BOOM_1,6,NULL,NULL,&s_boom2};
 statetype s_boom2               = {false,SPR_BOOM_2,6,NULL,NULL,&s_boom3};
 statetype s_boom3               = {false,SPR_BOOM_3,6,NULL,NULL,NULL};
 
+
+
 extern  statetype s_hrocket;
 extern  statetype s_hsmoke1;
 extern  statetype s_hsmoke2;
@@ -213,6 +215,8 @@ statetype s_hsmoke4             = {false,SPR_HSMOKE_4,3,NULL,NULL,NULL};
 statetype s_hboom1              = {false,SPR_HBOOM_1,6,NULL,NULL,&s_hboom2};
 statetype s_hboom2              = {false,SPR_HBOOM_2,6,NULL,NULL,&s_hboom3};
 statetype s_hboom3              = {false,SPR_HBOOM_3,6,NULL,NULL,NULL};
+
+
 
 void    T_Schabb (objtype *ob);
 void    T_SchabbThrow (objtype *ob);
@@ -235,6 +239,7 @@ void A_MechaSound (objtype *ob);
 void A_Smoke (objtype *ob)
 {
     GetNewActor ();
+
     if (ob->obclass == hrocketobj)
         newobj->state = &s_hsmoke1;
     else
@@ -441,6 +446,7 @@ statetype s_grddie1             = {false,SPR_GRD_DIE_1,15,NULL,(statefunc)A_Deat
 statetype s_grddie2             = {false,SPR_GRD_DIE_2,15,NULL,NULL,&s_grddie3};
 statetype s_grddie3             = {false,SPR_GRD_DIE_3,15,NULL,NULL,&s_grddie4};
 statetype s_grddie4             = {false,SPR_GRD_DEAD,0,NULL,NULL,&s_grddie4};
+
 
 //
 // dogs
@@ -703,6 +709,8 @@ statetype s_ssdie2              = {false,SPR_SS_DIE_2,15,NULL,NULL,&s_ssdie3};
 statetype s_ssdie3              = {false,SPR_SS_DIE_3,15,NULL,NULL,&s_ssdie4};
 statetype s_ssdie4              = {false,SPR_SS_DEAD,0,NULL,NULL,&s_ssdie4};
 
+
+
 /*
 ===============
 =
@@ -886,6 +894,7 @@ void A_DeathScream (objtype *ob)
 {
 
     if ((mapon==18 || mapon==19) && !US_RndT())
+
     {
         switch(ob->obclass)
         {
@@ -962,6 +971,8 @@ void A_DeathScream (objtype *ob)
 
 =============================================================================
 */
+
+
 
 void T_Launch (objtype *ob);
 void T_Will (objtype *ob);
@@ -1821,6 +1832,7 @@ void T_Chase (objtype *ob)
         dy = abs(ob->tiley - player->tiley);
         dist = dx>dy ? dx : dy;
 
+
         if(DEMOCOND_ORIG)
         {
             if(!dist || (dist == 1 && ob->distance < 0x4000))
@@ -2245,6 +2257,7 @@ void T_Shoot (objtype *ob)
         case ssobj:
             PlaySoundLocActor(SSFIRESND,ob);
             break;
+
         default:
             PlaySoundLocActor(NAZIFIRESND,ob);
     }
