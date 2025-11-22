@@ -165,7 +165,6 @@ void NewState (objtype *ob, statetype *state)
     }                                               \
 }
 
-#ifdef PLAYDEMOLIKEORIGINAL
     #define DOORCHECK                                   \
             if(DEMOCOND_ORIG)                           \
                 doornum = temp&63;                      \
@@ -176,13 +175,7 @@ void NewState (objtype *ob, statetype *state)
                 ob->distance = -doornum - 1;            \
                 return true;                            \
             }
-#else
-    #define DOORCHECK                                   \
-            doornum = (int) temp & 127;                 \
-            OpenDoor(doornum);                          \
-            ob->distance = -doornum - 1;                \
-            return true;
-#endif
+
 
 #define CHECKSIDE(x,y)                                  \
 {                                                       \
@@ -343,14 +336,13 @@ boolean TryWalk (objtype *ob)
         }
     }
 
-#ifdef PLAYDEMOLIKEORIGINAL
     if (DEMOCOND_ORIG && doornum != -1)
     {
         OpenDoor(doornum);
         ob->distance = -doornum-1;
         return true;
     }
-#endif
+
 
     ob->areanumber =
         *(mapsegs[0] + (ob->tiley<<mapshift)+ob->tilex) - AREATILE;
@@ -887,55 +879,6 @@ void KillActor (objtype *ob)
             NewState (ob,&s_dogdie1);
             break;
 
-#ifndef SPEAR
-        case bossobj:
-            GivePoints (5000);
-            NewState (ob,&s_bossdie1);
-            PlaceItemType (bo_key1,tilex,tiley);
-            break;
-
-        case gretelobj:
-            GivePoints (5000);
-            NewState (ob,&s_greteldie1);
-            PlaceItemType (bo_key1,tilex,tiley);
-            break;
-
-        case giftobj:
-            GivePoints (5000);
-            gamestate.killx = player->x;
-            gamestate.killy = player->y;
-            NewState (ob,&s_giftdie1);
-            break;
-
-        case fatobj:
-            GivePoints (5000);
-            gamestate.killx = player->x;
-            gamestate.killy = player->y;
-            NewState (ob,&s_fatdie1);
-            break;
-
-        case schabbobj:
-            GivePoints (5000);
-            gamestate.killx = player->x;
-            gamestate.killy = player->y;
-            NewState (ob,&s_schabbdie1);
-            break;
-        case fakeobj:
-            GivePoints (2000);
-            NewState (ob,&s_fakedie1);
-            break;
-
-        case mechahitlerobj:
-            GivePoints (5000);
-            NewState (ob,&s_mechadie1);
-            break;
-        case realhitlerobj:
-            GivePoints (5000);
-            gamestate.killx = player->x;
-            gamestate.killy = player->y;
-            NewState (ob,&s_hitlerdie1);
-            break;
-#else
         case spectreobj:
             if (ob->flags&FL_BONUS)
             {
@@ -973,7 +916,7 @@ void KillActor (objtype *ob)
             NewState (ob,&s_deathdie1);
             PlaceItemType (bo_key1,tilex,tiley);
             break;
-#endif
+
     }
 
     gamestate.killcount++;
@@ -1338,62 +1281,6 @@ void FirstSighting (objtype *ob)
             ob->speed *= 2;                 // go faster when chasing player
             break;
 
-#ifndef SPEAR
-        case bossobj:
-            SD_PlaySound(GUTENTAGSND);
-            NewState (ob,&s_bosschase1);
-            ob->speed = SPDPATROL*3;        // go faster when chasing player
-            break;
-
-#ifndef APOGEE_1_0
-        case gretelobj:
-            SD_PlaySound(KEINSND);
-            NewState (ob,&s_gretelchase1);
-            ob->speed *= 3;                 // go faster when chasing player
-            break;
-
-        case giftobj:
-            SD_PlaySound(EINESND);
-            NewState (ob,&s_giftchase1);
-            ob->speed *= 3;                 // go faster when chasing player
-            break;
-
-        case fatobj:
-            SD_PlaySound(ERLAUBENSND);
-            NewState (ob,&s_fatchase1);
-            ob->speed *= 3;                 // go faster when chasing player
-            break;
-#endif
-
-        case schabbobj:
-            SD_PlaySound(SCHABBSHASND);
-            NewState (ob,&s_schabbchase1);
-            ob->speed *= 3;                 // go faster when chasing player
-            break;
-
-        case fakeobj:
-            SD_PlaySound(TOT_HUNDSND);
-            NewState (ob,&s_fakechase1);
-            ob->speed *= 3;                 // go faster when chasing player
-            break;
-
-        case mechahitlerobj:
-            SD_PlaySound(DIESND);
-            NewState (ob,&s_mechachase1);
-            ob->speed *= 3;                 // go faster when chasing player
-            break;
-
-        case realhitlerobj:
-            SD_PlaySound(DIESND);
-            NewState (ob,&s_hitlerchase1);
-            ob->speed *= 5;                 // go faster when chasing player
-            break;
-
-        case ghostobj:
-            NewState (ob,&s_blinkychase1);
-            ob->speed *= 2;                 // go faster when chasing player
-            break;
-#else
         case spectreobj:
             SD_PlaySound(GHOSTSIGHTSND);
             NewState (ob,&s_spectrechase1);
@@ -1428,7 +1315,6 @@ void FirstSighting (objtype *ob)
             NewState (ob,&s_deathchase1);
             ob->speed = 2048;                       // go faster when chasing player
             break;
-#endif
     }
 
     if (ob->distance < 0)

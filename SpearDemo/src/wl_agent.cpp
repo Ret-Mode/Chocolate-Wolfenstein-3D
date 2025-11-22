@@ -433,13 +433,13 @@ void TakeDamage (int points,objtype *attacker)
     //
     // MAKE BJ'S EYES BUG IF MAJOR DAMAGE!
     //
-#ifdef SPEAR
+
     if (points > 30 && gamestate.health!=0 && !godmode && viewsize != 21)
     {
         StatusDrawFace(BJOUCHPIC);
         facecount = 0;
     }
-#endif
+
 }
 
 /*
@@ -475,11 +475,11 @@ void HealSelf (int points)
 void DrawLevel (void)
 {
     if(viewsize == 21 && ingame) return;
-#ifdef SPEAR
+
     if (gamestate.mapon == 20)
         LatchNumber (2,16,2,18);
     else
-#endif
+
         LatchNumber (2,16,2,gamestate.mapon+1);
 }
 

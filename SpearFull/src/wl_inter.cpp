@@ -313,7 +313,6 @@ Write (int x, int y, const char *string)
                     nx += 8;
                     continue;
 
-
                 case ' ':
                     break;
 
@@ -429,11 +428,9 @@ LevelCompleted (void)
     IN_StartAck ();
 
     VWB_DrawPic (0, 16, L_GUYPIC);
-
     if (mapon != 4 && mapon != 9 && mapon != 15 && mapon < 17)
 
     {
-
         Write (14, 2, "floor\ncompleted");
         Write (14, 7, STR_BONUS "     0");
         Write (16, 10, STR_TIME);
@@ -444,9 +441,7 @@ LevelCompleted (void)
 
 
         Write (26, 2, itoa (gamestate.mapon + 1, tempstr, 10));
-
         Write (26, 12, parTimes[gamestate.episode * 10 + mapon].timestr);
-
 
         //
         // PRINT TIME
@@ -461,7 +456,6 @@ LevelCompleted (void)
 
         min = sec / 60;
         sec %= 60;
-
         i = 26 * 8;
 
         VWB_DrawPic (i, 10 * 8, L_NUM0PIC + (min / 10));
@@ -812,7 +806,6 @@ DrawHighScores (void)
     char buffer[16];
     word i, w, h;
     HighScore *s;
-
     CacheLump (BACKDROP_LUMP_START, BACKDROP_LUMP_END);
     ClearMScreen ();
     DrawStripes (10);
@@ -858,7 +851,6 @@ DrawHighScores (void)
         PrintX = 292 - w;
 
         US_Print (buffer);
-
     }
 
     VW_UpdateScreen ();
@@ -903,7 +895,6 @@ CheckHighScore (int32_t score, word other)
             break;
         }
     }
-
     StartCPMusic (XAWARD_MUS);
 
     DrawHighScores ();

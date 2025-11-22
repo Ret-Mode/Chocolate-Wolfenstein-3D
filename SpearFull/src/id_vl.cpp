@@ -9,6 +9,7 @@
 // assertion errors and want to ignore them during debugging
 //#define IGNORE_BAD_DEST
 
+
 #define assert_ret(x) assert(x)
 
 
@@ -43,7 +44,9 @@ SDL_Color curpal[256];
 #define RGB(r, g, b) {(r)*255/63, (g)*255/63, (b)*255/63, 0}
 
 SDL_Color gamepal[]={
+
     #include "sodpal.inc"
+
 };
 
 CASSERT(lengthof(gamepal) == 256)
@@ -131,7 +134,7 @@ void    VL_SetVGAPlaneMode (void)
     scaleFactor = screenWidth/320;
     if(screenHeight/200 < scaleFactor) scaleFactor = screenHeight/200;
     
-    
+
     pixelangle = (short *) malloc(screenWidth * sizeof(short));
     CHECKMALLOCRESULT(pixelangle);
     wallheight = (int *) malloc(screenWidth * sizeof(int));

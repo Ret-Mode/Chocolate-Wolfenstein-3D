@@ -852,6 +852,7 @@ void FinishSignon (void)
 static int wolfdigimap[] =
     {
         // These first sounds are in the upload version
+
 //
 // SPEAR OF DESTINY DIGISOUNDS
 //
@@ -1067,7 +1068,7 @@ static void InitGame()
     CA_Startup ();
     US_Startup ();
 
-
+    // TODO: Will any memory checking be needed someday??
 
 
 //
@@ -1209,7 +1210,6 @@ void NewViewSize (int width)
 
 void Quit (const char *errorStr, ...)
 {
-
     char error[256];
     if(errorStr != NULL)
     {
@@ -1225,9 +1225,7 @@ void Quit (const char *errorStr, ...)
         ShutdownId();
         if (error && *error)
         {
-
             puts(error);
-
             VW_WaitVBL(100);
         }
         exit(1);
@@ -1235,25 +1233,20 @@ void Quit (const char *errorStr, ...)
 
     if (!error || !*error)
     {
-
         WriteConfig ();
     }
-
 
     ShutdownId ();
 
     if (error && *error)
     {
-
         puts(error);
-
         VW_WaitVBL(200);
         exit(1);
     }
     else
     if (!error || !(*error))
     {
-
     }
 
     exit(0);
@@ -1284,6 +1277,7 @@ static void DemoLoop()
         param_nowait = true;
         EnableEndGameMenuItem();
         NewGame(param_difficulty,0);
+
         gamestate.episode = 0;
         gamestate.mapon = param_tedlevel;
 
@@ -1298,12 +1292,8 @@ static void DemoLoop()
 
     StartCPMusic(INTROSONG);
 
-
     if (!param_nowait)
         PG13 ();
-
-
-
 
     while (1)
     {
@@ -1399,7 +1389,6 @@ void CheckParameters(int argc, char *argv[])
     for(int i = 1; i < argc; i++)
     {
         char *arg = argv[i];
-
         IFARG("--debugmode")
 
             param_debugmode = true;

@@ -79,7 +79,6 @@ CP_itemtype CtlMenu[] = {
 
 };
 
-
 CP_itemtype NewMenu[] = {
     {1, STR_DADDY, 0},
     {1, STR_HURTME, 0},
@@ -151,6 +150,8 @@ static char SaveName[13] = "savegam?.";
 // INPUT MANAGER SCANCODE TABLES
 //
 ////////////////////////////////////////////////////////////////////
+
+
 static const char* const ScanNames[SDLK_LAST] =
     {
         "?","?","?","?","?","?","?","?",                                //   0
@@ -195,8 +196,6 @@ static const char* const ScanNames[SDLK_LAST] =
         "?","?","?","?","PrtSc","?","?","?",                            // 312
         "?","?"                                                         // 320
     };
-
-
 
 ////////////////////////////////////////////////////////////////////
 //
@@ -253,8 +252,9 @@ US_ControlPanel (ScanCode scancode)
 
             return;
     }
-
     CacheLump (OPTIONS_LUMP_START, OPTIONS_LUMP_END);
+
+
     DrawMainMenu ();
     MenuFadeIn ();
     StartGame = 0;
@@ -364,7 +364,6 @@ US_ControlPanel (ScanCode scancode)
         EnableEndGameMenuItem();
 
     // RETURN/START GAME EXECUTION
-
     UnCacheLump (OPTIONS_LUMP_START, OPTIONS_LUMP_END);
 
 }
@@ -419,8 +418,6 @@ void
 BossKey (void)
 {
 }
-
-
 
 ////////////////////////////////////////////////////////////////////
 //
@@ -522,8 +519,6 @@ CP_CheckQuick (ScanCode scancode)
             {
                 CA_CacheGrChunk (C_CURSOR1PIC);
                 CacheLump (BACKDROP_LUMP_START, BACKDROP_LUMP_END);
-
-
                 VW_FadeOut ();
                 if(screenHeight % 200 != 0)
                     VL_ClearScreen(0);
@@ -562,6 +557,7 @@ CP_CheckQuick (ScanCode scancode)
             WindowX = WindowY = 0;
             WindowW = 320;
             WindowH = 160;
+
             if (Confirm (endStrings[US_RndT () & 0x7 + (US_RndT () & 1)]))
 
 
@@ -605,6 +601,7 @@ CP_EndGame (int)
     MainMenu[savegame].active = 0;
     MainMenu[viewscores].routine = CP_ViewScores;
     strcpy (MainMenu[viewscores].string, STR_VS);
+
     return 1;
 }
 
@@ -622,7 +619,6 @@ CP_ViewScores (int)
     UnCacheLump (OPTIONS_LUMP_START, OPTIONS_LUMP_END);
     StartCPMusic (XAWARD_MUS);
 
-
     DrawHighScores ();
     VW_UpdateScreen ();
     MenuFadeIn ();
@@ -632,6 +628,7 @@ CP_ViewScores (int)
 
     StartCPMusic (MENUSONG);
     MenuFadeOut ();
+
     CacheLump (BACKDROP_LUMP_START, BACKDROP_LUMP_END);
     CacheLump (OPTIONS_LUMP_START, OPTIONS_LUMP_END);
 
@@ -648,6 +645,7 @@ int
 CP_NewGame (int)
 {
     int which, episode;
+
     UnCacheLump (OPTIONS_LUMP_START, OPTIONS_LUMP_END);
 
     episode = 0;
@@ -688,7 +686,6 @@ CP_NewGame (int)
     // CHANGE "READ THIS!" TO NORMAL COLOR
     //
 
-
     pickquick = 0;
     UnCacheLump (NEWGAME_LUMP_START, NEWGAME_LUMP_END);
     CacheLump (OPTIONS_LUMP_START, OPTIONS_LUMP_END);
@@ -711,9 +708,9 @@ DrawNewGame (void)
     PrintX = NM_X + 20;
     PrintY = NM_Y - 32;
     VWB_DrawPic (PrintX, PrintY, C_HOWTOUGHPIC);
-
-
     DrawWindow (NM_X - 5, NM_Y - 10, NM_W, NM_H, BKGDCOLOR);
+
+
     DrawMenu (&NewItems, &NewMenu[0]);
     DrawNewGameDiff (NewItems.curpos);
     VW_UpdateScreen ();
@@ -842,6 +839,7 @@ CP_Sound (int)
     while (which >= 0);
 
     MenuFadeOut ();
+
     UnCacheLump (SOUND_LUMP_START, SOUND_LUMP_END);
     CacheLump (OPTIONS_LUMP_START, OPTIONS_LUMP_END);
 
@@ -891,7 +889,6 @@ DrawSoundMenu (void)
 
     for (i = 0; i < SndItems.amount; i++)
         if (SndMenu[i].string[0])
-
         {
             //
             // DRAW SELECTED/NOT SELECTED GRAPHIC BUTTONS
@@ -1036,7 +1033,6 @@ CP_LoadGame (int quick)
     }
     UnCacheLump (OPTIONS_LUMP_START, OPTIONS_LUMP_END);
     CacheLump (LOADSAVE_LUMP_START, LOADSAVE_LUMP_END);
-
 
     DrawLoadSaveScreen (0);
 
@@ -1293,7 +1289,6 @@ CP_SaveGame (int quick)
     UnCacheLump (LOADSAVE_LUMP_START, LOADSAVE_LUMP_END);
     CacheLump (OPTIONS_LUMP_START, OPTIONS_LUMP_END);
 
-
     return exit;
 }
 
@@ -1306,9 +1301,9 @@ int
 CP_Control (int)
 {
     int which;
+
     UnCacheLump (OPTIONS_LUMP_START, OPTIONS_LUMP_END);
     CacheLump (CONTROL_LUMP_START, CONTROL_LUMP_END);
-
 
     DrawCtlScreen ();
     MenuFadeIn ();
@@ -1346,6 +1341,7 @@ CP_Control (int)
     while (which >= 0);
 
     MenuFadeOut ();
+
     UnCacheLump (CONTROL_LUMP_START, CONTROL_LUMP_END);
     CacheLump (OPTIONS_LUMP_START, OPTIONS_LUMP_END);
 
@@ -1362,12 +1358,7 @@ DrawMouseSens (void)
 {
     ClearMScreen ();
     VWB_DrawPic (112, 184, C_MOUSELBACKPIC);
-
-
-
     DrawWindow (10, 80, 300, 30, BKGDCOLOR);
-
-
     WindowX = 0;
     WindowW = 320;
     PrintY = 82;
@@ -1375,13 +1366,11 @@ DrawMouseSens (void)
     US_CPrint (STR_MOUSEADJ);
 
     SETFONTCOLOR (TEXTCOLOR, BKGDCOLOR);
-
     PrintX = 14;
     PrintY = 95;
     US_Print (STR_SLOW);
     PrintX = 269;
     US_Print (STR_FAST);
-
 
     VWB_Bar (60, 97, 200, 10, TEXTCOLOR);
     DrawOutline (60, 97, 200, 10, 0, HIGHLIGHT);
@@ -1891,6 +1880,7 @@ FixupCustom (int w)
     VWB_Hlin (7, 32, y - 2, BORD2COLOR);
     VWB_Hlin (7, 32, y + 13, BORD2COLOR);
 
+
     switch (w)
     {
         case 0:
@@ -1945,9 +1935,6 @@ void
 DrawCustomScreen (void)
 {
     int i;
-
-
-
     ClearMScreen ();
     WindowX = 0;
     WindowW = 320;
@@ -1963,6 +1950,8 @@ DrawCustomScreen (void)
     WindowW = 320;
     PrintY = CST_Y + 13;
     VWB_DrawPic (128, 48, C_MOUSEPIC);
+
+
     SETFONTCOLOR (TEXTCOLOR, BKGDCOLOR);
     PrintX = CST_START;
     US_Print (STR_CRUN);
@@ -1982,14 +1971,12 @@ DrawCustomScreen (void)
     //
     // JOYSTICK/PAD
     //
-
     PrintY += 13;
     VWB_DrawPic (40, 88, C_JOYSTICKPIC);
     VWB_DrawPic (112, 120, C_KEYBOARDPIC);
 
 
     SETFONTCOLOR (TEXTCOLOR, BKGDCOLOR);
-
     PrintX = CST_START;
     US_Print (STR_CRUN);
     PrintX = CST_START + CST_SPC * 1;
@@ -2028,7 +2015,6 @@ DrawCustomScreen (void)
     // KEYBOARD MOVE KEYS
     //
     SETFONTCOLOR (TEXTCOLOR, BKGDCOLOR);
-
     PrintX = CST_START;
     US_Print (STR_LEFT);
     PrintX = CST_START + CST_SPC * 1;
@@ -2037,6 +2023,7 @@ DrawCustomScreen (void)
     US_Print (STR_FRWD);
     PrintX = CST_START + CST_SPC * 3;
     US_Print (STR_BKWD "\n");
+
     DrawWindow (5, PrintY - 1, 310, 13, BKGDCOLOR);
     DrawCustKeys (0);
     //
@@ -2293,9 +2280,6 @@ int
 CP_Quit (int)
 {
     if (Confirm (endStrings[US_RndT () & 0x7 + (US_RndT () & 1)]))
-
-
-
     {
         VW_UpdateScreen ();
         SD_MusicOff ();
@@ -2321,6 +2305,7 @@ IntroScreen (void)
 #define MAINCOLOR       0x4f
 #define EMSCOLOR        0x4f
 #define XMSCOLOR        0x4f
+
 
 #define FILLCOLOR       14
 
@@ -3027,7 +3012,6 @@ Confirm (const char *string)
             lastBlinkTime = GetTimeCount();
         }
         else SDL_Delay(5);
-
     }
     while (!Keyboard[sc_Y] && !Keyboard[sc_N] && !Keyboard[sc_Escape] && !ci.button0 && !ci.button1);
 
@@ -3247,7 +3231,6 @@ CheckForEpisodes (void)
 //
 // JAPANESE VERSION
 //
-
 //
 // ENGLISH
 //
@@ -3291,7 +3274,6 @@ CheckForEpisodes (void)
     strcat (configname, extension);
     strcat (SaveName, extension);
     strcat (demoname, extension);
-
 
 
 }

@@ -14,10 +14,6 @@
 
 #pragma hdrstop
 
-#ifdef MYPROFILE
-#include <TIME.H>
-#endif
-
 
 /*
 =============================================================================
@@ -40,11 +36,11 @@ boolean         ingame,fizzlein;
 gametype        gamestate;
 byte            bordercol=VIEWCOLOR;        // color of the Change View/Ingame border
 
-#ifdef SPEAR
+
 int32_t         spearx,speary;
 unsigned        spearangle;
 boolean         spearflag;
-#endif
+
 
 
 //
@@ -298,10 +294,9 @@ static void ScanInfoPlane(void)
                 case 70:
                 case 71:
                 case 72:
-#ifdef SPEAR
                 case 73:                        // TRUCK AND SPEAR!
                 case 74:
-#endif
+
                     SpawnStatic(x,y,tile-23);
                     break;
 
@@ -504,29 +499,6 @@ static void ScanInfoPlane(void)
 //
 // boss
 //
-#ifndef SPEAR
-                case 214:
-                    SpawnBoss (x,y);
-                    break;
-                case 197:
-                    SpawnGretel (x,y);
-                    break;
-                case 215:
-                    SpawnGift (x,y);
-                    break;
-                case 179:
-                    SpawnFat (x,y);
-                    break;
-                case 196:
-                    SpawnSchabbs (x,y);
-                    break;
-                case 160:
-                    SpawnFakeHitler (x,y);
-                    break;
-                case 178:
-                    SpawnHitler (x,y);
-                    break;
-#else
                 case 106:
                     SpawnSpectre (x,y);
                     break;
@@ -546,7 +518,6 @@ static void ScanInfoPlane(void)
                     SpawnDeath (x,y);
                     break;
 
-#endif
 
 //
 // mutants
@@ -596,20 +567,7 @@ static void ScanInfoPlane(void)
 //
 // ghosts
 //
-#ifndef SPEAR
-                case 224:
-                    SpawnGhosts (en_blinky,x,y);
-                    break;
-                case 225:
-                    SpawnGhosts (en_clyde,x,y);
-                    break;
-                case 226:
-                    SpawnGhosts (en_pinky,x,y);
-                    break;
-                case 227:
-                    SpawnGhosts (en_inky,x,y);
-                    break;
-#endif
+
             }
         }
     }
@@ -988,7 +946,7 @@ void ShowActStatus()
 
 char    demoname[13] = "DEMO?.";
 
-#ifndef REMDEBUG
+
 #define MAXDEMOSIZE     8192
 
 void StartDemoRecord (int levelnumber)
@@ -1067,15 +1025,8 @@ void RecordDemo (void)
     CA_CacheGrChunk(STARTFONT);
     fontnumber=0;
     SETFONTCOLOR(0,15);
-#ifndef SPEAR
-#ifdef UPLOAD
-    US_Print("  Demo which level(1-10): "); maps = 10;
-#else
-    US_Print("  Demo which level(1-60): "); maps = 60;
-#endif
-#else
     US_Print("  Demo which level(1-21): "); maps = 21;
-#endif
+
     VW_UpdateScreen();
     VW_FadeIn ();
     esc = !US_LineInput (px,py,str,NULL,true,2,0);
@@ -1090,13 +1041,9 @@ void RecordDemo (void)
 
     VW_FadeOut ();
 
-#ifndef SPEAR
-    NewGame (gd_hard,level/10);
-    gamestate.mapon = level%10;
-#else
     NewGame (gd_hard,0);
     gamestate.mapon = level;
-#endif
+
 
     StartDemoRecord (level);
 
@@ -1122,11 +1069,6 @@ void RecordDemo (void)
 
     FinishDemoRecord ();
 }
-#else
-void FinishDemoRecord (void) {return;}
-void RecordDemo (void) {return;}
-#endif
-
 
 
 //==========================================================================
@@ -1144,21 +1086,13 @@ void RecordDemo (void) {return;}
 void PlayDemo (int demonumber)
 {
     int length;
-#ifdef DEMOSEXTERN
 // debug: load chunk
-#ifndef SPEARDEMO
-    int dems[4]={T_DEMO0,T_DEMO1,T_DEMO2,T_DEMO3};
-#else
     int dems[1]={T_DEMO0};
-#endif
+
 
     CA_CacheGrChunk(dems[demonumber]);
     demoptr = (int8_t *) grsegs[dems[demonumber]];
-#else
-    demoname[4] = '0'+demonumber;
-    CA_LoadFile (demoname,&demobuffer);
-    demoptr = (int8_t *)demobuffer;
-#endif
+
 
     NewGame (1,0);
     gamestate.mapon = *demoptr++;
@@ -1182,11 +1116,8 @@ void PlayDemo (int demonumber)
 
     PlayLoop ();
 
-#ifdef DEMOSEXTERN
     UNCACHEGRCHUNK(dems[demonumber]);
-#else
-    MM_FreePtr (&demobuffer);
-#endif
+
 
     demoplayback = false;
 
@@ -1354,9 +1285,6 @@ void Died (void)
 void GameLoop (void)
 {
     boolean died;
-#ifdef MYPROFILE
-    clock_t start,end;
-#endif
 
 restartgame:
     ClearMemory ();
@@ -1374,13 +1302,12 @@ restartgame:
         if (!loadedgame)
             SetupGameLevel ();
 
-#ifdef SPEAR
         if (gamestate.mapon == 20)      // give them the key allways
         {
             gamestate.keys |= 1;
             DrawKeys ();
         }
-#endif
+
 
         ingame = true;
         if(loadedgame)
@@ -1400,12 +1327,10 @@ restartgame:
 
         DrawLevel ();
 
-#ifdef SPEAR
 startplayloop:
-#endif
+
         PlayLoop ();
 
-#ifdef SPEAR
         if (spearflag)
         {
             SD_StopSound();
@@ -1429,7 +1354,7 @@ startplayloop:
             Thrust (0,0);
             goto startplayloop;
         }
-#endif
+
 
         StopMusic ();
         ingame = false;
@@ -1454,7 +1379,6 @@ startplayloop:
                 LevelCompleted ();              // do the intermission
                 if(viewsize == 21) DrawPlayScreen();
 
-#ifdef SPEARDEMO
                 if (gamestate.mapon == 1)
                 {
                     died = true;                    // don't "get psyched!"
@@ -1464,47 +1388,14 @@ startplayloop:
                     ClearMemory ();
 
                     CheckHighScore (gamestate.score,gamestate.mapon+1);
-#ifndef JAPAN
+
                     strcpy(MainMenu[viewscores].string,STR_VS);
-#endif
+
                     MainMenu[viewscores].routine = CP_ViewScores;
                     return;
                 }
-#endif
-
-#ifdef JAPDEMO
-                if (gamestate.mapon == 3)
-                {
-                    died = true;                    // don't "get psyched!"
-
-                    VW_FadeOut ();
-
-                    ClearMemory ();
-
-                    CheckHighScore (gamestate.score,gamestate.mapon+1);
-#ifndef JAPAN
-                    strcpy(MainMenu[viewscores].string,STR_VS);
-#endif
-                    MainMenu[viewscores].routine = CP_ViewScores;
-                    return;
-                }
-#endif
 
                 gamestate.oldscore = gamestate.score;
-
-#ifndef SPEAR
-                //
-                // COMING BACK FROM SECRET LEVEL
-                //
-                if (gamestate.mapon == 9)
-                    gamestate.mapon = ElevatorBackTo[gamestate.episode];    // back from secret
-                else
-                    //
-                    // GOING TO SECRET LEVEL
-                    //
-                    if (playstate == ex_secretlevel)
-                        gamestate.mapon = 9;
-#else
 
 #define FROMSECRET1             3
 #define FROMSECRET2             11
@@ -1528,7 +1419,7 @@ startplayloop:
                         case 18: gamestate.mapon = FROMSECRET1+1; break;
                         case 19: gamestate.mapon = FROMSECRET2+1; break;
                     }
-#endif
+
                     else
                         //
                         // GOING TO NEXT LEVEL
@@ -1550,19 +1441,16 @@ startplayloop:
                 ClearMemory ();
 
                 CheckHighScore (gamestate.score,gamestate.mapon+1);
-#ifndef JAPAN
                 strcpy(MainMenu[viewscores].string,STR_VS);
-#endif
+
                 MainMenu[viewscores].routine = CP_ViewScores;
                 return;
 
             case ex_victorious:
                 if(viewsize == 21) DrawPlayScreen();
-#ifndef SPEAR
-                VW_FadeOut ();
-#else
+
                 VL_FadeOut (0,255,0,17,17,300);
-#endif
+
                 ClearMemory ();
 
                 Victory ();
@@ -1570,9 +1458,8 @@ startplayloop:
                 ClearMemory ();
 
                 CheckHighScore (gamestate.score,gamestate.mapon+1);
-#ifndef JAPAN
                 strcpy(MainMenu[viewscores].string,STR_VS);
-#endif
+
                 MainMenu[viewscores].routine = CP_ViewScores;
                 return;
 
