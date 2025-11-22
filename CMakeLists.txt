@@ -85,7 +85,7 @@ function(build targetName sourceRoot backendFiles backendIncludes backendLibs de
 
 endfunction()
 
-set(buildDoxygen ON CACHE BOOL "build doxygen")
+set(buildDoxygen OFF CACHE BOOL "build doxygen")
 
 if (BUILD_WOLF_DEMO)
     set(wolfDemoDefines GOODTIMES CARMACIZED UPLOAD)
